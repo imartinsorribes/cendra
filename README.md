@@ -1,6 +1,7 @@
 # cendra VLC
 
-> **Atlas de riesgo de incendio urbano en València con escenarios paramétricos.**
+> **¿Cuál es el riesgo de incendio de tu edificio?**  
+> Atlas paramétrico de València con datos abiertos.
 
 Proyecto para la **IV Convocatoria de Premios para proyectos de datos
 abiertos y periodismo de datos del Ajuntament de València (2026)**,
