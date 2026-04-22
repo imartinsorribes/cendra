@@ -51,6 +51,10 @@ secrets.json
 notas_privadas/
 *.local.md
 
+# --- Logs de ejecución locales ---
+logs_*.txt
+*.log
+
 # --- Documentos administrativos del concurso (no parte del producto) ---
 document_pdf.pdf
 convocatoria-*.pdf
