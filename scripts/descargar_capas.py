@@ -36,6 +36,14 @@ UA = "cendra-fetch/0.1 (+https://github.com/imartinsorribes/cendra)"
 PAGE_SIZE = 1000  # máximo habitual del MapServer
 
 # Capas con su MapServer/layer del geoportal y nombre de archivo de salida.
+#
+# La capa `edificis` (UrbanismoEInfraestructuras/112) del catálogo CKAN
+# se ha excluido a propósito: contiene ~430.000 entidades cartográficas
+# de cubierta y anexos, redundantes con el Catastro INSPIRE de buildings
+# (que ya descargamos por `scripts/descargar_catastro.py` y procesamos
+# por `extraer_alturas_ciudad.py` → 214.000 edificios reales con altura
+# y número de viviendas). Reincorporar `edificis` solo si se necesita la
+# geometría de cubiertas individuales para algún análisis posterior.
 CAPAS_ARCGIS: list[tuple[str, str, int, str]] = [
     # (clave, base_url, layer_id, fichero_salida)
     # --- Núcleo del modelo ---
@@ -43,7 +51,6 @@ CAPAS_ARCGIS: list[tuple[str, str, int, str]] = [
     ("fites_bombers", "Trafico", 239, "fites_bombers.geojson"),
     # --- Geometría base ---
     ("barris", "UrbanismoEInfraestructuras", 224, "barris.geojson"),
-    ("edificis", "UrbanismoEInfraestructuras", 112, "edificis.geojson"),
     # --- Equipamientos sensibles ---
     # `equipamientos` clase 'Instalaciones sanitarias', 'Bienestar Social',
     # 'Instalaciones educativas' son las relevantes para nuestro modelo.
