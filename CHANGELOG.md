@@ -37,6 +37,42 @@ riesgo de incendio urbano en València con **escenarios paramétricos**,
 respondiendo a la pregunta abierta tras el incendio de Campanar de
 febrero de 2024.
 
+### Añadido (continuación del día 2026-05-14)
+- Capa propia `data/raw/parques_bomberos.geojson` con los 6 parques
+  del SPEIS de l'Ajuntament (Central, Campanar, Norte, Oeste, Centro
+  Histórico, Saler/Devesa). Coordenadas geocodificadas con Nominatim
+  de OpenStreetMap, direcciones verificadas con la web oficial
+  Infociudad. Trazabilidad en `data/raw/parques_bomberos_FUENTES.md`.
+- Script `scripts/construir_parques_bomberos.py` reproducible.
+- Documento `docs/modelo-riesgo.md` (v0.1 y v0.1.1) con el diseño
+  completo del modelo paramétrico: tres dimensiones (vulnerabilidad
+  intrínseca, exposición poblacional, respuesta de emergencia), pesos
+  justificados, modelización del tiempo de llegada de bomberos por
+  hora del día y régimen dinámico de pesos cuando la fachada satura
+  V_intrínseca.
+- Script `scripts/calcular_riesgo.py` que implementa el modelo y
+  soporta tres modos de uso (escenario canónico, parámetros sueltos,
+  comparativa de los tres escenarios).
+- Procesado del Catastro INSPIRE: 214.000 edificios con altura por
+  planta (`extraer_alturas_ciudad.py`, gpkg de 72 MB) y 88 barrios
+  con viviendas y población estimada
+  (`extraer_viviendas.py`, CSV de 5 KB · 1.012.050 hab estimados en
+  total).
+- Descarga reproducible de 10 capas geoespaciales del portal CKAN
+  (`descargar_capas.py`). La capa `edificis` se excluye a propósito
+  (redundante con Catastro INSPIRE, ver comentario en el script).
+- Documento `docs/inventario-datos.md` con el estado completo de
+  todos los datos versionados, no versionados y procesados.
+- Repositorio remoto en `https://github.com/imartinsorribes/cendra`
+  (privado hasta el envío).
+
+### Validación del modelo
+- Test Campanar: riesgo 84,8 / 100 (umbral establecido ≥ 80) ✅
+- Test sensibilidad de la fachada: Campanar real 84,8 → mismo edificio
+  con fachada de ladrillo 33,6 → caída del 60 % (umbral ≥ 30 %) ✅
+- Test sensibilidad horaria (edificio lejano Borbotó): riesgo 28,4
+  a las 4:00 → 34,9 a las 8:00 (tiempo de llegada 7,7 → 14,4 min) ✅
+
 ### Hallazgos del arranque
 - 130 de 294 datasets del portal CKAN matchean al menos un tema del
   dominio. Solo **2 datasets nucleares** (hidrantes y fites bombers).

@@ -62,18 +62,21 @@ cendraVLC/
 
 ## Estado de los datos
 
-A día de arranque (`2026-05-14`), lo que hay en el repositorio:
+Inventario completo y trazable en [`docs/inventario-datos.md`](docs/inventario-datos.md).
 
-| Pieza | Estado | Cómo regenerarla |
-|---|---|---|
-| Volcado del catálogo CKAN | ✅ descargado (`data/raw/ckan_*.json`) | `python scripts/fetch_catalogo_vlci.py` |
-| Inventario de fuentes relevantes | ✅ generado ([`docs/fuentes-encontradas.md`](docs/fuentes-encontradas.md)) | `python scripts/filtrar_catalogo_incendio.py` |
-| Hallazgos de la exploración (IDs MapServer, ausencias, decisiones) | ✅ documentado ([`docs/hallazgos-exploracion.md`](docs/hallazgos-exploracion.md)) | (manual) |
-| Capas geoespaciales del portal (hidrantes, fites bombers, barris, edificis, equipamientos, mayores, hospitales, centros educativos, vulnerabilidad, manzanas) | ⏳ pendiente de descarga | `python scripts/descargar_capas.py` |
-| Parques de bomberos | ⚠️ no existe en el portal · capa propia a construir | (manual desde fuentes SPEIS) |
-| Catastro INSPIRE Buildings 46900 | ⏳ pendiente de descarga (~540 MB de GML) | `python scripts/descargar_catastro.py` |
-| Edificios 3D (altura por planta) | ⏳ depende de Catastro | `python scripts/extraer_alturas_ciudad.py` |
-| Viviendas por barrio | ⏳ depende de Catastro + barrios | `python scripts/extraer_viviendas.py` |
+| Pieza | Estado |
+|---|---|
+| Volcado del catálogo CKAN | ✅ 294 datasets descargados (`data/raw/ckan_*.json`) |
+| Inventario de fuentes relevantes | ✅ [`docs/fuentes-encontradas.md`](docs/fuentes-encontradas.md), 130 datasets clasificados |
+| Hallazgos de la exploración | ✅ [`docs/hallazgos-exploracion.md`](docs/hallazgos-exploracion.md) |
+| 10 capas geoespaciales del portal | ✅ descargadas (hidrantes, fites bombers, barris, equipamientos, mayores, área prioridad residencial, vulnerabilidad, hospitales, centros educativos, manzanas) |
+| Parques de bomberos | ✅ capa propia con 6 parques del SPEIS verificados ([`data/raw/parques_bomberos.geojson`](data/raw/parques_bomberos.geojson) + [`FUENTES.md`](data/raw/parques_bomberos_FUENTES.md)) |
+| Catastro INSPIRE Buildings 46900 | ✅ descargado (~163 MB ZIP, 3 GML descomprimidos) |
+| Edificios 3D | ✅ procesado: 214.000 edificios con altura (media 13,1 m, máx 108 m) |
+| Viviendas por barrio | ✅ procesado: 88 barrios, 1.012.050 hab estimados ([`data/processed/viviendas_por_barrio.csv`](data/processed/viviendas_por_barrio.csv)) |
+| Modelo paramétrico de riesgo v0.1.1 | ✅ diseñado e implementado ([`docs/modelo-riesgo.md`](docs/modelo-riesgo.md) · [`scripts/calcular_riesgo.py`](scripts/calcular_riesgo.py)) |
+| Cálculo batch sobre los 214k edificios | ⏳ pendiente (siguiente fase) |
+| Frontend web | ⏳ pendiente |
 
 Las descargas grandes (`data/raw/large/`, `data/external/`) no se
 versionan: están en `.gitignore`. Cualquier persona puede reproducir
