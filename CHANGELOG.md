@@ -73,6 +73,30 @@ febrero de 2024.
 - Test sensibilidad horaria (edificio lejano Borbotó): riesgo 28,4
   a las 4:00 → 34,9 a las 8:00 (tiempo de llegada 7,7 → 14,4 min) ✅
 
+### Auditoría de datos · `docs/validacion-datos.md`
+- Script `scripts/validar_datos.py` que ejecuta una validación
+  sistemática de todas las capas y derivados (counts, geometrías,
+  CRS, bbox, outliers, edge cases del modelo).
+- **Bug grave detectado y corregido**: sobreestimación poblacional del
+  +27,9 % por aplicar el factor 2,4 hab/vivienda **principal habitada**
+  del INE sobre el `numberOfDwellings` del Catastro INSPIRE (que
+  cuenta TODAS las viviendas catastradas, incluidas vacías,
+  secundarias y turísticas). Recalibrado a 1,88 hab/vivienda
+  catastrada contra el padrón INE 2023 (791.413 hab). Tras la
+  corrección la estimación queda a +0,17 % del padrón.
+- Anomalías residuales documentadas:
+  - 13 equipamientos y 4 mayores sin geometría (legítimo del
+    dataset original, se filtran al cargar).
+  - Capa `hospitales` con tipo `MultiPoint` (cosmético, se explota
+    a Point al cargar).
+  - 7 manzanas marginalmente fuera del bbox por 40 m en el límite
+    sur del término.
+  - 8 manzanas con polígonos auto-intersectantes (se aplica
+    `make_valid` al cargar).
+- Las 2 «torres» de >100 m del Catastro corresponden a edificios
+  reales documentados (Torre de Francia y aledaños en Quatre
+  Carreres).
+
 ### Hallazgos del arranque
 - 130 de 294 datasets del portal CKAN matchean al menos un tema del
   dominio. Solo **2 datasets nucleares** (hidrantes y fites bombers).

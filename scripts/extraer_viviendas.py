@@ -3,17 +3,29 @@ Saca viviendas por barrio del catastro INSPIRE (building.gml, NO el
 buildingpart que ya usamos para alturas).
 
 Building.gml trae el campo numberOfDwellings por edificio. Sumando por
-barrio y multiplicando por el tamaño medio del hogar (INE Valencia
-2021 = 2.4 personas/vivienda) sale una estimación razonable de
-población residencial por barrio.
+barrio y multiplicando por un factor empírico de población por
+vivienda catastrada se obtiene una estimación razonable de población
+residencial por barrio.
 
 Salida:
   data/processed/viviendas_por_barrio.csv
 
-Solo fuentes oficiales:
-  - building.gml: Direccion General del Catastro (datos.gob.es)
-  - barris.geojson: portal de dades obertes de l'Ajuntament
-  - factor 2.4 hab/vivienda: INE Encuesta continua hogares Valencia
+El factor 1.88 hab/vivienda **catastrada** se calibra contra el
+padrón INE 2023 de València (791.413 habitantes en el término
+municipal). El Catastro registra TODAS las viviendas administrativas
+de la finca (incluidas vacías, secundarias, en alquiler turístico,
+en obra). El tamaño medio del hogar INE de 2.4 hab/vivienda se refiere
+a la vivienda **principal habitada**, una categoría mucho más
+restrictiva, por lo que multiplicarlo por el numberOfDwellings del
+Catastro sobreestima la población en un ~28 %. Ver
+`docs/validacion-datos.md` §1 para la trazabilidad de la calibración.
+
+Fuentes:
+  - building.gml: Dirección General del Catastro (datos.gob.es)
+  - barris.geojson: portal de datos abiertos del Ajuntament
+  - factor 1.88 hab/vivienda catastrada: calibrado empíricamente
+    contra el Padrón Municipal de Habitantes INE 2023 (válido para
+    València ciudad, no extrapolable a otras ciudades sin recalibrar)
 """
 from __future__ import annotations
 
@@ -31,9 +43,10 @@ GML = (ROOT / "data" / "external" / "catastro" / "A.ES.SDGC.BU.46900"
 BARRIS = ROOT / "data" / "raw" / "large" / "barris.geojson"
 OUT_CSV = ROOT / "data" / "processed" / "viviendas_por_barrio.csv"
 
-# Tamaño medio del hogar Valencia 2021 (INE Encuesta Continua de
-# Hogares). 2.4 personas por vivienda principal.
-HAB_POR_VIVIENDA = 2.4
+# Factor empírico hab / vivienda catastrada para València ciudad.
+# Calibrado contra Padrón INE 2023: 791.413 hab / 421.687 viviendas
+# del Catastro INSPIRE → 1.877. Redondeado a 1.88.
+HAB_POR_VIVIENDA = 1.88
 
 
 def main():
