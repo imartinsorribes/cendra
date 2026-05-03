@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>cendra · atlas paramétrico de riesgo de incendio en València</title>
+<meta name="description" content="¿Cuál es el riesgo de incendio de tu edificio? Atlas paramétrico de València con datos abiertos.">
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <h1>cendra <span class="vlc">VLC</span></h1>
+  <p class="tagline">¿Cuál es el riesgo de incendio de tu edificio? Atlas paramétrico de València con datos abiertos.</p>
+</header>
+
+<main>
+  <aside id="panel">
+    <section class="bloque">
+      <h2>El edificio</h2>
+      <p class="ayuda">Estos son los datos del Catastro. Si haces clic en un barrio del mapa, se pre-rellenan con los valores medios de ese barrio.</p>
+
+      <label>Plantas sobre rasante
+        <input type="range" id="plantas" min="1" max="36" value="6">
+        <output id="plantas_val">6</output>
+      </label>
+
+      <label>Año de construcción
+        <input type="range" id="anio" min="1850" max="2026" value="1980">
+        <output id="anio_val">1980</output>
+      </label>
+    </section>
+
+    <section class="bloque">
+      <h2>Lo que no es dato abierto · escenario</h2>
+      <p class="ayuda">Materiales y mantenimiento del edificio. Aquí está la gracia del modelo: la persona usuaria decide.</p>
+
+      <label>Tipo de fachada
+        <select id="fachada">
+          <option value="ladrillo">Ladrillo / mortero tradicional</option>
+          <option value="vidrio">Muro cortina de vidrio</option>
+          <option value="composite-cte" selected>Composite con cumplimiento CTE</option>
+          <option value="composite-acmpe">Composite con núcleo combustible (ACM-PE) ⚠</option>
+        </select>
+      </label>
+
+      <label>Estado de la ITE
+        <select id="ite">
+          <option value="favorable">Favorable</option>
+          <option value="pendiente" selected>Pendiente / no realizada</option>
+          <option value="desfavorable">Desfavorable</option>
+        </select>
+      </label>
+
+      <label>Sistema contra incendios (SCI)
+        <select id="sci">
+          <option value="completo">Completo (rociadores + detección + columna seca)</option>
+          <option value="parcial" selected>Parcial</option>
+          <option value="extintores">Sólo extintores</option>
+          <option value="ninguno">Ninguno</option>
+        </select>
+      </label>
+
+      <label>Cubierta
+        <select id="cubierta">
+          <option value="tradicional">Tradicional (no combustible)</option>
+          <option value="mixto" selected>Mixto</option>
+          <option value="combustible">Combustible (madera, lámina bituminosa)</option>
+        </select>
+      </label>
+    </section>
+
+    <section class="bloque">
+      <h2>El día del incidente</h2>
+
+      <label>Hora del día
+        <input type="range" id="hora" min="0" max="23" value="12">
+        <output id="hora_val">12:00</output>
+      </label>
+
+      <label>
+        <input type="checkbox" id="saturacion">
+        El parque más cercano está cubriendo otra intervención
+      </label>
+    </section>
+
+    <section class="bloque escenarios">
+      <h2>Escenarios canónicos</h2>
+      <div class="botones">
+        <button data-escenario="campanar">Campanar (2024)</button>
+        <button data-escenario="carmen">Edificio histórico · madrugada</button>
+        <button data-escenario="quatre-carreres-nuevo">Promoción nueva · hora punta</button>
+      </div>
+    </section>
+  </aside>
+
+  <section id="mapa-wrap">
+    <div id="mapa"></div>
+
+    <div id="resultado" class="resultado">
+      <div class="cabecera-resultado">
+        <span class="numero" id="riesgo_total">—</span>
+        <span class="etiqueta">índice de riesgo</span>
+      </div>
+      <div class="barra"><div class="barra-relleno" id="barra_relleno"></div></div>
+      <div class="componentes">
+        <div><span id="V_val">—</span><span>Vulnerabilidad del edificio</span></div>
+        <div><span id="E_val">—</span><span>Exposición poblacional</span></div>
+        <div><span id="R_val">—</span><span>Respuesta de emergencia</span></div>
+      </div>
+      <p class="contexto" id="contexto"></p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <p>
+    Proyecto para la IV Convocatoria de Premios de datos abiertos y periodismo de datos
+    del Ajuntament de València (2026). Datos:
+    <a href="https://opendata.vlci.valencia.es/">portal de datos abiertos del Ajuntament</a>,
+    <a href="https://www.catastro.hacienda.gob.es/">Catastro INSPIRE</a>,
+    <a href="https://www.valencia.es/cas/bomberos/parques/">SPEIS</a>.
+    Código fuente bajo MIT, datos derivados bajo CC BY 4.0.
+  </p>
+</footer>
+
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="modelo.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
