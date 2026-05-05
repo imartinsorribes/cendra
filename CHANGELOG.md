@@ -73,6 +73,53 @@ febrero de 2024.
 - Test sensibilidad horaria (edificio lejano Borbotó): riesgo 28,4
   a las 4:00 → 34,9 a las 8:00 (tiempo de llegada 7,7 → 14,4 min) ✅
 
+### Cálculo batch del riesgo
+- `scripts/calcular_riesgo_batch.py`: aplica el modelo a los 214.000
+  edificios del Catastro INSPIRE bajo un escenario por defecto
+  (paramétricos en valores medios). Spatial joins vectorizados +
+  cálculo NumPy en unos 25 s sobre el gpkg completo.
+- Salidas:
+  - `data/processed/riesgo_edificios.gpkg`: una geometría + 8
+    atributos numéricos por edificio (no versionado por tamaño).
+  - `data/processed/riesgo_por_barrio.csv`: agregado de los 88
+    barrios con riesgo medio / p75 / p90 + métricas auxiliares.
+- Distribución del riesgo medio por barrio: media 36,5 · σ 5,1 ·
+  rango 24,9-46,1. Top: RAFALELL-VISTABELLA, EL CALVARI, ELS ORRIOLS,
+  EL PERELLONET — combinación de vulnerabilidad social y/o tiempo de
+  llegada elevado.
+
+### Dos bugs detectados al validar el batch
+- El cruce entre barrios y vulnerabilidad estaba intentando hacerse
+  por `codbarrio` (rango 1-8 dentro de distrito) contra `codbar`
+  (rango 11-162, código compuesto). 0 matches. Cambiado a cruce por
+  nombre normalizado: 84,5 % de los edificios reciben vulnerabilidad;
+  el resto son pedanías sin datos publicados.
+- El campo `ind_global` del dataset `Vulnerabilitat per barris 2021`
+  está INVERTIDO: valor bajo = vulnerabilidad alta. Verificado contra
+  el campo de etiqueta `vul_global`. Reescalado lineal corregido:
+  `clip((3,9 - ind) / 2 × 100, 0, 100)`. La σ del riesgo entre
+  barrios sube de 4,1 a 5,1 (modelo discrimina mejor). Top-10 ahora
+  incluye EL CALVARI y ELS ORRIOLS, que el bug enmascaraba.
+
+### Frontend web interactivo · `web/`
+- `web/index.html`: estructura con panel lateral + mapa MapLibre +
+  cuadro flotante con el resultado.
+- `web/style.css`: paleta brasa/ceniza, layout grid responsivo,
+  móvil en stack vertical.
+- `web/modelo.js`: traducción literal del modelo Python a JS. MISMAS
+  constantes, MISMA fórmula, MISMA regla de saturación por fachada.
+  Comentario en cabecera advierte que ambos archivos viven en sync.
+- `web/app.js`: inicializa MapLibre con base CARTO Positron, dibuja
+  capa coroplética de barrios coloreada por riesgo medio, capa de
+  parques de bomberos con tooltip, conecta los sliders al modelo con
+  cálculo en vivo, propaga el contexto del barrio al hacer click,
+  soporta los tres escenarios canónicos del documento.
+- `web/data/barris_riesgo.geojson` (123 KB): geometría simplificada
+  a 10 m con riesgo, densidad y vulnerabilidad por barrio.
+- `web/data/parques_bomberos.geojson`: copia de la capa propia.
+- `scripts/preparar_datos_web.py`: prepara y simplifica los GeoJSON
+  que sirve el frontend.
+
 ### Auditoría de datos · `docs/validacion-datos.md`
 - Script `scripts/validar_datos.py` que ejecuta una validación
   sistemática de todas las capas y derivados (counts, geometrías,
