@@ -1,0 +1,12 @@
+# wrangler.toml · configuración de Cloudflare Pages para `cendra VLC`.
+# Permite hacer despliegues desde la línea de comandos:
+#
+#   npx wrangler pages deploy web --project-name cendra
+#
+# Documentación: https://developers.cloudflare.com/workers/wrangler/
+
+name = "cendra"
+compatibility_date = "2026-05-14"
+
+# El directorio que Cloudflare publica como sitio estático.
+pages_build_output_dir = "web"

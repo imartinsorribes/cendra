@@ -61,16 +61,14 @@ map.addControl(new maplibregl.AttributionControl({
 }));
 
 // Escala de color para el riesgo (verde-amarillo-rojo brasa)
-function colorRiesgo(r) {
-  if (r == null || isNaN(r)) return '#cccccc';
-  // 0 → verde · 40 → amarillo · 80+ → brasa
+function colorRiesgo(campo = 'riesgo_medio') {
   return [
-    'interpolate', ['linear'], ['number', ['get', 'riesgo_medio'], 0],
-    0, '#6e9d4c',
-    25, '#b8c155',
+    'interpolate', ['linear'], ['number', ['get', campo], 0],
+    25, '#6e9d4c',
+    35, '#b8c155',
     45, '#f5b400',
-    65, '#e57a37',
-    85, '#b03a1d',
+    55, '#e57a37',
+    65, '#b03a1d',
   ];
 }
 
@@ -99,6 +97,29 @@ map.on('load', async () => {
     type: 'line',
     paint: { 'line-color': '#b03a1d', 'line-width': 2 },
     filter: ['==', 'codbarrio', -1],
+  });
+
+  // Capa de TOP-2000 edificios de mayor riesgo (puntos)
+  // Solo se ve a zoom alto para no saturar la vista general.
+  map.addSource('edificios', {
+    type: 'geojson',
+    data: 'data/edificios_top_riesgo.geojson',
+  });
+  map.addLayer({
+    id: 'edificios',
+    source: 'edificios',
+    type: 'circle',
+    minzoom: 13,
+    paint: {
+      'circle-radius': [
+        'interpolate', ['linear'], ['zoom'],
+        13, 2.5, 16, 5, 19, 7,
+      ],
+      'circle-color': colorRiesgo('riesgo'),
+      'circle-stroke-color': 'white',
+      'circle-stroke-width': 0.5,
+      'circle-opacity': 0.85,
+    },
   });
 
   // Parques de bomberos
@@ -134,13 +155,17 @@ map.on('load', async () => {
 
   // Click en barrio: trasladar el contexto al modelo
   map.on('click', 'barris-fill', e => {
+    // Si el click cae también sobre un edificio individual, ignoramos el
+    // barrio (el handler del edificio ya gestiona la situación).
+    const edif = map.queryRenderedFeatures(e.point, { layers: ['edificios'] });
+    if (edif.length > 0) return;
+
     const f = e.features[0];
     const p = f.properties;
     estado.lon = e.lngLat.lng;
     estado.lat = e.lngLat.lat;
     estado.barrio_nombre = p.barrio;
-    // El barrio tiene riesgo_medio precalculado; usamos sus componentes E
-    estado.densidad = Math.min(100, (p.densidad || 5000) / 100);  // hab/km2 escalado tosco
+    estado.densidad = Math.min(100, (p.densidad || 5000) / 100);
     estado.barrio_vuln = p.vulnerab || 50;
     map.setFilter('barris-hover', ['==', 'codbarrio', p.codbarrio]);
     map.flyTo({ center: e.lngLat, zoom: 14, duration: 800 });
@@ -148,6 +173,41 @@ map.on('load', async () => {
   });
   map.on('mouseenter', 'barris-fill', () => map.getCanvas().style.cursor = 'pointer');
   map.on('mouseleave', 'barris-fill', () => map.getCanvas().style.cursor = '');
+
+  // Click en edificio individual: rellenar los sliders con sus valores
+  // reales y mostrar la ficha del edificio.
+  map.on('click', 'edificios', e => {
+    const p = e.features[0].properties;
+    estado.lon = e.lngLat.lng;
+    estado.lat = e.lngLat.lat;
+    estado.barrio_nombre = p.barrio;
+    inputs.plantas.value = p.plantas;
+    outputs.plantas.value = p.plantas;
+    if (p.anio_construccion && !isNaN(p.anio_construccion)) {
+      const a = Math.round(p.anio_construccion);
+      inputs.anio.value = a;
+      outputs.anio.value = a;
+    }
+    // Para la exposición, usamos los valores del barrio (ya en su CSV)
+    // — los conoceríamos solo si tuviéramos la fuente original, pero
+    // los datasets del frontend solo dan info del barrio agregada.
+    map.flyTo({ center: e.lngLat, zoom: 17, duration: 800 });
+    recalcular();
+
+    new maplibregl.Popup({ offset: 10, closeButton: true })
+      .setLngLat(e.lngLat)
+      .setHTML(`
+        <strong>Edificio · ${p.barrio || '(sin barrio)'}</strong><br>
+        ${p.plantas} plantas · ${p.altura_m?.toFixed?.(0) ?? p.altura_m} m
+        · año ${p.anio_construccion ? Math.round(p.anio_construccion) : '—'}<br>
+        Riesgo del batch (escenario medio): <strong>${p.riesgo}</strong><br>
+        Parque más cercano: ${p.parque_cercano}<br>
+        Tiempo llegada estimado: ${p.tiempo_llegada_min} min
+      `)
+      .addTo(map);
+  });
+  map.on('mouseenter', 'edificios', () => map.getCanvas().style.cursor = 'pointer');
+  map.on('mouseleave', 'edificios', () => map.getCanvas().style.cursor = '');
 
   // Primer cálculo
   recalcular();
