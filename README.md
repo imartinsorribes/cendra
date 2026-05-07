@@ -2,6 +2,8 @@
 
 > **¿Cuál es el riesgo de incendio de tu edificio?**  
 > Atlas paramétrico de València con datos abiertos.
+>
+> 🌐 **Atlas público**: <https://cendra.pages.dev>
 
 Proyecto para la **IV Convocatoria de Premios para proyectos de datos
 abiertos y periodismo de datos del Ajuntament de València (2026)**,
@@ -79,8 +81,8 @@ Inventario completo y trazable en [`docs/inventario-datos.md`](docs/inventario-d
 | Cálculo batch sobre los 214k edificios | ✅ ([`data/processed/riesgo_edificios.gpkg`](data/processed/riesgo_edificios.gpkg) · gpkg no versionado) + agregado por barrio ([`data/processed/riesgo_por_barrio.csv`](data/processed/riesgo_por_barrio.csv)) |
 | Frontend web interactivo | ✅ ([`web/`](web/) · HTML + MapLibre + modelo en JS + calculadora paramétrica + capa de los 2.000 edificios de mayor riesgo) |
 | Memoria Anexo II del concurso | ✅ ([`docs/memoria/anexo-ii.md`](docs/memoria/anexo-ii.md)) |
-| Configuración de despliegue público | ✅ ([`docs/despliegue.md`](docs/despliegue.md) · listo para Cloudflare Pages, GitHub Pages o Netlify) |
-| Despliegue efectivo | ⏳ pendiente de tu acción (3 minutos en Cloudflare Pages) |
+| Configuración de despliegue público | ✅ ([`docs/despliegue.md`](docs/despliegue.md)) |
+| Despliegue efectivo | ✅ <https://cendra.pages.dev> (Cloudflare Pages, despliegue continuo desde `main`) |
 
 Las descargas grandes (`data/raw/large/`, `data/external/`) no se
 versionan: están en `.gitignore`. Cualquier persona puede reproducir

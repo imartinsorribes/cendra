@@ -16,7 +16,7 @@ con datos abiertos.**
 | **Edición** | IV Convocatoria de Premios para proyectos de datos abiertos y periodismo de datos del Ajuntament de València · 2026 |
 | **Modalidad** | Individual |
 | **Repositorio del código** | <https://github.com/imartinsorribes/cendra> |
-| **URL pública del proyecto** | _se publicará el día de presentación · ver §11_ |
+| **URL pública del proyecto** | <https://cendra.pages.dev> |
 | **Licencias** | Código fuente: MIT · Datos derivados: CC BY 4.0 · Memoria y documentación: CC BY 4.0 |
 
 ---
