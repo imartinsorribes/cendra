@@ -45,7 +45,11 @@ npm install -g wrangler
 npx wrangler pages deploy web --project-name cendra
 ```
 
-La configuración mínima está en [`wrangler.toml`](../wrangler.toml).
+No se incluye un `wrangler.toml` en el repositorio: si Cloudflare lo
+encuentra, intenta desplegar el proyecto como Worker en lugar de como
+Pages y el build falla. La configuración de Pages se hace
+íntegramente desde el dashboard (output directory `web`, branch
+`main`) o pasando los flags al CLI como en el ejemplo anterior.
 
 ## Opción B · GitHub Pages
 
