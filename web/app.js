@@ -72,9 +72,13 @@ function colorRiesgo(campo = 'riesgo_medio') {
   ];
 }
 
-map.on('load', async () => {
-  // Cargar parques de bomberos (necesario para el modelo)
-  await M.cargarParques('data/parques_bomberos.geojson');
+// Exponer el mapa para depuración desde la consola.
+window.__map = map;
+
+async function inicializarMapa() {
+  try {
+    // Cargar parques de bomberos (necesario para el modelo)
+    await M.cargarParques('data/parques_bomberos.geojson');
 
   // Capa de barrios coloreada por riesgo medio
   map.addSource('barris', {
@@ -206,12 +210,30 @@ map.on('load', async () => {
       `)
       .addTo(map);
   });
-  map.on('mouseenter', 'edificios', () => map.getCanvas().style.cursor = 'pointer');
-  map.on('mouseleave', 'edificios', () => map.getCanvas().style.cursor = '');
+    map.on('mouseenter', 'edificios', () => map.getCanvas().style.cursor = 'pointer');
+    map.on('mouseleave', 'edificios', () => map.getCanvas().style.cursor = '');
 
-  // Primer cálculo
-  recalcular();
-});
+    // Primer cálculo
+    recalcular();
+  } catch (e) {
+    console.error('cendra · error al inicializar el mapa:', e);
+    // Aunque las capas del mapa fallen, intentamos al menos que la
+    // calculadora muestre un primer resultado.
+    try {
+      await M.cargarParques('data/parques_bomberos.geojson');
+      recalcular();
+    } catch (e2) { console.error('cendra · fallback también falló:', e2); }
+  }
+}
+
+// `map.on('load', ...)` puede perderse si el evento ya disparó antes de
+// que el listener se registre (race condition en localhost u otros
+// servidores rápidos). Comprobamos primero el estado del mapa.
+if (map.loaded()) {
+  inicializarMapa();
+} else {
+  map.once('load', inicializarMapa);
+}
 
 // === LÓGICA DE LA CALCULADORA ==============================================
 
