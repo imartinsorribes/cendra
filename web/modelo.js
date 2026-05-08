@@ -242,4 +242,5 @@ window.cendraModelo = {
   calcularRiesgo,
   ESCENARIOS,
   TABLA_FACHADA, TABLA_ITE, TABLA_SCI, TABLA_CUBIERTA,
+  V_HORA_KMH,
 };

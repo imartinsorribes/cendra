@@ -113,16 +113,16 @@ async function inicializarMapa() {
     id: 'edificios',
     source: 'edificios',
     type: 'circle',
-    minzoom: 13,
+    minzoom: 11,
     paint: {
       'circle-radius': [
         'interpolate', ['linear'], ['zoom'],
-        13, 2.5, 16, 5, 19, 7,
+        11, 1.5, 13, 3, 16, 5, 19, 8,
       ],
       'circle-color': colorRiesgo('riesgo'),
       'circle-stroke-color': 'white',
       'circle-stroke-width': 0.5,
-      'circle-opacity': 0.85,
+      'circle-opacity': 0.9,
     },
   });
 
@@ -157,7 +157,7 @@ async function inicializarMapa() {
     });
   });
 
-  // Click en barrio: trasladar el contexto al modelo
+  // Click en barrio: trasladar el contexto al modelo + mostrar info
   map.on('click', 'barris-fill', e => {
     // Si el click cae también sobre un edificio individual, ignoramos el
     // barrio (el handler del edificio ya gestiona la situación).
@@ -174,6 +174,19 @@ async function inicializarMapa() {
     map.setFilter('barris-hover', ['==', 'codbarrio', p.codbarrio]);
     map.flyTo({ center: e.lngLat, zoom: 14, duration: 800 });
     recalcular();
+
+    // Popup con info del barrio (cierra otros antes)
+    document.querySelectorAll('.maplibregl-popup').forEach(el => el.remove());
+    new maplibregl.Popup({ offset: 8, closeButton: true })
+      .setLngLat(e.lngLat)
+      .setHTML(`
+        <strong>${p.barrio}</strong><br>
+        Riesgo medio del barrio · <strong>${p.riesgo_medio ?? '—'}</strong> / 100<br>
+        ${p.n_edificios ?? '?'} edificios · altura media ${p.altura_media?.toFixed?.(1) ?? '?'} m<br>
+        Tiempo medio bomberos: ${p.tiempo_llegada_medio?.toFixed?.(1) ?? '?'} min<br>
+        <em>Mueve los sliders para simular un edificio aquí.</em>
+      `)
+      .addTo(map);
   });
   map.on('mouseenter', 'barris-fill', () => map.getCanvas().style.cursor = 'pointer');
   map.on('mouseleave', 'barris-fill', () => map.getCanvas().style.cursor = '');
@@ -212,6 +225,15 @@ async function inicializarMapa() {
   });
     map.on('mouseenter', 'edificios', () => map.getCanvas().style.cursor = 'pointer');
     map.on('mouseleave', 'edificios', () => map.getCanvas().style.cursor = '');
+
+    // Aviso de zoom: visible solo cuando el zoom < umbral de edificios
+    const aviso = document.getElementById('ayuda-zoom');
+    function actualizarAvisoZoom() {
+      if (!aviso) return;
+      aviso.classList.toggle('oculto', map.getZoom() >= 11);
+    }
+    actualizarAvisoZoom();
+    map.on('zoom', actualizarAvisoZoom);
 
     // Primer cálculo
     recalcular();
@@ -278,10 +300,24 @@ function recalcular() {
   `;
 }
 
+// Etiqueta dinámica para la franja horaria del slider de hora
+function etiquetaHora(h) {
+  const v = window.cendraModelo.V_HORA_KMH?.[h] ?? 45;
+  let franja;
+  if (h >= 0 && h <= 6) franja = 'madrugada';
+  else if (h <= 9) franja = 'hora punta mañana';
+  else if (h <= 13) franja = 'mañana';
+  else if (h <= 15) franja = 'mediodía';
+  else if (h <= 18) franja = 'tarde';
+  else if (h <= 20) franja = 'hora punta tarde';
+  else franja = 'noche';
+  return `${String(h).padStart(2,'0')}:00 · ${franja} · ${v} km/h`;
+}
+
 // Reactividad
 ['plantas','anio','hora'].forEach(k => {
   inputs[k].addEventListener('input', () => {
-    if (k === 'hora') outputs.hora.value = `${inputs.hora.value}:00`;
+    if (k === 'hora') outputs.hora.value = etiquetaHora(parseInt(inputs.hora.value, 10));
     else outputs[k].value = inputs[k].value;
     recalcular();
   });
@@ -307,7 +343,7 @@ document.querySelectorAll('.botones button').forEach(b => {
     inputs.ite.value = e.ite;
     inputs.sci.value = e.sci;
     inputs.cubierta.value = e.cubierta;
-    inputs.hora.value = e.hora; outputs.hora.value = `${e.hora}:00`;
+    inputs.hora.value = e.hora; outputs.hora.value = etiquetaHora(e.hora);
     inputs.saturacion.checked = e.saturacion;
     map.flyTo({ center: [e.lon, e.lat], zoom: 15, duration: 1200 });
     recalcular();

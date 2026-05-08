@@ -17,9 +17,24 @@
 
 <main>
   <aside id="panel">
+    <!-- Resultado de la simulación: lo primero que se ve siempre -->
+    <section class="resultado-panel">
+      <div class="cabecera-resultado">
+        <span class="numero" id="riesgo_total">—</span>
+        <span class="etiqueta">índice de riesgo</span>
+      </div>
+      <div class="barra"><div class="barra-relleno" id="barra_relleno"></div></div>
+      <div class="componentes">
+        <div><span id="V_val">—</span><span>Edificio (V)</span></div>
+        <div><span id="E_val">—</span><span>Población (E)</span></div>
+        <div><span id="R_val">—</span><span>Bomberos (R)</span></div>
+      </div>
+      <p class="contexto" id="contexto">Mueve los sliders de abajo o haz clic en el mapa para ver el riesgo.</p>
+    </section>
+
     <section class="bloque">
-      <h2>El edificio</h2>
-      <p class="ayuda">Estos son los datos del Catastro. Si haces clic en un barrio del mapa, se pre-rellenan con los valores medios de ese barrio.</p>
+      <h2>Tu edificio</h2>
+      <p class="ayuda">Plantas y año son datos del Catastro. <strong>Haz clic en un punto rojo del mapa (zoom alto)</strong> para usar los datos reales de un edificio, o muévelos a mano.</p>
 
       <label>Plantas sobre rasante
         <input type="range" id="plantas" min="1" max="36" value="6">
@@ -76,7 +91,7 @@
 
       <label>Hora del día
         <input type="range" id="hora" min="0" max="23" value="12">
-        <output id="hora_val">12:00</output>
+        <output id="hora_val">12:00 · mediodía · 45 km/h</output>
       </label>
 
       <label>
@@ -98,18 +113,8 @@
   <section id="mapa-wrap">
     <div id="mapa"></div>
 
-    <div id="resultado" class="resultado">
-      <div class="cabecera-resultado">
-        <span class="numero" id="riesgo_total">—</span>
-        <span class="etiqueta">índice de riesgo</span>
-      </div>
-      <div class="barra"><div class="barra-relleno" id="barra_relleno"></div></div>
-      <div class="componentes">
-        <div><span id="V_val">—</span><span>Vulnerabilidad del edificio</span></div>
-        <div><span id="E_val">—</span><span>Exposición poblacional</span></div>
-        <div><span id="R_val">—</span><span>Respuesta de emergencia</span></div>
-      </div>
-      <p class="contexto" id="contexto"></p>
+    <div id="ayuda-zoom" class="ayuda-zoom">
+      Haz zoom hasta nivel 11+ para ver los edificios individuales con su riesgo
     </div>
 
     <div id="leyenda" class="leyenda">
@@ -136,7 +141,7 @@
 </footer>
 
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
-<script src="modelo.js?v=2"></script>
-<script src="app.js?v=2"></script>
+<script src="modelo.js?v=3"></script>
+<script src="app.js?v=3"></script>
 </body>
 </html>
