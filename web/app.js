@@ -29,12 +29,28 @@ const outputs = {
 
 const resultado = {
   total: document.getElementById('riesgo_total'),
+  delta: document.getElementById('riesgo_delta'),
   barra: document.getElementById('barra_relleno'),
   V: document.getElementById('V_val'),
   E: document.getElementById('E_val'),
   R: document.getElementById('R_val'),
+  V_bar: document.getElementById('V_bar'),
+  E_bar: document.getElementById('E_bar'),
+  R_bar: document.getElementById('R_bar'),
   contexto: document.getElementById('contexto'),
 };
+
+// Devuelve un color hex de la escala verde-amarillo-brasa según el valor 0-100
+function colorPorValor(v) {
+  if (v == null || isNaN(v)) return '#cccccc';
+  if (v < 25) return '#6e9d4c';
+  if (v < 35) return '#b8c155';
+  if (v < 45) return '#f5b400';
+  if (v < 55) return '#e57a37';
+  return '#b03a1d';
+}
+
+let _riesgoAnterior = null;
 
 // Estado: ubicación del edificio (centro del mapa al inicio) y datos de barrio
 let estado = {
@@ -117,12 +133,12 @@ async function inicializarMapa() {
     paint: {
       'circle-radius': [
         'interpolate', ['linear'], ['zoom'],
-        11, 1.5, 13, 3, 16, 5, 19, 8,
+        11, 2.5, 13, 4.5, 16, 7, 19, 11,
       ],
       'circle-color': colorRiesgo('riesgo'),
-      'circle-stroke-color': 'white',
-      'circle-stroke-width': 0.5,
-      'circle-opacity': 0.9,
+      'circle-stroke-color': '#222220',
+      'circle-stroke-width': 0.8,
+      'circle-opacity': 0.95,
     },
   });
 
@@ -177,14 +193,23 @@ async function inicializarMapa() {
 
     // Popup con info del barrio (cierra otros antes)
     document.querySelectorAll('.maplibregl-popup').forEach(el => el.remove());
-    new maplibregl.Popup({ offset: 8, closeButton: true })
+    new maplibregl.Popup({ offset: 8, closeButton: true, maxWidth: '260px' })
       .setLngLat(e.lngLat)
       .setHTML(`
-        <strong>${p.barrio}</strong><br>
-        Riesgo medio del barrio · <strong>${p.riesgo_medio ?? '—'}</strong> / 100<br>
-        ${p.n_edificios ?? '?'} edificios · altura media ${p.altura_media?.toFixed?.(1) ?? '?'} m<br>
-        Tiempo medio bomberos: ${p.tiempo_llegada_medio?.toFixed?.(1) ?? '?'} min<br>
-        <em>Mueve los sliders para simular un edificio aquí.</em>
+        <div class="popup-titulo">Barrio · ${p.barrio}</div>
+        <div class="popup-num">
+          <span class="popup-num-val" style="color:${colorPorValor(p.riesgo_medio || 0)}">${p.riesgo_medio ?? '—'}</span>
+          <span class="popup-num-lab">riesgo medio histórico</span>
+        </div>
+        <p class="popup-detalle">
+          ${p.n_edificios ?? '?'} edificios · altura media ${p.altura_media?.toFixed?.(1) ?? '?'} m<br>
+          Tiempo medio bomberos: ${p.tiempo_llegada_medio?.toFixed?.(1) ?? '?'} min
+        </p>
+        <p class="popup-cta">
+          ↑ Ahora el panel simula un edificio aquí. Mueve los sliders
+          para explorar escenarios, o haz zoom y clic en un punto rojo
+          para usar los datos reales de un edificio concreto.
+        </p>
       `)
       .addTo(map);
   });
@@ -211,15 +236,26 @@ async function inicializarMapa() {
     map.flyTo({ center: e.lngLat, zoom: 17, duration: 800 });
     recalcular();
 
-    new maplibregl.Popup({ offset: 10, closeButton: true })
+    document.querySelectorAll('.maplibregl-popup').forEach(el => el.remove());
+    new maplibregl.Popup({ offset: 10, closeButton: true, maxWidth: '280px' })
       .setLngLat(e.lngLat)
       .setHTML(`
-        <strong>Edificio · ${p.barrio || '(sin barrio)'}</strong><br>
-        ${p.plantas} plantas · ${p.altura_m?.toFixed?.(0) ?? p.altura_m} m
-        · año ${p.anio_construccion ? Math.round(p.anio_construccion) : '—'}<br>
-        Riesgo del batch (escenario medio): <strong>${p.riesgo}</strong><br>
-        Parque más cercano: ${p.parque_cercano}<br>
-        Tiempo llegada estimado: ${p.tiempo_llegada_min} min
+        <div class="popup-titulo">Edificio del Catastro</div>
+        <div class="popup-num">
+          <span class="popup-num-val" style="color:${colorPorValor(p.riesgo || 0)}">${p.riesgo}</span>
+          <span class="popup-num-lab">riesgo bajo escenario medio</span>
+        </div>
+        <p class="popup-detalle">
+          ${p.plantas} plantas · ${p.altura_m?.toFixed?.(0) ?? p.altura_m} m
+          · año ${p.anio_construccion ? Math.round(p.anio_construccion) : '—'}<br>
+          ${p.barrio || '(sin barrio)'}<br>
+          Bomberos: ${p.parque_cercano} · ${p.tiempo_llegada_min} min
+        </p>
+        <p class="popup-cta">
+          ↑ Los sliders del panel ya están con los valores reales de este
+          edificio. Cambia fachada / ITE / SCI / cubierta para ver qué
+          pasaría bajo otros escenarios.
+        </p>
       `)
       .addTo(map);
   });
@@ -280,11 +316,43 @@ function recalcular() {
   if (!M.calcularRiesgo) return;
   const r = M.calcularRiesgo(leerInputs());
 
+  // Número grande con pulso de animación
   resultado.total.textContent = r.riesgo_total;
+  resultado.total.classList.remove('pulsando');
+  // Forzar reflow para reiniciar la animación
+  void resultado.total.offsetWidth;
+  resultado.total.classList.add('pulsando');
+
+  // Delta respecto al cálculo anterior
+  if (_riesgoAnterior !== null) {
+    const d = r.riesgo_total - _riesgoAnterior;
+    if (Math.abs(d) >= 0.1) {
+      const sig = d > 0 ? '↑' : '↓';
+      resultado.delta.textContent = `${sig} ${Math.abs(d).toFixed(1)}`;
+      resultado.delta.classList.toggle('up', d > 0);
+      resultado.delta.classList.toggle('down', d < 0);
+      // Limpiar tras 2 s
+      clearTimeout(window.__deltaTimer);
+      window.__deltaTimer = setTimeout(() => {
+        resultado.delta.textContent = '';
+        resultado.delta.classList.remove('up', 'down');
+      }, 2500);
+    }
+  }
+  _riesgoAnterior = r.riesgo_total;
+
+  // Barra global del riesgo total
   resultado.barra.style.width = `${r.riesgo_total}%`;
-  resultado.V.textContent = r.componentes.V_intrinseca;
-  resultado.E.textContent = r.componentes.E_exposicion;
-  resultado.R.textContent = r.componentes.R_respuesta;
+
+  // Componentes con su barrita y color por valor
+  const setComp = (valBar, valEl, valor) => {
+    valEl.textContent = valor.toFixed(1);
+    valBar.style.width = `${Math.max(0, Math.min(100, valor))}%`;
+    valBar.style.background = colorPorValor(valor);
+  };
+  setComp(resultado.V_bar, resultado.V, r.componentes.V_intrinseca);
+  setComp(resultado.E_bar, resultado.E, r.componentes.E_exposicion);
+  setComp(resultado.R_bar, resultado.R, r.componentes.R_respuesta);
 
   // Contexto: mostrar régimen + parque + tiempo
   const reg = r.pesos.regimen === 'fachada-critica'

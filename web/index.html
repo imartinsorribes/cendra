@@ -6,7 +6,7 @@
 <title>cendra · atlas paramétrico de riesgo de incendio en València</title>
 <meta name="description" content="¿Cuál es el riesgo de incendio de tu edificio? Atlas paramétrico de València con datos abiertos.">
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
 
@@ -19,16 +19,30 @@
   <aside id="panel">
     <!-- Resultado de la simulación: lo primero que se ve siempre -->
     <section class="resultado-panel">
+      <p class="titulo-resultado">Riesgo simulado de TU edificio</p>
       <div class="cabecera-resultado">
         <span class="numero" id="riesgo_total">—</span>
-        <span class="etiqueta">índice de riesgo</span>
+        <span class="delta" id="riesgo_delta"></span>
+        <span class="etiqueta">/ 100</span>
       </div>
       <div class="barra"><div class="barra-relleno" id="barra_relleno"></div></div>
-      <div class="componentes">
-        <div><span id="V_val">—</span><span>Edificio (V)</span></div>
-        <div><span id="E_val">—</span><span>Población (E)</span></div>
-        <div><span id="R_val">—</span><span>Bomberos (R)</span></div>
+
+      <!-- Componentes con su barrita propia -->
+      <div class="componentes-detalle">
+        <div class="comp">
+          <div class="comp-cabecera"><span>Edificio (V)</span><span id="V_val">—</span></div>
+          <div class="comp-barra"><div class="comp-relleno" id="V_bar"></div></div>
+        </div>
+        <div class="comp">
+          <div class="comp-cabecera"><span>Población (E)</span><span id="E_val">—</span></div>
+          <div class="comp-barra"><div class="comp-relleno" id="E_bar"></div></div>
+        </div>
+        <div class="comp">
+          <div class="comp-cabecera"><span>Bomberos (R)</span><span id="R_val">—</span></div>
+          <div class="comp-barra"><div class="comp-relleno" id="R_bar"></div></div>
+        </div>
       </div>
+
       <p class="contexto" id="contexto">Mueve los sliders de abajo o haz clic en el mapa para ver el riesgo.</p>
     </section>
 
@@ -141,7 +155,7 @@
 </footer>
 
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
-<script src="modelo.js?v=3"></script>
-<script src="app.js?v=3"></script>
+<script src="modelo.js?v=4"></script>
+<script src="app.js?v=4"></script>
 </body>
 </html>
