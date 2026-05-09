@@ -67,11 +67,15 @@ W_RESP_INTERNAL = {
 }
 
 # Tablas paramétricas (§3.1)
+# Las fachadas SATE con núcleo combustible (EPS / XPS sin barrera
+# cortafuegos) son una categoría adicional muy común en rehabilitaciones
+# energéticas de la última década en València.
 TABLA_FACHADA = {
     "ladrillo": 0,
     "mortero": 10,
     "vidrio": 30,
     "composite-cte": 60,
+    "sate-combustible": 80,
     "composite-acmpe": 100,
 }
 TABLA_ITE = {"favorable": 0, "pendiente": 50, "desfavorable": 100}
@@ -152,25 +156,31 @@ ESCENARIOS: dict[str, dict] = {
 # === Funciones de los sub-factores conocidos ================================
 
 def v_edad(anio: int) -> float:
-    """Vulnerabilidad por año de construcción (§3.1)."""
-    if anio > 2010:
+    """Vulnerabilidad por año de construcción (§3.1).
+
+    Los cortes están alineados con los hitos normativos españoles en
+    seguridad contra incendios:
+      - post-2017 → RIPCI revisado: muy bajo (0)
+      - 2006-2017 → CTE DB-SI obligatorio: bajo (20)
+      - 1991-2006 → NBE-CPI-91: medio (50)
+      - pre-1991  → sin normativa formal: alto (100)
+    """
+    if anio > 2017:
         return 0.0
-    if anio > 1980:
-        return 30.0
-    if anio > 1950:
-        return 60.0
+    if anio > 2006:
+        return 20.0
+    if anio > 1991:
+        return 50.0
     return 100.0
 
 
 def v_altura(plantas: int) -> float:
-    """Vulnerabilidad por altura del edificio (§3.1)."""
-    if plantas <= 3:
-        return 10.0
-    if plantas <= 7:
-        return 40.0
-    if plantas <= 12:
-        return 70.0
-    return 100.0
+    """Vulnerabilidad por altura del edificio (§3.1).
+
+    Función continua que captura el «efecto chimenea»: 7 puntos por
+    planta, saturado a 100 en edificios ≥ 15 plantas.
+    """
+    return min(100.0, max(0.0, plantas * 7.0))
 
 
 def r_tiempo(t_min: float) -> float:
@@ -281,12 +291,39 @@ def vulnerabilidad_intrinseca(
     return round(media_ponderada, 1), sub
 
 
+def factor_uso_ocupacion(uso: str | None, hora: int) -> float:
+    """Probabilidad de ocupación efectiva del edificio según uso y hora.
+    Modula E para reconocer que un edificio residencial a las 3 AM tiene
+    más víctimas potenciales que un edificio de oficinas a la misma hora,
+    y al revés a las 11:00."""
+    if uso is None:
+        return 1.0
+    u = uso.lower()
+    if "residential" in u or u.startswith("1_"):
+        if 0 <= hora < 6:   return 1.0
+        if 6 <= hora < 9:   return 0.85
+        if 9 <= hora < 17:  return 0.45
+        if 17 <= hora < 22: return 0.9
+        return 1.0
+    if "industrial" in u or u.startswith("3_"):
+        return 0.9 if 8 <= hora < 18 else 0.1
+    if "office" in u or "4_1" in u:
+        return 0.95 if 8 <= hora < 19 else 0.1
+    if "agriculture" in u or u.startswith("2_"):
+        return 0.4 if 7 <= hora < 19 else 0.05
+    return 0.6  # otros / desconocido
+
+
 def exposicion(
     barrio_vuln: float = 50.0,
     densidad: float = 50.0,
     equip_sensibles: str = "ninguno",
+    uso: str | None = None,
+    hora: int = 12,
 ) -> tuple[float, dict]:
-    """E_exposición (§3.2). Recibe los sub-factores ya escalados 0-100."""
+    """E_exposición (§3.2). Recibe los sub-factores ya escalados 0-100.
+    Si se proporciona `uso` del edificio, modula el total por la
+    probabilidad de ocupación a esa hora."""
     e_sensibles_tabla = {
         "residencia": 100,
         "hospital": 80,
@@ -298,7 +335,10 @@ def exposicion(
         "e_vulnerab": barrio_vuln,
         "e_sensibles": e_sensibles_tabla[equip_sensibles],
     }
-    total = sum(sub[k] * w for k, w in W_EXP_INTERNAL.items())
+    base = sum(sub[k] * w for k, w in W_EXP_INTERNAL.items())
+    factor = factor_uso_ocupacion(uso, hora)
+    total = base * factor
+    sub["factor_ocupacion"] = round(factor, 2)
     return round(total, 1), sub
 
 
@@ -345,6 +385,7 @@ def riesgo(
     hora: int, saturacion: str = "libre",
     barrio_vuln: float = 50.0, densidad: float = 50.0,
     equip_sensibles: str = "ninguno",
+    uso: str | None = None,
     parques: list[dict] | None = None,
 ) -> dict:
     """Calcula el índice de riesgo (0-100) y devuelve el desglose completo."""
@@ -352,7 +393,7 @@ def riesgo(
         parques = cargar_parques()
 
     V, sub_V = vulnerabilidad_intrinseca(plantas, anio, fachada, ite, sci, cubierta)
-    E, sub_E = exposicion(barrio_vuln, densidad, equip_sensibles)
+    E, sub_E = exposicion(barrio_vuln, densidad, equip_sensibles, uso, hora)
     R, sub_R = respuesta(lon, lat, hora, saturacion, parques)
 
     # Pesos dinámicos: si la fachada×altura saturó V_intrínseca, los

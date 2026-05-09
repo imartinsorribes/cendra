@@ -178,6 +178,7 @@ def calc_E_exposicion_vectorizado(
 
 def calc_R_respuesta_vectorizado(
     dist_parque_m: np.ndarray, dist_hidrante_m: np.ndarray,
+    dist_fite_m: np.ndarray,
 ) -> np.ndarray:
     """R_respuesta bajo DEFAULT_HORA y saturación 'libre'."""
     d_ruta = dist_parque_m * FACTOR_TORTUOSIDAD
@@ -198,10 +199,16 @@ def calc_R_respuesta_vectorizado(
         default=100.0,
     )
 
-    r_a = DEFAULT_R_ACCESO
+    # r_acceso real: si hay fite bombers a <50 m la calle está preparada
+    # para vehículos pesados (score 0). Si no, asumimos calle normal (30).
+    # NaN → no se encontró fite cercana → 30.
+    r_a = np.where(
+        np.isnan(dist_fite_m), 30.0,
+        np.where(dist_fite_m < 50, 0.0, 30.0),
+    )
 
     R = 0.65 * r_t + 0.20 * r_h + 0.15 * r_a
-    return R, t_min, r_t, r_h
+    return R, t_min, r_t, r_h, r_a
 
 
 # === Pipeline principal =====================================================
@@ -311,7 +318,7 @@ def main() -> None:
         file=sys.stderr,
     )
 
-    print("[6/9] sjoin_nearest: hidrante más cercano…", file=sys.stderr)
+    print("[6/9] sjoin_nearest: hidrante + fite bombers más cercanos…", file=sys.stderr)
     hidr = cargar_capa("hidrants")
     j_hidr = gpd.sjoin_nearest(
         edif_pt2,
@@ -319,16 +326,33 @@ def main() -> None:
         how="left",
         distance_col="dist_hidrante_m",
     )
-    # Puede haber duplicados si varios hidrantes están a igual distancia
     j_hidr = j_hidr.groupby(j_hidr.index)["dist_hidrante_m"].min()
     edif["dist_hidrante_m"] = j_hidr.reindex(edif.index).values
+
+    fites = cargar_capa("fites_bombers")
+    if len(fites) > 0:
+        j_fite = gpd.sjoin_nearest(
+            edif_pt2, fites[["geometry"]],
+            how="left", distance_col="dist_fite_m",
+            max_distance=100.0,  # solo nos interesa si está cerca
+        )
+        j_fite = j_fite.groupby(j_fite.index)["dist_fite_m"].min()
+        edif["dist_fite_m"] = j_fite.reindex(edif.index).values
+    else:
+        edif["dist_fite_m"] = np.nan
+    n_cerca_fite = int((edif["dist_fite_m"] < 50).sum())
     print(
-        f"  dist hidrante  media={edif['dist_hidrante_m'].mean():.0f}m  "
+        f"  dist hidrante media={edif['dist_hidrante_m'].mean():.0f}m  "
         f"max={edif['dist_hidrante_m'].max():.0f}m",
         file=sys.stderr,
     )
+    print(
+        f"  edificios con fite bombers a <50m: {n_cerca_fite:,} "
+        f"({n_cerca_fite/len(edif)*100:.1f}%)",
+        file=sys.stderr,
+    )
 
-    print("[7/9] anejar año de construcción…", file=sys.stderr)
+    print("[7/9] anejar año de construcción y uso del Catastro…", file=sys.stderr)
     anos_csv = ROOT / "data" / "processed" / "anos_construccion.csv"
     if anos_csv.exists():
         anos = pd.read_csv(anos_csv)
@@ -340,21 +364,28 @@ def main() -> None:
         # Cruce por localId base (sin _partN)
         edif["localId_base"] = edif["localId"].str.split("_part").str[0]
         edif = edif.merge(
-            anos[["localId", "anio_construccion"]].rename(
+            anos[["localId", "anio_construccion", "uso"]].rename(
                 columns={"localId": "localId_base"}
             ),
             on="localId_base",
             how="left",
         ).drop(columns=["localId_base"])
         validos = int(edif["anio_construccion"].notna().sum())
+        n_resid = int((edif["uso"].fillna("").str.contains("residential", case=False)).sum())
         print(
             f"  año asignado a {validos:,} de {len(edif):,} edificios "
             f"({validos/len(edif)*100:.1f}%) · media: "
             f"{edif['anio_construccion'].mean():.0f}",
             file=sys.stderr,
         )
+        print(
+            f"  edificios residenciales: {n_resid:,} "
+            f"({n_resid/len(edif)*100:.1f}%)",
+            file=sys.stderr,
+        )
     else:
         edif["anio_construccion"] = np.nan
+        edif["uso"] = ""
         print("  [skip] anos_construccion.csv ausente", file=sys.stderr)
 
     print("[8/9] equipamientos sensibles cercanos (radio "
@@ -427,9 +458,11 @@ def main() -> None:
         edif["ind_vulnerab_norm"].values,
         edif["E_sensibles"].values,
     )
-    R, t_llegada, r_t, r_h = calc_R_respuesta_vectorizado(
-        edif["dist_parque_m"].values, edif["dist_hidrante_m"].values
+    R, t_llegada, r_t, r_h, r_a = calc_R_respuesta_vectorizado(
+        edif["dist_parque_m"].values, edif["dist_hidrante_m"].values,
+        edif["dist_fite_m"].values,
     )
+    edif["R_acceso"] = r_a
 
     edif["V_intrinseca"] = V
     edif["E_exposicion"] = E
@@ -457,12 +490,12 @@ def main() -> None:
     edif_out = edif.set_geometry("geometry").drop(columns=["pt"])
     # Reducir a las columnas útiles
     cols = [
-        "localId", "plantas", "altura_m", "anio_construccion",
+        "localId", "plantas", "altura_m", "anio_construccion", "uso",
         "barrio", "codbarrio",
         "densidad_hab_km2", "ind_vulnerab_norm", "E_sensibles",
-        "parque_cercano", "dist_parque_m", "dist_hidrante_m",
+        "parque_cercano", "dist_parque_m", "dist_hidrante_m", "dist_fite_m",
         "tiempo_llegada_min", "V_intrinseca", "E_exposicion", "R_respuesta",
-        "fachada_critica", "riesgo",
+        "R_acceso", "fachada_critica", "riesgo",
         "geometry",
     ]
     edif_out = edif_out[cols]

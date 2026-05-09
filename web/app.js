@@ -293,6 +293,14 @@ if (map.loaded()) {
   map.once('load', inicializarMapa);
 }
 
+// Independientemente de que el mapa esté cargado, hacemos un primer
+// cálculo «en frío» para que el panel muestre algo inmediatamente
+// (riesgo, banda, recomendaciones). El mapa puede tardar en cargar el
+// estilo del CDN pero la calculadora no debería esperar.
+M.cargarParques('data/parques_bomberos.geojson').then(() => {
+  try { recalcular(); } catch (e) { /* primer recalcular puede fallar si DOM no está */ }
+}).catch(() => { /* offline o error de red */ });
+
 // === LÓGICA DE LA CALCULADORA ==============================================
 
 function leerInputs() {
@@ -366,6 +374,35 @@ function recalcular() {
     <strong>${t.tiempo_llegada_min} min</strong> a las ${inputs.hora.value}:00.
     ${estado.barrio_nombre ? `Barrio: <strong>${estado.barrio_nombre}</strong>.` : ''}
   `;
+
+  // Banda de confianza (mejor / peor caso paramétrico)
+  const banda = M.bandaConfianza(leerInputs());
+  document.getElementById('banda_best').textContent = banda.best;
+  document.getElementById('banda_worst').textContent = banda.worst;
+
+  // Recomendaciones
+  actualizarRecomendaciones(leerInputs());
+}
+
+// Pintar la lista de recomendaciones
+function actualizarRecomendaciones(input) {
+  const ul = document.getElementById('lista_recomendaciones');
+  if (!ul) return;
+  const { recomendaciones } = M.recomendaciones(input);
+  if (!recomendaciones.length) {
+    ul.innerHTML = '<li class="reco-vacia">No hay mejoras paramétricas por debajo del valor actual: este edificio ya está en su mejor configuración.</li>';
+    return;
+  }
+  ul.innerHTML = recomendaciones.map(r => `
+    <li>
+      <span class="reco-campo">${r.etiqueta_campo}</span>
+      <span class="reco-delta">−${r.delta.toFixed(1)}</span>
+      <span class="reco-cambio">
+        ${r.label_actual} → <strong>${r.label_propuesto}</strong><br>
+        Bajaría a <strong>${r.nuevo_riesgo.toFixed(1)}</strong> / 100
+      </span>
+    </li>
+  `).join('');
 }
 
 // Etiqueta dinámica para la franja horaria del slider de hora
@@ -394,6 +431,49 @@ function etiquetaHora(h) {
   inputs[k].addEventListener('change', recalcular);
 });
 inputs.saturacion.addEventListener('change', recalcular);
+
+// === Filtros del mapa ======================================================
+
+const filtros = {
+  alto: document.getElementById('f_alto'),
+  lejos: document.getElementById('f_lejos'),
+  alto_plantas: document.getElementById('f_alto_plantas'),
+  pre1991: document.getElementById('f_pre1991'),
+  barris: document.getElementById('f_barris'),
+  edificios: document.getElementById('f_edificios'),
+  parques: document.getElementById('f_parques'),
+};
+
+function aplicarFiltros() {
+  if (!window.__map?.getSource?.('edificios')) return;
+  const cond = ['all'];
+  if (filtros.alto?.checked)
+    cond.push(['>=', ['get', 'riesgo'], 55]);
+  if (filtros.lejos?.checked)
+    cond.push(['>=', ['get', 'tiempo_llegada_min'], 8]);
+  if (filtros.alto_plantas?.checked)
+    cond.push(['>', ['get', 'plantas'], 12]);
+  if (filtros.pre1991?.checked)
+    cond.push(['all',
+      ['has', 'anio_construccion'],
+      ['<', ['get', 'anio_construccion'], 1991],
+    ]);
+  window.__map.setFilter('edificios', cond.length > 1 ? cond : null);
+
+  // Visibilidad de capas
+  const setVis = (layer, on) => {
+    if (window.__map.getLayer(layer))
+      window.__map.setLayoutProperty(layer, 'visibility', on ? 'visible' : 'none');
+  };
+  setVis('barris-fill', filtros.barris.checked);
+  setVis('barris-hover', filtros.barris.checked);
+  setVis('edificios', filtros.edificios.checked);
+  setVis('parques', filtros.parques.checked);
+}
+
+Object.values(filtros).forEach(el => {
+  if (el) el.addEventListener('change', aplicarFiltros);
+});
 
 // Escenarios canónicos
 document.querySelectorAll('.botones button').forEach(b => {

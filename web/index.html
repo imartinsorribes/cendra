@@ -6,7 +6,7 @@
 <title>cendra · atlas paramétrico de riesgo de incendio en València</title>
 <meta name="description" content="¿Cuál es el riesgo de incendio de tu edificio? Atlas paramétrico de València con datos abiertos.">
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
-<link rel="stylesheet" href="style.css?v=4">
+<link rel="stylesheet" href="style.css?v=5">
 </head>
 <body>
 
@@ -43,7 +43,16 @@
         </div>
       </div>
 
+      <p class="banda" id="banda">Rango plausible: <span id="banda_best">—</span> (mejor) – <span id="banda_worst">—</span> (peor)</p>
+
       <p class="contexto" id="contexto">Mueve los sliders de abajo o haz clic en el mapa para ver el riesgo.</p>
+    </section>
+
+    <!-- Motor de recomendaciones -->
+    <section class="bloque recomendaciones">
+      <h2>Cómo bajaría más el riesgo</h2>
+      <p class="ayuda">Las tres mejoras que más impacto tendrían en este edificio, ordenadas por impacto.</p>
+      <ol id="lista_recomendaciones" class="reco-lista"></ol>
     </section>
 
     <section class="bloque">
@@ -68,8 +77,10 @@
       <label>Tipo de fachada
         <select id="fachada">
           <option value="ladrillo">Ladrillo / mortero tradicional</option>
+          <option value="mortero">Mortero (encalado tradicional)</option>
           <option value="vidrio">Muro cortina de vidrio</option>
           <option value="composite-cte" selected>Composite con cumplimiento CTE</option>
+          <option value="sate-combustible">SATE con núcleo combustible (EPS/XPS) ⚠</option>
           <option value="composite-acmpe">Composite con núcleo combustible (ACM-PE) ⚠</option>
         </select>
       </label>
@@ -122,6 +133,36 @@
         <button data-escenario="quatre-carreres-nuevo">Promoción nueva · hora punta</button>
       </div>
     </section>
+
+    <!-- Filtros del mapa -->
+    <section class="bloque filtros">
+      <h2>Filtros del mapa</h2>
+      <p class="ayuda">Quédate solo con los edificios que te interesan.</p>
+
+      <label class="filtro-opt">
+        <input type="checkbox" id="f_alto"> Solo con riesgo ≥ 55
+      </label>
+      <label class="filtro-opt">
+        <input type="checkbox" id="f_lejos"> Solo con bomberos a > 8 min
+      </label>
+      <label class="filtro-opt">
+        <input type="checkbox" id="f_alto_plantas"> Solo con > 12 plantas
+      </label>
+      <label class="filtro-opt">
+        <input type="checkbox" id="f_pre1991"> Solo construidos antes de 1991
+      </label>
+
+      <p class="filtro-titulo">Capas visibles</p>
+      <label class="filtro-opt">
+        <input type="checkbox" id="f_barris" checked> Mapa de barrios (coroplético)
+      </label>
+      <label class="filtro-opt">
+        <input type="checkbox" id="f_edificios" checked> Edificios individuales
+      </label>
+      <label class="filtro-opt">
+        <input type="checkbox" id="f_parques" checked> Parques de bomberos
+      </label>
+    </section>
   </aside>
 
   <section id="mapa-wrap">
@@ -155,7 +196,7 @@
 </footer>
 
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
-<script src="modelo.js?v=4"></script>
-<script src="app.js?v=4"></script>
+<script src="modelo.js?v=5"></script>
+<script src="app.js?v=5"></script>
 </body>
 </html>

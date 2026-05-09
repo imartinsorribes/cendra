@@ -21,11 +21,38 @@ const TABLA_FACHADA = {
   "mortero": 10,
   "vidrio": 30,
   "composite-cte": 60,
+  "sate-combustible": 80,
   "composite-acmpe": 100,
 };
 const TABLA_ITE = { "favorable": 0, "pendiente": 50, "desfavorable": 100 };
 const TABLA_SCI = { "completo": 0, "parcial": 35, "extintores": 70, "ninguno": 100 };
 const TABLA_CUBIERTA = { "tradicional": 0, "mixto": 40, "combustible": 100 };
+
+// Etiquetas legibles para la UI (mantener en sync con las claves arriba)
+const LABEL_FACHADA = {
+  "ladrillo": "Ladrillo / mortero tradicional",
+  "mortero": "Mortero (encalado tradicional)",
+  "vidrio": "Muro cortina de vidrio",
+  "composite-cte": "Composite con cumplimiento CTE",
+  "sate-combustible": "SATE con núcleo combustible (EPS/XPS) ⚠",
+  "composite-acmpe": "Composite con núcleo combustible (ACM-PE) ⚠",
+};
+const LABEL_ITE = {
+  "favorable": "Favorable",
+  "pendiente": "Pendiente / no realizada",
+  "desfavorable": "Desfavorable",
+};
+const LABEL_SCI = {
+  "completo": "Completo (rociadores + detección + columna seca)",
+  "parcial": "Parcial",
+  "extintores": "Solo extintores",
+  "ninguno": "Ninguno",
+};
+const LABEL_CUBIERTA = {
+  "tradicional": "Tradicional (no combustible)",
+  "mixto": "Mixto",
+  "combustible": "Combustible (madera, lámina bituminosa)",
+};
 
 const V_HORA_KMH = (() => {
   const v = {};
@@ -91,18 +118,18 @@ const ESCENARIOS = {
 
 // === Sub-factores ===========================================================
 
+// v_edad alineado con hitos normativos españoles:
+//   post-2017 = RIPCI · 2006-2017 = CTE DB-SI · 1991-2006 = NBE-CPI-91 · pre-1991 = sin normativa
 function vEdad(anio) {
-  if (anio > 2010) return 0;
-  if (anio > 1980) return 30;
-  if (anio > 1950) return 60;
+  if (anio > 2017) return 0;
+  if (anio > 2006) return 20;
+  if (anio > 1991) return 50;
   return 100;
 }
 
+// v_altura continua: 7 puntos por planta, saturado a 100 desde 15 plantas
 function vAltura(plantas) {
-  if (plantas <= 3) return 10;
-  if (plantas <= 7) return 40;
-  if (plantas <= 12) return 70;
-  return 100;
+  return Math.min(100, Math.max(0, plantas * 7));
 }
 
 function rTiempo(tMin) {
@@ -162,15 +189,34 @@ function vulnerabilidadIntrinseca({ plantas, anio, fachada, ite, sci, cubierta }
   return { V, sub, fachadaCritica };
 }
 
-function exposicion({ barrio_vuln = 50, densidad = 50, equip_sensibles = "ninguno" }) {
+// Probabilidad de ocupación efectiva por uso y hora del día.
+function factorUsoOcupacion(uso, hora) {
+  if (!uso) return 1.0;
+  const u = String(uso).toLowerCase();
+  if (u.includes("residential") || u.startsWith("1_")) {
+    if (hora < 6)  return 1.0;
+    if (hora < 9)  return 0.85;
+    if (hora < 17) return 0.45;
+    if (hora < 22) return 0.9;
+    return 1.0;
+  }
+  if (u.includes("industrial") || u.startsWith("3_")) return (hora >= 8 && hora < 18) ? 0.9 : 0.1;
+  if (u.includes("office") || u.includes("4_1"))      return (hora >= 8 && hora < 19) ? 0.95 : 0.1;
+  if (u.includes("agriculture") || u.startsWith("2_"))return (hora >= 7 && hora < 19) ? 0.4 : 0.05;
+  return 0.6;
+}
+
+function exposicion({ barrio_vuln = 50, densidad = 50, equip_sensibles = "ninguno", uso = null, hora = 12 }) {
   const tabla = { residencia: 100, hospital: 80, educativo: 60, ninguno: 0 };
   const sub = {
     e_densidad: densidad,
     e_vulnerab: barrio_vuln,
     e_sensibles: tabla[equip_sensibles] ?? 0,
   };
-  const E = 0.40 * sub.e_densidad + 0.35 * sub.e_vulnerab + 0.25 * sub.e_sensibles;
-  return { E, sub };
+  const base = 0.40 * sub.e_densidad + 0.35 * sub.e_vulnerab + 0.25 * sub.e_sensibles;
+  const factor = factorUsoOcupacion(uso, hora);
+  sub.factor_ocupacion = Math.round(factor * 100) / 100;
+  return { E: base * factor, sub };
 }
 
 function respuesta({ lon, lat, hora, saturacion }) {
@@ -236,11 +282,82 @@ function calcularRiesgo(input) {
   };
 }
 
+// === Motor de recomendaciones ==============================================
+// Para cada variable paramétrica mejorable, encuentra el valor con mayor
+// caída de riesgo y devuelve el top-3 ordenado por impacto.
+
+const VARS_MEJORABLES = [
+  { campo: "fachada", tabla: TABLA_FACHADA, label: LABEL_FACHADA, etiq: "Fachada" },
+  { campo: "ite", tabla: TABLA_ITE, label: LABEL_ITE, etiq: "ITE" },
+  { campo: "sci", tabla: TABLA_SCI, label: LABEL_SCI, etiq: "Sistema contra incendios" },
+  { campo: "cubierta", tabla: TABLA_CUBIERTA, label: LABEL_CUBIERTA, etiq: "Cubierta" },
+];
+
+function recomendaciones(input) {
+  const baseline = calcularRiesgo(input).riesgo_total;
+  const propuestas = [];
+
+  for (const m of VARS_MEJORABLES) {
+    const valorActual = input[m.campo];
+    const scoreActual = m.tabla[valorActual];
+    let mejorDelta = 0;
+    let mejorVal = null;
+    let mejorRiesgo = null;
+
+    for (const [nuevoVal, nuevoScore] of Object.entries(m.tabla)) {
+      if (nuevoScore >= scoreActual) continue;  // solo si es mejor
+      const inputMod = { ...input, [m.campo]: nuevoVal };
+      const r = calcularRiesgo(inputMod).riesgo_total;
+      const delta = baseline - r;
+      if (delta > mejorDelta) {
+        mejorDelta = delta;
+        mejorVal = nuevoVal;
+        mejorRiesgo = r;
+      }
+    }
+
+    if (mejorVal !== null) {
+      propuestas.push({
+        campo: m.campo,
+        etiqueta_campo: m.etiq,
+        valor_actual: valorActual,
+        valor_propuesto: mejorVal,
+        label_actual: m.label[valorActual],
+        label_propuesto: m.label[mejorVal],
+        nuevo_riesgo: Math.round(mejorRiesgo * 10) / 10,
+        delta: Math.round(mejorDelta * 10) / 10,
+      });
+    }
+  }
+
+  propuestas.sort((a, b) => b.delta - a.delta);
+  return { baseline: Math.round(baseline * 10) / 10, recomendaciones: propuestas.slice(0, 3) };
+}
+
+// === Banda de confianza ====================================================
+// Calcula el riesgo bajo el «mejor caso» (todos los paramétricos en óptimo)
+// y «peor caso» (todos en el extremo) manteniendo lo demás constante.
+
+function bandaConfianza(input) {
+  const best = calcularRiesgo({
+    ...input, fachada: "ladrillo", ite: "favorable",
+    sci: "completo", cubierta: "tradicional",
+  }).riesgo_total;
+  const worst = calcularRiesgo({
+    ...input, fachada: "composite-acmpe", ite: "desfavorable",
+    sci: "ninguno", cubierta: "combustible",
+  }).riesgo_total;
+  return { best: Math.round(best * 10) / 10, worst: Math.round(worst * 10) / 10 };
+}
+
 // Exportar al ámbito global para que app.js pueda usarlas
 window.cendraModelo = {
   cargarParques,
   calcularRiesgo,
+  recomendaciones,
+  bandaConfianza,
   ESCENARIOS,
   TABLA_FACHADA, TABLA_ITE, TABLA_SCI, TABLA_CUBIERTA,
+  LABEL_FACHADA, LABEL_ITE, LABEL_SCI, LABEL_CUBIERTA,
   V_HORA_KMH,
 };

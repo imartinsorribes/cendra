@@ -253,6 +253,99 @@ label > input[type="checkbox"] {
 }
 .contexto strong { color: var(--texto); }
 
+/* Banda de confianza (best / worst case) */
+.banda {
+  margin: 0.5rem 0 0;
+  padding-top: 0.5rem;
+  border-top: 1px dashed var(--linea);
+  font-size: 0.72rem;
+  color: var(--ceniza);
+  text-align: center;
+}
+.banda span {
+  font-weight: 600;
+  color: var(--texto);
+  font-variant-numeric: tabular-nums;
+}
+.banda #banda_best { color: #6e9d4c; }
+.banda #banda_worst { color: var(--brasa); }
+
+/* Lista de recomendaciones */
+.recomendaciones .reco-lista {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+  counter-reset: reco;
+}
+.reco-lista li {
+  counter-increment: reco;
+  position: relative;
+  padding: 0.6rem 0.75rem 0.6rem 2.4rem;
+  margin-bottom: 0.5rem;
+  background: white;
+  border: 1px solid var(--linea);
+  border-radius: 5px;
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+.reco-lista li::before {
+  content: counter(reco);
+  position: absolute;
+  left: 0.7rem; top: 0.55rem;
+  width: 1.4rem; height: 1.4rem;
+  background: var(--brasa);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.75rem;
+}
+.reco-lista .reco-campo {
+  font-weight: 600;
+  color: var(--texto);
+}
+.reco-lista .reco-cambio {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.78rem;
+  color: var(--texto-suave);
+}
+.reco-lista .reco-delta {
+  display: inline-block;
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  background: #6e9d4c;
+  color: white;
+  font-weight: 700;
+  font-size: 0.72rem;
+  margin-left: 0.4rem;
+  font-variant-numeric: tabular-nums;
+}
+.reco-vacia {
+  font-size: 0.8rem;
+  color: var(--ceniza);
+  font-style: italic;
+}
+
+/* Filtros del mapa */
+.filtros .filtro-opt {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+.filtros .filtro-opt input { margin-right: 0.4rem; }
+.filtros .filtro-titulo {
+  margin: 0.85rem 0 0.35rem;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ceniza);
+  font-weight: 600;
+}
+
 /* Aviso de zoom para ver edificios individuales */
 .ayuda-zoom {
   position: absolute;
