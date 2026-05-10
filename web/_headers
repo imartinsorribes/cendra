@@ -1,10 +1,12 @@
 # Cabeceras HTTP que Cloudflare Pages aplica al servir cada ruta.
 # Documentación: https://developers.cloudflare.com/pages/configuration/headers/
 
-# GeoJSONs: caché de 1 hora con revalidación; rara vez cambian fuera
-# de despliegues programados.
+# GeoJSONs derivados del batch: el navegador siempre revalida con
+# Cloudflare (If-Modified-Since). Cloudflare devuelve 304 si no han
+# cambiado y 200 con la versión nueva si sí. Así cada nuevo despliegue
+# de batch llega a la usuaria sin esperar a que expire un cache.
 /data/*
-  Cache-Control: public, max-age=3600, must-revalidate
+  Cache-Control: public, max-age=0, must-revalidate
   Access-Control-Allow-Origin: *
 
 # JS y CSS propios: caché de 1 día, también permiten CORS por si
