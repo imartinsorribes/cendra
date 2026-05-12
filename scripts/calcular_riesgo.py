@@ -277,16 +277,20 @@ def vulnerabilidad_intrinseca(
     # Saturación por fachada combustible amplificada por altura:
     # cuando la fachada se clasifica como `composite-acmpe`, el riesgo
     # estructural en edificios altos escala no linealmente por el
-    # "efecto chimenea" demostrado en Campanar. La V_intrínseca no
-    # puede bajar del valor de fachada amplificado por altura.
+    # "efecto chimenea" demostrado en Campanar. El régimen «fachada
+    # crítica» se activa siempre que la fachada combustible esté
+    # presente — esto cambia los pesos de la combinación final, aunque
+    # el valor concreto de V_intrínseca ya estuviera al máximo por
+    # otros factores. El «piso» eleva V si la media ponderada no lo
+    # alcanzaba.
     if sub["v_fachada"] >= 100:
         piso = sub["v_fachada"] * (1.0 + 0.5 * sub["v_altura"] / 100.0)
         piso = min(piso, 100.0)
+        sub["__regla_aplicada__"] = (
+            f"fachada combustible × altura (piso {piso:.1f})"
+        )
         if piso > media_ponderada:
             media_ponderada = piso
-            sub["__regla_aplicada__"] = (
-                f"saturación fachada×altura ({piso:.1f})"
-            )
 
     return round(media_ponderada, 1), sub
 
