@@ -183,8 +183,13 @@ function vulnerabilidadIntrinseca({ plantas, anio, fachada, ite, sci, cubierta }
 
   let fachadaCritica = false;
   if (sub.v_fachada >= 100) {
+    // El régimen «fachada crítica» se activa SIEMPRE que la fachada
+    // combustible esté presente, independientemente de si el piso
+    // eleva la V_intrínseca o no (puede ya estar al máximo por otros
+    // factores).
+    fachadaCritica = true;
     const piso = Math.min(sub.v_fachada * (1.0 + 0.5 * sub.v_altura / 100), 100);
-    if (piso > V) { V = piso; fachadaCritica = true; }
+    if (piso > V) V = piso;
   }
   return { V, sub, fachadaCritica };
 }
@@ -331,7 +336,19 @@ function recomendaciones(input) {
   }
 
   propuestas.sort((a, b) => b.delta - a.delta);
-  return { baseline: Math.round(baseline * 10) / 10, recomendaciones: propuestas.slice(0, 3) };
+  const top = propuestas.filter(p => p.delta >= 0.1).slice(0, 3);
+  const fachadaCritica = ["composite-acmpe", "sate-combustible"].includes(input.fachada);
+  let nota = null;
+  if (fachadaCritica && top.length < 3) {
+    nota = "Mientras la fachada combustible persista, las otras mejoras paramétricas (ITE, SCI, cubierta) tienen efecto muy limitado: la vulnerabilidad estructural queda saturada por la fachada. Por eso solo aparece la fachada como recomendación.";
+  } else if (!top.length) {
+    nota = "Este edificio ya está en la mejor configuración paramétrica posible.";
+  }
+  return {
+    baseline: Math.round(baseline * 10) / 10,
+    recomendaciones: top,
+    nota,
+  };
 }
 
 // === Banda de confianza ====================================================
@@ -350,12 +367,99 @@ function bandaConfianza(input) {
   return { best: Math.round(best * 10) / 10, worst: Math.round(worst * 10) / 10 };
 }
 
+// === Plan de respuesta operativa ===========================================
+// Para un edificio simulado, estima el despliegue del SPEIS necesario
+// según altura, fachada y entorno. NO es protocolo oficial — es una
+// heurística basada en doctrina común de respuesta a incendio
+// estructural urbano. Sirve para que la persona usuaria visualice qué
+// implica «que arda» y se entienda la dimensión de la operación.
+
+function planRespuesta(input) {
+  const plantas = Math.max(1, input.plantas | 0);
+  const fachadaCritica = ["composite-acmpe", "sate-combustible"].includes(input.fachada);
+
+  // Dotaciones base por altura (1 dotación ≈ 5 efectivos + 1 vehículo)
+  let dotaciones, efectivos, vehiculos;
+  if (plantas <= 3) {
+    dotaciones = 1; efectivos = 5;
+    vehiculos = ["BUL (bomba urbana ligera)"];
+  } else if (plantas <= 8) {
+    dotaciones = 2; efectivos = 12;
+    vehiculos = ["BUL", "Autoescala"];
+  } else if (plantas <= 14) {
+    dotaciones = 3; efectivos = 18;
+    vehiculos = ["BUL", "BUP (bomba urbana pesada)", "Autoescala", "UEMSV (médico)"];
+  } else {
+    dotaciones = 4; efectivos = 25;
+    vehiculos = ["BUL", "BUP", "Autoescala-jumbo", "UEMSV", "Mando intermedio"];
+  }
+
+  // Refuerzo si fachada combustible: una dotación adicional + refuerzo
+  // del Consorcio Provincial.
+  if (fachadaCritica) {
+    dotaciones += 1;
+    efectivos += 7;
+    vehiculos.push("Refuerzo del Consorcio Provincial");
+  }
+
+  // Refuerzo por equipamiento sensible cercano
+  if (input.equip_sensibles === "residencia" || input.equip_sensibles === "hospital") {
+    dotaciones += 1;
+    efectivos += 5;
+    vehiculos.push("UEMSV adicional (evacuación asistida)");
+  }
+
+  // Radios operativos
+  const radio_evacuacion_m = plantas <= 5 ? 50 : plantas <= 10 ? 75 : 100;
+  const radio_perimetro_m = radio_evacuacion_m * 2;
+
+  // Caudal hidráulico aproximado: 500 L/min por dotación que entra en
+  // ataque interno. Caudal total + 30 % de reserva.
+  const caudal_lmin = Math.round(dotaciones * 500 * 1.3);
+
+  // Tiempo estimado de control (cuando se contiene la propagación):
+  // 8 min base + 4 min por planta adicional > 5, doble si fachada
+  // combustible (basado en doctrina post-Campanar).
+  let t_control_min = 8 + Math.max(0, plantas - 5) * 4;
+  if (fachadaCritica) t_control_min *= 2;
+  if (t_control_min > 240) t_control_min = 240;  // tope realista
+
+  return {
+    dotaciones,
+    efectivos,
+    vehiculos,
+    radio_evacuacion_m,
+    radio_perimetro_m,
+    caudal_lmin,
+    tiempo_control_min: Math.round(t_control_min),
+    fachada_critica: fachadaCritica,
+  };
+}
+
+// === Geometría para visualizar el despliegue en el mapa ====================
+// Calcula un círculo geodésico aproximado (50 puntos) alrededor de un
+// punto lon/lat con un radio en metros. Sirve para dibujar buffers de
+// evacuación y perímetro sin librerías externas.
+function circuloGeo(lon, lat, radioM, n = 64) {
+  const R = 6371000;
+  const coords = [];
+  for (let i = 0; i <= n; i++) {
+    const b = (i / n) * 2 * Math.PI;
+    const dLat = (radioM * Math.cos(b)) / R * (180 / Math.PI);
+    const dLon = (radioM * Math.sin(b)) / (R * Math.cos(lat * Math.PI / 180)) * (180 / Math.PI);
+    coords.push([lon + dLon, lat + dLat]);
+  }
+  return { type: "Polygon", coordinates: [coords] };
+}
+
 // Exportar al ámbito global para que app.js pueda usarlas
 window.cendraModelo = {
   cargarParques,
   calcularRiesgo,
   recomendaciones,
   bandaConfianza,
+  planRespuesta,
+  circuloGeo,
   ESCENARIOS,
   TABLA_FACHADA, TABLA_ITE, TABLA_SCI, TABLA_CUBIERTA,
   LABEL_FACHADA, LABEL_ITE, LABEL_SCI, LABEL_CUBIERTA,

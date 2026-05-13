@@ -328,6 +328,63 @@ label > input[type="checkbox"] {
   color: var(--ceniza);
   font-style: italic;
 }
+.reco-nota {
+  list-style: none;
+  padding: 0.7rem 0.85rem;
+  background: rgba(176, 58, 29, 0.06);
+  border-left: 3px solid var(--brasa);
+  border-radius: 0 4px 4px 0;
+  font-size: 0.78rem;
+  color: var(--texto-suave);
+  line-height: 1.45;
+}
+
+/* Plan de respuesta operativa */
+.plan-respuesta { background: rgba(31, 79, 139, 0.04); border-radius: 6px; padding: 0.9rem 1rem; }
+.plan-respuesta h2 { color: var(--acento); }
+.plan-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+}
+.plan-cifra {
+  background: white;
+  border: 1px solid var(--linea);
+  border-radius: 5px;
+  padding: 0.5rem 0.75rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+.plan-cifra .big {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--acento);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.plan-cifra span:last-child {
+  font-size: 0.72rem;
+  color: var(--texto-suave);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.plan-vehiculos {
+  margin: 0.5rem 0 0.4rem;
+  font-size: 0.78rem;
+  color: var(--texto);
+  line-height: 1.5;
+}
+.plan-vehiculos strong { color: var(--acento); }
+.plan-perimetro {
+  margin: 0;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--linea);
+  font-size: 0.75rem;
+  color: var(--texto-suave);
+  font-style: italic;
+}
 
 /* Filtros del mapa */
 .filtros .filtro-opt {

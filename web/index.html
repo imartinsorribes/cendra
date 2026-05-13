@@ -55,6 +55,32 @@
       <ol id="lista_recomendaciones" class="reco-lista"></ol>
     </section>
 
+    <!-- Plan de respuesta operativa -->
+    <section class="bloque plan-respuesta">
+      <h2>🚒 Despliegue estimado del SPEIS</h2>
+      <p class="ayuda">Cuántos efectivos, vehículos y caudal harían falta si este edificio ardiera. Heurística basada en doctrina, no es protocolo oficial.</p>
+      <div class="plan-grid">
+        <div class="plan-cifra">
+          <span class="big" id="plan_efectivos">—</span>
+          <span>efectivos</span>
+        </div>
+        <div class="plan-cifra">
+          <span class="big" id="plan_dotaciones">—</span>
+          <span>dotaciones</span>
+        </div>
+        <div class="plan-cifra">
+          <span class="big" id="plan_caudal">—</span>
+          <span>L/min de agua</span>
+        </div>
+        <div class="plan-cifra">
+          <span class="big" id="plan_tiempo">—</span>
+          <span>min para contener</span>
+        </div>
+      </div>
+      <p class="plan-vehiculos" id="plan_vehiculos"></p>
+      <p class="plan-perimetro" id="plan_perimetro"></p>
+    </section>
+
     <section class="bloque">
       <h2>Tu edificio</h2>
       <p class="ayuda">Plantas y año son datos del Catastro. <strong>Haz clic en un punto rojo del mapa (zoom alto)</strong> para usar los datos reales de un edificio, o muévelos a mano.</p>
@@ -196,7 +222,7 @@
 </footer>
 
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
-<script src="modelo.js?v=5"></script>
-<script src="app.js?v=5"></script>
+<script src="modelo.js?v=6"></script>
+<script src="app.js?v=6"></script>
 </body>
 </html>

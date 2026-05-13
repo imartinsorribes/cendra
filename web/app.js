@@ -156,6 +156,41 @@ async function inicializarMapa() {
     },
   });
 
+  // Capas operativas (despliegue del SPEIS) — empiezan vacías y se
+  // actualizan en cada recalcular().
+  const emptyFC = { type: 'FeatureCollection', features: [] };
+  map.addSource('op_perimetro', { type: 'geojson', data: emptyFC });
+  map.addLayer({
+    id: 'op_perimetro_fill', source: 'op_perimetro', type: 'fill',
+    paint: { 'fill-color': '#1f4f8b', 'fill-opacity': 0.06 },
+  });
+  map.addLayer({
+    id: 'op_perimetro_line', source: 'op_perimetro', type: 'line',
+    paint: { 'line-color': '#1f4f8b', 'line-width': 1.5, 'line-dasharray': [3, 2] },
+  });
+  map.addSource('op_evacuacion', { type: 'geojson', data: emptyFC });
+  map.addLayer({
+    id: 'op_evacuacion_fill', source: 'op_evacuacion', type: 'fill',
+    paint: { 'fill-color': '#b03a1d', 'fill-opacity': 0.1 },
+  });
+  map.addLayer({
+    id: 'op_evacuacion_line', source: 'op_evacuacion', type: 'line',
+    paint: { 'line-color': '#b03a1d', 'line-width': 1.5 },
+  });
+  map.addSource('op_ruta', { type: 'geojson', data: emptyFC });
+  map.addLayer({
+    id: 'op_ruta_line', source: 'op_ruta', type: 'line',
+    paint: { 'line-color': '#1f4f8b', 'line-width': 2.5, 'line-dasharray': [1, 1.5] },
+  });
+  map.addSource('op_target', { type: 'geojson', data: emptyFC });
+  map.addLayer({
+    id: 'op_target_circle', source: 'op_target', type: 'circle',
+    paint: {
+      'circle-radius': 9, 'circle-color': '#b03a1d',
+      'circle-stroke-color': 'white', 'circle-stroke-width': 2.5,
+    },
+  });
+
   // Tooltip parques
   map.on('mouseenter', 'parques', e => {
     map.getCanvas().style.cursor = 'pointer';
@@ -199,7 +234,7 @@ async function inicializarMapa() {
         <div class="popup-titulo">Barrio · ${p.barrio}</div>
         <div class="popup-num">
           <span class="popup-num-val" style="color:${colorPorValor(p.riesgo_medio || 0)}">${p.riesgo_medio ?? '—'}</span>
-          <span class="popup-num-lab">riesgo medio histórico</span>
+          <span class="popup-num-lab">media del modelo · escenario base</span>
         </div>
         <p class="popup-detalle">
           ${p.n_edificios ?? '?'} edificios · altura media ${p.altura_media?.toFixed?.(1) ?? '?'} m<br>
@@ -243,7 +278,7 @@ async function inicializarMapa() {
         <div class="popup-titulo">Edificio del Catastro</div>
         <div class="popup-num">
           <span class="popup-num-val" style="color:${colorPorValor(p.riesgo || 0)}">${p.riesgo}</span>
-          <span class="popup-num-lab">riesgo bajo escenario medio</span>
+          <span class="popup-num-lab">riesgo del modelo · escenario base</span>
         </div>
         <p class="popup-detalle">
           ${p.plantas} plantas · ${p.altura_m?.toFixed?.(0) ?? p.altura_m} m
@@ -382,18 +417,76 @@ function recalcular() {
 
   // Recomendaciones
   actualizarRecomendaciones(leerInputs());
+
+  // Plan de respuesta operativa
+  actualizarPlanRespuesta(leerInputs(), r.detalle_respuesta);
+}
+
+// Pinta el plan de respuesta operativa + actualiza las capas del mapa
+function actualizarPlanRespuesta(input, detalleRespuesta) {
+  const plan = M.planRespuesta(input);
+  document.getElementById('plan_efectivos').textContent = plan.efectivos;
+  document.getElementById('plan_dotaciones').textContent = plan.dotaciones;
+  document.getElementById('plan_caudal').textContent = plan.caudal_lmin.toLocaleString('es-ES');
+  document.getElementById('plan_tiempo').textContent = plan.tiempo_control_min;
+
+  const veh = document.getElementById('plan_vehiculos');
+  veh.innerHTML = `<strong>Vehículos:</strong> ${plan.vehiculos.join(' · ')}`;
+
+  const per = document.getElementById('plan_perimetro');
+  per.textContent =
+    `Evacuación inmediata en radio ${plan.radio_evacuacion_m} m. ` +
+    `Perímetro operativo del SPEIS hasta ${plan.radio_perimetro_m} m. ` +
+    (plan.fachada_critica
+      ? 'Tiempo de contención duplicado por fachada combustible.'
+      : '');
+
+  // Actualizar capas del mapa con los círculos y la línea al parque
+  actualizarCapasOperativas(input, plan, detalleRespuesta);
+}
+
+function actualizarCapasOperativas(input, plan, detalle) {
+  if (!window.__map || !window.__map.getSource('op_evacuacion')) return;
+
+  const lon = input.lon, lat = input.lat;
+  // Círculo de evacuación
+  window.__map.getSource('op_evacuacion').setData({
+    type: 'Feature', properties: {}, geometry: M.circuloGeo(lon, lat, plan.radio_evacuacion_m),
+  });
+  // Círculo de perímetro
+  window.__map.getSource('op_perimetro').setData({
+    type: 'Feature', properties: {}, geometry: M.circuloGeo(lon, lat, plan.radio_perimetro_m),
+  });
+  // Línea al parque efectivo
+  const parqueNombre = detalle?.parque_efectivo;
+  const parques = window.cendraModelo.PARQUES || [];
+  // Como PARQUES está en el closure de modelo.js no es accesible directamente,
+  // usamos el detalle. Si no hay nombre, ocultamos.
+  if (parqueNombre) {
+    // Volver a fetch parques si no están cargados — debe ser raro
+    fetch('data/parques_bomberos.geojson').then(r => r.json()).then(g => {
+      const f = g.features.find(f => f.properties.nombre === parqueNombre);
+      if (!f) return;
+      const [plon, plat] = f.geometry.coordinates;
+      window.__map.getSource('op_ruta').setData({
+        type: 'Feature', properties: {}, geometry: {
+          type: 'LineString', coordinates: [[plon, plat], [lon, lat]],
+        },
+      });
+    });
+  }
+  // Marker del edificio simulado
+  window.__map.getSource('op_target').setData({
+    type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: [lon, lat] },
+  });
 }
 
 // Pintar la lista de recomendaciones
 function actualizarRecomendaciones(input) {
   const ul = document.getElementById('lista_recomendaciones');
   if (!ul) return;
-  const { recomendaciones } = M.recomendaciones(input);
-  if (!recomendaciones.length) {
-    ul.innerHTML = '<li class="reco-vacia">No hay mejoras paramétricas por debajo del valor actual: este edificio ya está en su mejor configuración.</li>';
-    return;
-  }
-  ul.innerHTML = recomendaciones.map(r => `
+  const { recomendaciones, nota } = M.recomendaciones(input);
+  const items = recomendaciones.map(r => `
     <li>
       <span class="reco-campo">${r.etiqueta_campo}</span>
       <span class="reco-delta">−${r.delta.toFixed(1)}</span>
@@ -403,6 +496,12 @@ function actualizarRecomendaciones(input) {
       </span>
     </li>
   `).join('');
+  const notaHtml = nota ? `<li class="reco-nota">${nota}</li>` : '';
+  if (!items && !notaHtml) {
+    ul.innerHTML = '<li class="reco-vacia">Este edificio ya está en su mejor configuración paramétrica.</li>';
+    return;
+  }
+  ul.innerHTML = items + notaHtml;
 }
 
 // Etiqueta dinámica para la franja horaria del slider de hora
