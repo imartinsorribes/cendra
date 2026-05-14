@@ -1,0 +1,126 @@
+{
+  "type": "FeatureCollection",
+  "name": "parques_bomberos_speis_valencia",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.3637589,
+          39.4563809
+        ]
+      },
+      "properties": {
+        "nombre": "Parque Central de Bomberos",
+        "direccion": "Avinguda de la Plata, s/n",
+        "codigo_postal": "46013",
+        "telefono": "962087787",
+        "fuente_direccion": "valencia.es/infociudad",
+        "fuente_coordenadas": "nominatim_osm_2026-05-14",
+        "fecha_consulta": "2026-05-14"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.4060379,
+          39.4843728
+        ]
+      },
+      "properties": {
+        "nombre": "Parque de Bomberos Campanar",
+        "direccion": "Bulevard Nord (Prolongación Av. Pío Baroja, paralela a Av. General Avilés), s/n",
+        "codigo_postal": "46015",
+        "telefono": "962084972",
+        "fuente_direccion": "valencia.es/infociudad",
+        "fuente_coordenadas": "nominatim_osm_2026-05-14",
+        "fecha_consulta": "2026-05-14"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.3551279,
+          39.4808215
+        ]
+      },
+      "properties": {
+        "nombre": "Parque de Bomberos Norte",
+        "direccion": "Carrer de Daniel Balaciart, s/n",
+        "codigo_postal": "46020",
+        "telefono": "963539939",
+        "fuente_direccion": "valencia.es/infociudad",
+        "fuente_coordenadas": "nominatim_osm_2026-05-14",
+        "fecha_consulta": "2026-05-14"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.3952959,
+          39.4653154
+        ]
+      },
+      "properties": {
+        "nombre": "Parque de Bomberos Oeste",
+        "direccion": "Carrer Músic Ayllón, 8",
+        "codigo_postal": "46018",
+        "telefono": "962084977",
+        "fuente_direccion": "valencia.es/infociudad",
+        "fuente_coordenadas": "nominatim_osm_2026-05-14",
+        "fecha_consulta": "2026-05-14"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.3799907,
+          39.4779192
+        ]
+      },
+      "properties": {
+        "nombre": "Parque de Bomberos Centro Histórico",
+        "direccion": "Carrer de Dalt, 5 (acceso secundario por C/ San Miguel)",
+        "codigo_postal": "46003",
+        "telefono": "962087784",
+        "fuente_direccion": "valencia.es/infociudad",
+        "fuente_coordenadas": "nominatim_osm_2026-05-14",
+        "fecha_consulta": "2026-05-14"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.3227833,
+          39.3536259
+        ]
+      },
+      "properties": {
+        "nombre": "Parque de Bomberos Saler/Devesa",
+        "direccion": "Avinguda dels Pinars, s/n (CV-500, km 8,300)",
+        "codigo_postal": "46012",
+        "telefono": "963539988",
+        "fuente_direccion": "valencia.es/infociudad",
+        "fuente_coordenadas": "nominatim_osm_2026-05-14",
+        "fecha_consulta": "2026-05-14"
+      }
+    }
+  ]
+}
