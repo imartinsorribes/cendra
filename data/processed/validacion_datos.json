@@ -1,0 +1,259 @@
+{
+  "capas": {
+    "hidrants.geojson": {
+      "path": "hidrants.geojson",
+      "estado": "OK",
+      "n_features": 1923,
+      "tipos": {
+        "Point": 1923
+      },
+      "crs": "EPSG:4326",
+      "nulls": 0,
+      "invalid": 0,
+      "fuera_bbox": 0,
+      "bounds": [
+        -0.429,
+        39.2806,
+        -0.2777,
+        39.55
+      ],
+      "flags": []
+    },
+    "fites_bombers.geojson": {
+      "path": "fites_bombers.geojson",
+      "estado": "OK",
+      "n_features": 251,
+      "tipos": {
+        "Point": 251
+      },
+      "crs": "EPSG:4326",
+      "nulls": 0,
+      "invalid": 0,
+      "fuera_bbox": 0,
+      "bounds": [
+        -0.3941,
+        39.4281,
+        -0.3276,
+        39.5012
+      ],
+      "flags": []
+    },
+    "barris.geojson": {
+      "path": "barris.geojson",
+      "estado": "OK",
+      "n_features": 88,
+      "tipos": {
+        "Polygon": 88
+      },
+      "crs": "EPSG:4326",
+      "nulls": 0,
+      "invalid": 0,
+      "fuera_bbox": 0,
+      "bounds": [
+        -0.4325,
+        39.2789,
+        -0.2754,
+        39.5666
+      ],
+      "flags": []
+    },
+    "equipamientos.geojson": {
+      "path": "equipamientos.geojson",
+      "estado": "ATENCIÓN",
+      "n_features": 2915,
+      "tipos": {
+        "Point": 2902
+      },
+      "crs": "EPSG:4326",
+      "nulls": 13,
+      "invalid": 13,
+      "fuera_bbox": 17,
+      "bounds": [
+        -0.5258,
+        39.0128,
+        -0.1673,
+        39.6679
+      ],
+      "flags": [
+        "nulls(13)",
+        "invalidas(13)",
+        "fuera_bbox(17)"
+      ]
+    },
+    "majors.geojson": {
+      "path": "majors.geojson",
+      "estado": "ATENCIÓN",
+      "n_features": 151,
+      "tipos": {
+        "Point": 147
+      },
+      "crs": "EPSG:4326",
+      "nulls": 4,
+      "invalid": 4,
+      "fuera_bbox": 4,
+      "bounds": [
+        -0.426,
+        39.3096,
+        -0.2963,
+        39.5395
+      ],
+      "flags": [
+        "nulls(4)",
+        "invalidas(4)",
+        "fuera_bbox(4)"
+      ]
+    },
+    "area_prioridad_residencial.geojson": {
+      "path": "area_prioridad_residencial.geojson",
+      "estado": "OK",
+      "n_features": 3,
+      "tipos": {
+        "Polygon": 3
+      },
+      "crs": "EPSG:4326",
+      "nulls": 0,
+      "invalid": 0,
+      "fuera_bbox": 0,
+      "bounds": [
+        -0.3836,
+        39.4728,
+        -0.3716,
+        39.4812
+      ],
+      "flags": []
+    },
+    "vulnerabilitat_barris.geojson": {
+      "path": "vulnerabilitat_barris.geojson",
+      "estado": "OK",
+      "n_features": 70,
+      "tipos": {
+        "Polygon": 70
+      },
+      "crs": "EPSG:4326",
+      "nulls": 0,
+      "invalid": 0,
+      "fuera_bbox": 0,
+      "bounds": [
+        -0.4266,
+        39.4228,
+        -0.302,
+        39.5047
+      ],
+      "flags": []
+    },
+    "hospitales.geojson": {
+      "path": "hospitales.geojson",
+      "estado": "ATENCIÓN",
+      "n_features": 62,
+      "tipos": {
+        "MultiPoint": 62
+      },
+      "crs": "EPSG:4326",
+      "nulls": 0,
+      "invalid": 0,
+      "fuera_bbox": 0,
+      "bounds": [
+        -0.4213,
+        39.3075,
+        -0.297,
+        39.5396
+      ],
+      "flags": [
+        "tipos_extraños(['MultiPoint'])"
+      ]
+    },
+    "centros_educativos.geojson": {
+      "path": "centros_educativos.geojson",
+      "estado": "OK",
+      "n_features": 534,
+      "tipos": {
+        "Point": 534
+      },
+      "crs": "EPSG:4326",
+      "nulls": 0,
+      "invalid": 0,
+      "fuera_bbox": 0,
+      "bounds": [
+        -0.4254,
+        39.3129,
+        -0.3177,
+        39.5414
+      ],
+      "flags": []
+    },
+    "manzanas_poblacion.geojson": {
+      "path": "manzanas_poblacion.geojson",
+      "estado": "ATENCIÓN",
+      "n_features": 4913,
+      "tipos": {
+        "Polygon": 4913
+      },
+      "crs": "EPSG:4326",
+      "nulls": 0,
+      "invalid": 8,
+      "fuera_bbox": 7,
+      "bounds": [
+        -0.4314,
+        39.2791,
+        -0.2758,
+        39.5512
+      ],
+      "flags": [
+        "invalidas(8)",
+        "fuera_bbox(7)"
+      ]
+    }
+  },
+  "catastro": {
+    "n_edificios": 214000,
+    "altura_media": 13.103130841121496,
+    "altura_max": 108.0,
+    "n_outliers_75m": 39
+  },
+  "poblacion": {
+    "pob_estimada_actual": 792775,
+    "pob_ine_2023": 791413,
+    "diferencia_pct": 0.2,
+    "factor_corregido": 1.88,
+    "viviendas_totales": 421687
+  },
+  "parques": {
+    "n": 6,
+    "fuera_bbox": 0,
+    "lista": [
+      "Parque Central de Bomberos",
+      "Parque de Bomberos Campanar",
+      "Parque de Bomberos Norte",
+      "Parque de Bomberos Oeste",
+      "Parque de Bomberos Centro Histórico",
+      "Parque de Bomberos Saler/Devesa"
+    ]
+  },
+  "modelo": [
+    {
+      "caso": "Edificio 0 plantas (bajo)",
+      "riesgo": 15.6,
+      "regimen": "normal"
+    },
+    {
+      "caso": "Edificio 50 plantas",
+      "riesgo": 84.2,
+      "regimen": "fachada-critica"
+    },
+    {
+      "caso": "Año 1850 (antiguo)",
+      "riesgo": 42.3,
+      "regimen": "normal"
+    },
+    {
+      "caso": "Año 2030 (futuro)",
+      "riesgo": 27.7,
+      "regimen": "normal"
+    }
+  ],
+  "coherencia": {
+    "muestra": 5000,
+    "sin_barrio": 7,
+    "pct_sin_barrio": 0.14
+  }
+}
