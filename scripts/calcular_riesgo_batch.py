@@ -227,22 +227,47 @@ def main() -> None:
 
     print("[4/8] anejar índice de vulnerabilidad por barrio…", file=sys.stderr)
     vuln = cargar_capa("vulnerabilitat_barris")
-    # Cruzamos por codbarrio (barris) ↔ codbar (vulnerabilidad).
-    # Forzamos ambos a Int64 nullable para evitar el conflicto str/int
-    # que provoca el sjoin previo (153 edificios sin barrio quedan NaN).
-    vuln_simple = vuln[["codbar", "ind_global"]].copy()
-    vuln_simple["codbar"] = pd.to_numeric(vuln_simple["codbar"], errors="coerce").astype("Int64")
-    # ind_global está en escala 1-3 según el dataset. Lo reescalamos a
-    # 0-100 conservativamente: 1→25, 2→50, 3→75 (margen arriba y
-    # abajo para casos extremos).
-    vuln_simple["ind_vulnerab_norm"] = (vuln_simple["ind_global"].astype(float) - 1) / 2 * 100
-    edif["codbarrio"] = pd.to_numeric(edif["codbarrio"], errors="coerce").astype("Int64")
+    # El cruce no es por codbarrio/codbar (formatos distintos) sino
+    # por el NOMBRE del barrio. `vulnerabilitat_barris` cubre 70 de los
+    # 88 barrios oficiales (las pedanías no tienen datos censales
+    # suficientes para calcular vulnerabilidad). Para los barrios sin
+    # vulnerabilidad publicada, el modelo usa el fallback 50.
+    import unicodedata
+
+    def normalizar(s):
+        if not isinstance(s, str):
+            return ""
+        s = unicodedata.normalize("NFKD", s).encode("ascii", "ignore").decode("ascii")
+        return s.strip().upper().replace("  ", " ")
+
+    vuln_simple = vuln[["nombre", "ind_global"]].copy()
+    vuln_simple["nombre_norm"] = vuln_simple["nombre"].apply(normalizar)
+    # ind_global del dataset está INVERTIDO: valor BAJO = vulnerabilidad
+    # ALTA. Comprobado contra `vul_global`:
+    #   - EL CALVARI: ind=1.9 → "Alta"
+    #   - SANT MARCEL.LI: ind=2.4 → "Media"
+    #   - PENYAROJA: ind=3.4 → "Baja"
+    # Rango observado: 1.9 - 3.9. Reescalado lineal 0-100 invertido:
+    #   score = (3.9 - ind_global) / 2.0 * 100
+    # con clip a [0, 100] para los casos fuera de rango.
+    ind = vuln_simple["ind_global"].astype(float)
+    vuln_simple["ind_vulnerab_norm"] = (
+        ((3.9 - ind) / 2.0 * 100).clip(0, 100)
+    )
+    edif["barrio_norm"] = edif["barrio"].apply(normalizar)
     edif = edif.merge(
-        vuln_simple[["codbar", "ind_vulnerab_norm"]],
-        left_on="codbarrio",
-        right_on="codbar",
+        vuln_simple[["nombre_norm", "ind_vulnerab_norm"]],
+        left_on="barrio_norm",
+        right_on="nombre_norm",
         how="left",
-    ).drop(columns=["codbar"])
+    ).drop(columns=["nombre_norm", "barrio_norm"])
+    n_match = int(edif["ind_vulnerab_norm"].notna().sum())
+    print(
+        f"  vulnerabilidad asignada a {n_match:,} de {len(edif):,} edificios "
+        f"({n_match/len(edif)*100:.1f}%) · media valor: "
+        f"{edif['ind_vulnerab_norm'].mean():.1f}",
+        file=sys.stderr,
+    )
     print(
         f"  vulnerabilidad ind_global media: "
         f"{edif['ind_vulnerab_norm'].mean():.1f}",
