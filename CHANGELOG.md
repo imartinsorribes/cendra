@@ -144,6 +144,47 @@ febrero de 2024.
   reales documentados (Torre de Francia y aledaños en Quatre
   Carreres).
 
+## [0.2.1] - 2026-05-22
+
+### Añadido
+- Motor de recomendaciones top-3 mejoras paramétricas con delta y
+  nota explicativa cuando la fachada combustible domina el resultado.
+- Banda de confianza (mejor caso / peor caso paramétrico) bajo el
+  número grande del riesgo.
+- Plan de respuesta operativa estimado del SPEIS: dotaciones,
+  efectivos, vehículos, caudal hidráulico, tiempo de contención y
+  radios de evacuación. Capas en el mapa con buffer de evacuación,
+  perímetro operativo y línea al parque efectivo.
+- Filtros del mapa: 4 filtros de edificios (riesgo ≥ 55, bomberos
+  > 8 min, > 12 plantas, pre-1991) + 3 toggles de visibilidad.
+- Tests automatizados (`tests/`) con 28 casos cubriendo escenarios,
+  sensibilidades, edge cases y sincronía Python↔JS.
+
+### Corregido
+- Régimen «fachada crítica» se activa siempre que la fachada
+  combustible esté presente, no solo cuando el piso eleva V. El test
+  edge case del edificio con todos los paramétricos en máximo lo
+  detectó.
+- Cache busting: `_headers` con `max-age=0, must-revalidate` para
+  `/data/*` evita que el navegador sirva GeoJSON viejos tras un
+  nuevo despliegue de batch.
+- Etiquetas «histórico» renombradas a «media del modelo · escenario
+  base» para no confundir con histórico de incendios reales.
+
+## [0.2.0] - 2026-05-14
+
+### Añadido
+- Cortes normativos del año en `v_edad`: post-2017 (RIPCI revisado),
+  2006-2017 (CTE DB-SI), 1991-2006 (NBE-CPI-91), pre-1991 (sin
+  normativa).
+- `v_altura` función continua (7 puntos por planta, saturada a 100
+  desde 15 plantas).
+- Nueva opción de fachada `sate-combustible` (SATE con núcleo EPS/XPS
+  sin barrera) muy presente en rehabilitaciones energéticas recientes.
+- Modulación de E_exposición por `currentUse × hora` (residencial
+  nocturno = más víctimas).
+- R_acceso real: sjoin_nearest con `fites_bombers` a < 50 m.
+
 ### Hallazgos del arranque
 - 130 de 294 datasets del portal CKAN matchean al menos un tema del
   dominio. Solo **2 datasets nucleares** (hidrantes y fites bombers).

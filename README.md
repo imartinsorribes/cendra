@@ -76,7 +76,8 @@ Inventario completo y trazable en [`docs/inventario-datos.md`](docs/inventario-d
 | Catastro INSPIRE Buildings 46900 | ✅ descargado (~163 MB ZIP, 3 GML descomprimidos) |
 | Edificios 3D | ✅ procesado: 214.000 edificios con altura (media 13,1 m, máx 108 m) |
 | Viviendas por barrio | ✅ procesado: 88 barrios, 1.012.050 hab estimados ([`data/processed/viviendas_por_barrio.csv`](data/processed/viviendas_por_barrio.csv)) |
-| Modelo paramétrico de riesgo v0.1.1 | ✅ diseñado e implementado ([`docs/modelo-riesgo.md`](docs/modelo-riesgo.md) · [`scripts/calcular_riesgo.py`](scripts/calcular_riesgo.py)) |
+| Modelo paramétrico de riesgo v0.2.1 | ✅ diseñado e implementado ([`docs/modelo-riesgo.md`](docs/modelo-riesgo.md) · [`scripts/calcular_riesgo.py`](scripts/calcular_riesgo.py)) con cortes normativos, motor de recomendaciones, banda de confianza y plan de respuesta operativa del SPEIS |
+| Tests automatizados | ✅ 28 tests en [`tests/`](tests/) (escenarios canónicos, sensibilidades, sincronía Python↔JS) |
 | Validación y auditoría de datos | ✅ ([`docs/validacion-datos.md`](docs/validacion-datos.md) · [`scripts/validar_datos.py`](scripts/validar_datos.py)) |
 | Cálculo batch sobre los 214k edificios | ✅ ([`data/processed/riesgo_edificios.gpkg`](data/processed/riesgo_edificios.gpkg) · gpkg no versionado) + agregado por barrio ([`data/processed/riesgo_por_barrio.csv`](data/processed/riesgo_por_barrio.csv)) |
 | Frontend web interactivo | ✅ ([`web/`](web/) · HTML + MapLibre + modelo en JS + calculadora paramétrica + capa de los 2.000 edificios de mayor riesgo) |

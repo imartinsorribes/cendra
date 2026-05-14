@@ -1,6 +1,6 @@
 # Modelo paramétrico de riesgo de incendio residencial
 
-> Versión 0.1 · 2026-05-14 · Documento de diseño.
+> Versión 0.2.1 · 2026-05-22 · Documento de diseño.
 > El código que implementa este modelo vive en
 > `scripts/calcular_riesgo.py` (pendiente). Cualquier cambio del modelo
 > debe versionarse aquí primero y reflejarse después en el código.
@@ -78,9 +78,9 @@ arde. Combina factores conocidos y paramétricos:
 
 | Sub-factor | Tipo | Escala 0 (bajo) → 100 (alto) |
 |---|---|---|
-| Año de construcción (V_edad) | conocido | `> 2010` = 0 · `1980-2010` = 30 · `1950-1980` = 60 · `< 1950` = 100 |
-| Altura del edificio (V_altura) | conocido | `≤ 3 plantas` = 10 · `4-7` = 40 · `8-12` = 70 · `> 12` = 100 |
-| Tipo de fachada (V_fachada) | **paramétrico** | ladrillo = 0 · mortero = 10 · vidrio = 30 · composite-CTE = 60 · composite-ACM-PE = 100 |
+| Año de construcción (V_edad) | conocido | `post-2017` = 0 (RIPCI revisado) · `2006-2017` = 20 (CTE DB-SI) · `1991-2006` = 50 (NBE-CPI-91) · `pre-1991` = 100 (sin normativa) |
+| Altura del edificio (V_altura) | conocido | Función continua: `min(100, plantas × 7)`. Captura el efecto chimenea sin saltos abruptos |
+| Tipo de fachada (V_fachada) | **paramétrico** | ladrillo = 0 · mortero = 10 · vidrio = 30 · composite-CTE = 60 · **sate-combustible = 80** · composite-ACM-PE = 100 |
 | Estado ITE (V_ITE) | **paramétrico** | favorable = 0 · pendiente = 50 · desfavorable = 100 |
 | Sistema SCI (V_SCI) | **paramétrico** | completo = 0 · parcial = 35 · solo extintores = 70 · ninguno = 100 |
 | Cubierta (V_cubierta) | **paramétrico** | tradicional = 0 · mixto = 40 · combustible = 100 |
@@ -98,7 +98,8 @@ un incendio contenible en un incendio de propagación total.
 
 ### 3.2 E_exposición (impacto poblacional · 0 a 100)
 
-Mide cuánta gente puede verse afectada y cuán vulnerable es:
+Mide cuánta gente puede verse afectada y cuán vulnerable es. Desde v0.2
+modula además por **ocupación efectiva del edificio** según uso y hora:
 
 | Sub-factor | Tipo | Escala |
 |---|---|---|
@@ -109,8 +110,14 @@ Mide cuánta gente puede verse afectada y cuán vulnerable es:
 Combinación interna:
 
 ```
-E_exposición = 0.40·E_densidad + 0.35·E_vulnerab + 0.25·E_sensibles
+E_exposición = (0.40·E_densidad + 0.35·E_vulnerab + 0.25·E_sensibles) × factor_ocupación(uso, hora)
 ```
+
+El **factor de ocupación** reconoce que un edificio residencial a las
+3 AM tiene 1,0 (todos durmiendo) mientras que un edificio de oficinas
+a la misma hora tiene 0,1 (vacío). Y al revés a las 11:00. Se aplica
+cuando el `currentUse` del Catastro está disponible (99,8 % de los
+edificios).
 
 ### 3.3 R_respuesta (penalización por respuesta de emergencia · 0 a 100)
 
@@ -123,7 +130,7 @@ en colapso estructural y víctimas mortales.
 |---|---|---|
 | Tiempo estimado de llegada al edificio (R_tiempo) | conocido + paramétrico | ver §3.3.1 |
 | Distancia al hidrante más cercano (R_hidrante) | conocido | < 50 m = 0 · 50-100 m = 30 · 100-200 m = 70 · > 200 m = 100 |
-| Acceso preparado para vehículos pesados (R_acceso) | conocido | hay `fites bombers` o la calle es categoría de tráfico rodado normal = 0 · vía estrecha sin fites = 60 · zona peatonalizada sin fites = 100 |
+| Acceso preparado para vehículos pesados (R_acceso) | conocido | hay `fites bombers` a < 50 m = 0 · calle normal = 30 (default) |
 
 Combinación interna:
 
@@ -304,7 +311,50 @@ Los tres tests viven en `tests/test_modelo.py` (pendiente).
   "qué fachada tiene"**. El producto no etiqueta edificios reales;
   solo permite explorar el espacio de escenarios.
 
-## 8. Versionado y trazabilidad
+## 8. Extensiones derivadas del modelo (v0.2.1)
+
+### 8.1 Motor de recomendaciones
+
+Para cualquier edificio simulado, el modelo identifica las **tres
+mejoras paramétricas con mayor reducción de riesgo**. El algoritmo
+prueba, manteniendo todo lo demás constante, cada valor mejor que el
+actual para fachada, ITE, SCI y cubierta, y devuelve las tres
+variables con mayor caída ordenadas por impacto.
+
+Cuando el edificio está en régimen «fachada crítica», las otras
+mejoras (ITE, SCI, cubierta) tienen efecto cuasi nulo porque
+V_intrínseca queda saturada por la fachada. El motor reconoce esto
+explícitamente y añade una nota al usuario: *«mientras la fachada
+combustible persista, las demás mejoras no reducen significativamente
+el riesgo»*.
+
+### 8.2 Banda de confianza
+
+Cada cálculo se acompaña de su rango plausible: el riesgo bajo el
+**mejor caso paramétrico** (todas las variables paramétricas en su
+óptimo) y el **peor caso paramétrico** (todas al extremo). Sirve para
+comunicar que el modelo es una estimación, no un veredicto.
+
+### 8.3 Plan de respuesta operativa del SPEIS
+
+Para cualquier edificio, el modelo estima el despliegue de bomberos
+necesario en caso de incendio:
+
+- **Dotaciones y efectivos** según altura (1 dotación ≤ 3 plantas,
+  hasta 4-5 si fachada combustible + altura > 14).
+- **Vehículos**: BUL, BUP, autoescala, UEMSV, refuerzo provincial.
+- **Caudal hidráulico**: 500 L/min por dotación + 30 % de reserva.
+- **Tiempo estimado de contención**: 8 min base + 4 min por planta
+  > 5, duplicado si fachada combustible (aprendizaje de Campanar).
+- **Radio de evacuación inmediata**: 50-100 m según altura.
+- **Radio del perímetro operativo**: el doble del de evacuación.
+
+Es una heurística basada en doctrina común de respuesta a incendio
+estructural urbano, **no es protocolo oficial del SPEIS**. Sirve para
+que la persona usuaria visualice qué implica «que arda»: el atlas
+pasa de diagnóstico (riesgo X) a acción (despliegue Y).
+
+## 9. Versionado y trazabilidad
 
 Cada versión del modelo se identifica con la fecha de este documento
 y un número de versión menor. El código de `calcular_riesgo.py`
@@ -312,5 +362,7 @@ referencia siempre la versión documentada aquí.
 
 | Versión | Fecha | Cambio |
 |---|---|---|
-| 0.1 | 2026-05-14 | Diseño inicial del modelo (este documento) |
-| 0.1.1 | 2026-05-14 | Régimen de pesos dinámico cuando la fachada satura V_intrínseca. Test del caso Campanar relajado a `≥ 80` y añadido test de sensibilidad a la fachada |
+| 0.1 | 2026-04-22 | Diseño inicial del modelo (este documento) |
+| 0.1.1 | 2026-04-24 | Régimen de pesos dinámico cuando la fachada satura V_intrínseca. Test del caso Campanar relajado a `≥ 80` y añadido test de sensibilidad a la fachada |
+| 0.2 | 2026-05-14 | Cortes normativos del año (NBE-CPI-91, CTE DB-SI, RIPCI). v_altura continua. Nueva fachada `sate-combustible`. R_acceso real con `fites_bombers` a <50 m. Modulación de E_exposición por `uso × hora` con el `currentUse` del Catastro. Régimen «fachada crítica» se activa siempre que la fachada combustible esté presente, no solo cuando el piso eleva V |
+| 0.2.1 | 2026-05-22 | Motor de recomendaciones top-3 con explicación cuando la fachada combustible domina. Banda de confianza (mejor caso / peor caso paramétrico). Plan de respuesta operativa estimado del SPEIS (dotaciones, vehículos, caudal hidráulico, tiempo de contención, perímetro de evacuación) |

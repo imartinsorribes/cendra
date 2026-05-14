@@ -16,6 +16,7 @@ con datos abiertos.**
 | **Edición** | IV Convocatoria de Premios para proyectos de datos abiertos y periodismo de datos del Ajuntament de València · 2026 |
 | **Modalidad** | Individual |
 | **Repositorio del código** | <https://github.com/imartinsorribes/cendra> |
+| **Modelo de riesgo** | v0.2.1 con cortes normativos, motor de recomendaciones, banda de confianza y plan de respuesta operativa del SPEIS |
 | **URL pública del proyecto** | <https://cendra.pages.dev> |
 | **Licencias** | Código fuente: MIT · Datos derivados: CC BY 4.0 · Memoria y documentación: CC BY 4.0 |
 
@@ -350,12 +351,30 @@ sobre cualquier hosting estático.
   intervención. Es un grado de finura que no se encuentra en los
   pocos análisis previos sobre riesgo de incendio urbano publicados
   para municipios españoles.
+- **Cortes normativos alineados con la realidad legal española**:
+  el factor V_edad no usa cortes arbitrarios, sino los hitos legales
+  reales (NBE-CPI-91, CTE DB-SI 2006, RIPCI 2017). Esta alineación
+  permite que el modelo discrimine correctamente entre edificios
+  construidos bajo distintas obligaciones normativas.
 - **Régimen dinámico de pesos**. El modelo no es lineal: cuando se
   cumplen las condiciones físicas que invalidaron la respuesta
   operativa en Campanar (fachada combustible en edificio alto), los
   pesos se redistribuyen para reflejar que la respuesta deja de ser
   un atenuador efectivo. La regla es única, documentada y trazable
   hasta el informe del incidente real.
+- **Motor de recomendaciones**. Para cualquier edificio el modelo
+  identifica las tres mejoras paramétricas con mayor caída de
+  riesgo, ordenadas por impacto. Convierte el atlas de diagnóstico
+  pasivo a herramienta de acción para vecindario, comunidades de
+  propietarios y política pública. Reconoce explícitamente cuando
+  una intervención no aporta (por ejemplo, mejorar SCI cuando hay
+  fachada combustible) — la honestidad metodológica forma parte del
+  resultado.
+- **Plan de respuesta operativa del SPEIS estimado**. Para cualquier
+  edificio el modelo estima dotaciones, vehículos, caudal hidráulico
+  necesario y tiempo de contención bajo doctrina común. Es la
+  primera herramienta pública en España que materializa el coste
+  operativo de un incendio en cada edificio del Catastro.
 - **Calculadora reactiva en navegador puro**. La persona usuaria no
   necesita instalar nada, registrarse ni esperar. Cada movimiento de
   un slider recalcula el índice en tiempo real porque el modelo
@@ -412,9 +431,11 @@ sobre cualquier hosting estático.
   pieza independiente con una API clara. El batch (`calcular_riesgo_batch.py`)
   lo aplica a 214.000 edificios. El frontend lo replica en JS. Los
   tres pueden evolucionar por separado.
-- **Validación con tests**. Cuatro pruebas de comportamiento del
-  modelo y una auditoría sistemática de los datos verifican que la
-  herramienta hace lo que dice.
+- **Validación con tests automatizados**. 28 tests (`tests/`) cubren
+  los escenarios canónicos, la sensibilidad del modelo a fachada y
+  hora, los cortes normativos, los edge cases extremos y la sincronía
+  entre las constantes del modelo Python (batch) y JS (frontend). El
+  jurado puede ejecutarlos en local con `pytest tests/`.
 - **Calibración con fuentes oficiales**. La estimación poblacional
   se calibra contra el padrón INE; los parques de bomberos se
   verifican con la web oficial del SPEIS; la vulnerabilidad social
