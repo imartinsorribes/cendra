@@ -75,8 +75,10 @@ Inventario completo y trazable en [`docs/inventario-datos.md`](docs/inventario-d
 | Edificios 3D | ✅ procesado: 214.000 edificios con altura (media 13,1 m, máx 108 m) |
 | Viviendas por barrio | ✅ procesado: 88 barrios, 1.012.050 hab estimados ([`data/processed/viviendas_por_barrio.csv`](data/processed/viviendas_por_barrio.csv)) |
 | Modelo paramétrico de riesgo v0.1.1 | ✅ diseñado e implementado ([`docs/modelo-riesgo.md`](docs/modelo-riesgo.md) · [`scripts/calcular_riesgo.py`](scripts/calcular_riesgo.py)) |
-| Cálculo batch sobre los 214k edificios | ⏳ pendiente (siguiente fase) |
-| Frontend web | ⏳ pendiente |
+| Validación y auditoría de datos | ✅ ([`docs/validacion-datos.md`](docs/validacion-datos.md) · [`scripts/validar_datos.py`](scripts/validar_datos.py)) |
+| Cálculo batch sobre los 214k edificios | ✅ ([`data/processed/riesgo_edificios.gpkg`](data/processed/riesgo_edificios.gpkg) · gpkg no versionado) + agregado por barrio ([`data/processed/riesgo_por_barrio.csv`](data/processed/riesgo_por_barrio.csv)) |
+| Frontend web interactivo | ✅ ([`web/`](web/) · HTML + MapLibre + modelo en JS + calculadora paramétrica en vivo) |
+| Despliegue público | ⏳ pendiente (sirve cualquier hosting estático: Cloudflare Pages, GitHub Pages, Netlify) |
 
 Las descargas grandes (`data/raw/large/`, `data/external/`) no se
 versionan: están en `.gitignore`. Cualquier persona puede reproducir
@@ -89,7 +91,7 @@ el pipeline desde cero con los scripts del repositorio.
 python scripts/fetch_catalogo_vlci.py
 python scripts/filtrar_catalogo_incendio.py
 
-# 2. Capas geoespaciales (barrios, vulnerabilidad, manzanas)
+# 2. Capas geoespaciales (barrios, vulnerabilidad, manzanas, etc.)
 python scripts/descargar_capas.py
 
 # 3. Catastro INSPIRE (edificios + número de plantas + viviendas)
@@ -97,9 +99,43 @@ python scripts/descargar_catastro.py
 python scripts/extraer_alturas_ciudad.py
 python scripts/extraer_viviendas.py
 
-# 4. Modelo paramétrico (pendiente)
-# python scripts/calcular_riesgo.py
+# 4. Capa propia de parques de bomberos
+python scripts/construir_parques_bomberos.py
+
+# 5. Validar todos los datos (counts, geometrías, edge cases)
+python scripts/validar_datos.py
+
+# 6. Cálculo batch del riesgo sobre los 214.000 edificios
+python scripts/calcular_riesgo_batch.py
+
+# 7. Preparar GeoJSONs optimizados que sirve el frontend
+python scripts/preparar_datos_web.py
+
+# 8. Levantar el frontend localmente
+python -m http.server 8000 --directory web
+# y abrir http://localhost:8000
 ```
+
+## Uso del modelo
+
+Cálculo aislado desde la CLI:
+
+```bash
+# Escenario canónico (campanar | carmen | quatre-carreres-nuevo)
+python scripts/calcular_riesgo.py --escenario campanar
+
+# Comparativa de los tres escenarios
+python scripts/calcular_riesgo.py --todos-escenarios
+
+# Parámetros libres
+python scripts/calcular_riesgo.py --plantas 14 --anio 2006 \
+    --lon -0.398 --lat 39.485 --fachada composite-acmpe \
+    --ite pendiente --sci parcial --cubierta mixto --hora 18
+```
+
+Desde el frontend la calculadora es reactiva: se hace clic en un
+barrio, se mueven los sliders de plantas y año, se elige fachada /
+ITE / SCI / cubierta y se ve cómo cambia el índice en tiempo real.
 
 ## Continuidad con `ombrari`
 
