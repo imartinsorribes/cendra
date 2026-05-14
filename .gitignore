@@ -1,0 +1,62 @@
+# --- Datos pesados / generados ---
+data/raw/large/
+data/external/
+data/processed/*.gpkg
+data/processed/*.parquet
+data/processed/*.tif
+data/processed/*.zip
+data/cache/
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+ENV/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+*.egg-info/
+build/
+dist/
+.coverage
+htmlcov/
+
+# --- Node / web ---
+node_modules/
+dist/
+.parcel-cache/
+.next/
+
+# --- IDE / SO ---
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Secretos ---
+.env
+.env.*
+!.env.example
+secrets.json
+
+# --- Notas locales no versionadas ---
+notas_privadas/
+*.local.md
+
+# --- Documentos administrativos del concurso (no parte del producto) ---
+document_pdf.pdf
+convocatoria-*.pdf
+anexos/
+
+# --- Wrangler / Cloudflare ---
+.wrangler
+.dev.vars*
+!.dev.vars.example
