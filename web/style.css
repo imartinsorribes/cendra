@@ -211,6 +211,52 @@ label > input[type="checkbox"] {
   color: var(--ceniza);
 }
 
+.leyenda {
+  position: absolute;
+  bottom: 1.5rem; left: 1rem;
+  background: var(--bg-panel);
+  border: 1px solid var(--linea);
+  border-radius: 6px;
+  padding: 0.6rem 0.8rem;
+  box-shadow: var(--sombra);
+  font-size: 0.75rem;
+  color: var(--texto-suave);
+  z-index: 10;
+  max-width: 220px;
+}
+.leyenda strong {
+  color: var(--texto);
+  font-size: 0.8rem;
+}
+.leyenda .gradiente {
+  margin: 0.4rem 0 0.2rem;
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(to right, #6e9d4c 0%, #b8c155 25%, #f5b400 50%, #e57a37 75%, #b03a1d 100%);
+}
+.leyenda .ejes {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  color: var(--ceniza);
+  margin-bottom: 0.5rem;
+}
+.leyenda .explica {
+  padding-top: 0.4rem;
+  border-top: 1px solid var(--linea);
+  font-size: 0.72rem;
+  line-height: 1.5;
+}
+.leyenda .punto {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  margin-right: 0.3rem;
+  vertical-align: middle;
+}
+.leyenda .punto.parque { background: #1f4f8b; border: 1px solid white; }
+.leyenda .punto.edif { background: #b03a1d; }
+
 footer {
   padding: 0.5rem 1.5rem;
   font-size: 0.8rem;

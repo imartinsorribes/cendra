@@ -56,13 +56,20 @@ from calcular_riesgo import (  # noqa: E402
 # === Escenario por defecto del batch =======================================
 # Valores «medianos» de los paramétricos. El frontend permitirá variarlos
 # y recalcular en vivo.
-DEFAULT_ANIO = 1990  # V_edad = 30
+DEFAULT_ANIO = 1990  # fallback cuando no se conoce → V_edad = 30
 DEFAULT_FACHADA = "composite-cte"  # 60
 DEFAULT_ITE = "pendiente"  # 50
 DEFAULT_SCI = "parcial"  # 35
 DEFAULT_CUBIERTA = "mixto"  # 40
 DEFAULT_HORA = 12  # 45 km/h
 DEFAULT_R_ACCESO = 30.0  # calle normal (placeholder)
+
+# Radio para buscar equipamientos sensibles cercanos (en metros, EPSG:25830)
+RADIO_SENSIBLES_M = 200.0
+# Scores aplicados por tipo de equipamiento sensible más cercano
+SCORE_RESIDENCIA = 100  # peor caso: movilidad reducida + dependencia
+SCORE_HOSPITAL = 80
+SCORE_EDUCATIVO = 60
 
 
 # === Carga de datos =========================================================
@@ -97,14 +104,24 @@ def cargar_parques() -> gpd.GeoDataFrame:
 
 # === Cálculos vectorizados ==================================================
 
-def calc_V_intrinseca_vectorizado(plantas: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+def calc_V_intrinseca_vectorizado(
+    plantas: np.ndarray, anios: np.ndarray,
+) -> tuple[np.ndarray, np.ndarray]:
     """V_intrínseca para todos los edificios bajo el escenario por defecto.
+
+    `anios` es un array con el año real de cada edificio (NaN cuando no
+    se conoce → se aplica DEFAULT_ANIO).
 
     Devuelve (V, fachada_critica_flag) — el flag se usa para decidir
     el régimen de pesos."""
-    # V_edad fija (DEFAULT_ANIO)
-    v_e = v_edad(DEFAULT_ANIO)  # escalar
-    # V_altura vectorizado: plantas → 0/10/40/70/100
+    # V_edad vectorizado a partir del año real
+    anios_clean = np.where(np.isnan(anios), DEFAULT_ANIO, anios)
+    v_e = np.select(
+        [anios_clean > 2010, anios_clean > 1980, anios_clean > 1950],
+        [0.0, 30.0, 60.0],
+        default=100.0,
+    )
+    # V_altura vectorizado: plantas → 10/40/70/100
     v_a = np.select(
         [plantas <= 3, plantas <= 7, plantas <= 12, plantas > 12],
         [10.0, 40.0, 70.0, 100.0],
@@ -136,10 +153,12 @@ def calc_V_intrinseca_vectorizado(plantas: np.ndarray) -> tuple[np.ndarray, np.n
 
 
 def calc_E_exposicion_vectorizado(
-    densidad_hab_km2: np.ndarray, ind_vulnerab_norm: np.ndarray,
+    densidad_hab_km2: np.ndarray,
+    ind_vulnerab_norm: np.ndarray,
+    e_sensibles: np.ndarray,
 ) -> np.ndarray:
     """E_exposición para todos los edificios.
-    `ind_vulnerab_norm` ya viene reescalado a 0-100.
+    `ind_vulnerab_norm` y `e_sensibles` ya vienen escalados 0-100.
     `densidad` se normaliza por percentiles dentro de este mismo array."""
     # Densidad → percentil sobre la distribución
     valid = ~np.isnan(densidad_hab_km2)
@@ -151,7 +170,7 @@ def calc_E_exposicion_vectorizado(
     e_dens = rank
 
     e_vul = np.where(np.isnan(ind_vulnerab_norm), 50.0, ind_vulnerab_norm)
-    e_sens = 0.0  # placeholder hasta integrar capas de equipamientos sensibles
+    e_sens = np.where(np.isnan(e_sensibles), 0.0, e_sensibles)
 
     E = 0.40 * e_dens + 0.35 * e_vul + 0.25 * e_sens
     return E
@@ -292,7 +311,7 @@ def main() -> None:
         file=sys.stderr,
     )
 
-    print("[6/8] sjoin_nearest: hidrante más cercano…", file=sys.stderr)
+    print("[6/9] sjoin_nearest: hidrante más cercano…", file=sys.stderr)
     hidr = cargar_capa("hidrants")
     j_hidr = gpd.sjoin_nearest(
         edif_pt2,
@@ -309,10 +328,104 @@ def main() -> None:
         file=sys.stderr,
     )
 
-    print("[7/8] calcular V, E, R y riesgo total (vectorizado)…", file=sys.stderr)
-    V, fachada_crit = calc_V_intrinseca_vectorizado(edif["plantas"].values)
+    print("[7/9] anejar año de construcción…", file=sys.stderr)
+    anos_csv = ROOT / "data" / "processed" / "anos_construccion.csv"
+    if anos_csv.exists():
+        anos = pd.read_csv(anos_csv)
+        anos["anio_construccion"] = pd.to_numeric(
+            anos["anio_construccion"], errors="coerce"
+        )
+        # Los años < 1700 son placeholders del Catastro (sin fecha real)
+        anos.loc[anos["anio_construccion"] < 1700, "anio_construccion"] = np.nan
+        # Cruce por localId base (sin _partN)
+        edif["localId_base"] = edif["localId"].str.split("_part").str[0]
+        edif = edif.merge(
+            anos[["localId", "anio_construccion"]].rename(
+                columns={"localId": "localId_base"}
+            ),
+            on="localId_base",
+            how="left",
+        ).drop(columns=["localId_base"])
+        validos = int(edif["anio_construccion"].notna().sum())
+        print(
+            f"  año asignado a {validos:,} de {len(edif):,} edificios "
+            f"({validos/len(edif)*100:.1f}%) · media: "
+            f"{edif['anio_construccion'].mean():.0f}",
+            file=sys.stderr,
+        )
+    else:
+        edif["anio_construccion"] = np.nan
+        print("  [skip] anos_construccion.csv ausente", file=sys.stderr)
+
+    print("[8/9] equipamientos sensibles cercanos (radio "
+          f"{RADIO_SENSIBLES_M:.0f}m)…", file=sys.stderr)
+    e_sens_score = pd.Series(np.nan, index=edif.index)
+
+    def proximidad_score(capa, score, filtro=None):
+        """Devuelve un score para cada edificio si tiene algún equipamiento
+        de ese tipo a menos de RADIO_SENSIBLES_M metros."""
+        g = capa.copy()
+        if filtro is not None:
+            g = g[filtro(g)]
+        # Si MultiPoint, explotamos a Point
+        g = g.explode(index_parts=False).reset_index(drop=True)
+        g = g[g.geometry.notna() & g.geometry.is_valid]
+        if len(g) == 0:
+            return pd.Series(dtype=float)
+        nearest = gpd.sjoin_nearest(
+            edif_pt2, g[["geometry"]],
+            how="left", distance_col="d_m",
+            max_distance=RADIO_SENSIBLES_M,
+        )
+        nearest = nearest.groupby(nearest.index)["d_m"].min()
+        return pd.Series(
+            np.where(nearest.notna(), score, np.nan),
+            index=nearest.index,
+        )
+
+    hosp = cargar_capa("hospitales")
+    s_h = proximidad_score(hosp, SCORE_HOSPITAL).reindex(edif.index)
+
+    educ = cargar_capa("centros_educativos")
+    s_e = proximidad_score(educ, SCORE_EDUCATIVO).reindex(edif.index)
+
+    majors = cargar_capa("majors")
+    # Filtro empírico para quedarnos solo con RESIDENCIAS:
+    # el dataset municipal mezcla residencias con asociaciones y otros
+    # recursos sociales dirigidos a mayores. Nos quedamos con los que
+    # tienen `equipamien` que contenga keywords de residencia o centro
+    # de día.
+    def es_residencia(g):
+        nombre = g["equipamien"].fillna("").str.upper()
+        return (
+            nombre.str.contains("RESIDEN")
+            | nombre.str.contains("CENTRE DE DIA")
+            | nombre.str.contains("CENTRO DE D")
+            | nombre.str.contains("GERIATR")
+        )
+    s_r = proximidad_score(majors, SCORE_RESIDENCIA, filtro=es_residencia).reindex(edif.index)
+
+    # Combinar: máximo score entre los 3 tipos
+    score_matrix = pd.concat([s_h, s_e, s_r], axis=1)
+    e_sens_score = score_matrix.max(axis=1, skipna=True)
+    n_con_sensible = int(e_sens_score.notna().sum())
+    print(
+        f"  con equipamiento sensible a <{RADIO_SENSIBLES_M:.0f}m: "
+        f"{n_con_sensible:,} edificios "
+        f"({n_con_sensible/len(edif)*100:.1f}%) · score medio: "
+        f"{e_sens_score.mean():.1f}",
+        file=sys.stderr,
+    )
+    edif["E_sensibles"] = e_sens_score.values
+
+    print("[9/9] calcular V, E, R y riesgo total (vectorizado)…", file=sys.stderr)
+    V, fachada_crit = calc_V_intrinseca_vectorizado(
+        edif["plantas"].values, edif["anio_construccion"].values,
+    )
     E = calc_E_exposicion_vectorizado(
-        edif["densidad_hab_km2"].values, edif["ind_vulnerab_norm"].values
+        edif["densidad_hab_km2"].values,
+        edif["ind_vulnerab_norm"].values,
+        edif["E_sensibles"].values,
     )
     R, t_llegada, r_t, r_h = calc_R_respuesta_vectorizado(
         edif["dist_parque_m"].values, edif["dist_hidrante_m"].values
@@ -339,13 +452,14 @@ def main() -> None:
         file=sys.stderr,
     )
 
-    print("[8/8] escribir salidas…", file=sys.stderr)
+    print("[fin] escribir salidas…", file=sys.stderr)
     # Limpiar geometría auxiliar
     edif_out = edif.set_geometry("geometry").drop(columns=["pt"])
     # Reducir a las columnas útiles
     cols = [
-        "localId", "plantas", "altura_m", "barrio", "codbarrio",
-        "densidad_hab_km2", "ind_vulnerab_norm",
+        "localId", "plantas", "altura_m", "anio_construccion",
+        "barrio", "codbarrio",
+        "densidad_hab_km2", "ind_vulnerab_norm", "E_sensibles",
         "parque_cercano", "dist_parque_m", "dist_hidrante_m",
         "tiempo_llegada_min", "V_intrinseca", "E_exposicion", "R_respuesta",
         "fachada_critica", "riesgo",
@@ -368,10 +482,12 @@ def main() -> None:
             riesgo_p90=("riesgo", lambda s: float(s.quantile(0.90))),
             altura_media=("altura_m", "mean"),
             plantas_media=("plantas", "mean"),
+            anio_mediano=("anio_construccion", "median"),
             dist_parque_media=("dist_parque_m", "mean"),
             tiempo_llegada_medio=("tiempo_llegada_min", "mean"),
             densidad=("densidad_hab_km2", "first"),
             vulnerab=("ind_vulnerab_norm", "first"),
+            pct_con_sensible=("E_sensibles", lambda s: float(s.notna().mean() * 100)),
         )
         .round(2)
         .sort_values("riesgo_medio", ascending=False)

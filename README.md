@@ -77,8 +77,10 @@ Inventario completo y trazable en [`docs/inventario-datos.md`](docs/inventario-d
 | Modelo paramétrico de riesgo v0.1.1 | ✅ diseñado e implementado ([`docs/modelo-riesgo.md`](docs/modelo-riesgo.md) · [`scripts/calcular_riesgo.py`](scripts/calcular_riesgo.py)) |
 | Validación y auditoría de datos | ✅ ([`docs/validacion-datos.md`](docs/validacion-datos.md) · [`scripts/validar_datos.py`](scripts/validar_datos.py)) |
 | Cálculo batch sobre los 214k edificios | ✅ ([`data/processed/riesgo_edificios.gpkg`](data/processed/riesgo_edificios.gpkg) · gpkg no versionado) + agregado por barrio ([`data/processed/riesgo_por_barrio.csv`](data/processed/riesgo_por_barrio.csv)) |
-| Frontend web interactivo | ✅ ([`web/`](web/) · HTML + MapLibre + modelo en JS + calculadora paramétrica en vivo) |
-| Despliegue público | ⏳ pendiente (sirve cualquier hosting estático: Cloudflare Pages, GitHub Pages, Netlify) |
+| Frontend web interactivo | ✅ ([`web/`](web/) · HTML + MapLibre + modelo en JS + calculadora paramétrica + capa de los 2.000 edificios de mayor riesgo) |
+| Memoria Anexo II del concurso | ✅ ([`docs/memoria/anexo-ii.md`](docs/memoria/anexo-ii.md)) |
+| Configuración de despliegue público | ✅ ([`docs/despliegue.md`](docs/despliegue.md) · listo para Cloudflare Pages, GitHub Pages o Netlify) |
+| Despliegue efectivo | ⏳ pendiente de tu acción (3 minutos en Cloudflare Pages) |
 
 Las descargas grandes (`data/raw/large/`, `data/external/`) no se
 versionan: están en `.gitignore`. Cualquier persona puede reproducir

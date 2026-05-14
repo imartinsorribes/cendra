@@ -4,9 +4,13 @@ Prepara los GeoJSON optimizados que sirve el frontend en `web/data/`.
   - `web/data/parques_bomberos.geojson`: copia de la capa propia.
   - `web/data/barris_riesgo.geojson`: barrios oficiales del Ajuntament
     enriquecidos con el riesgo medio del batch (`riesgo_por_barrio.csv`),
-    su densidad de población y el índice de vulnerabilidad. Coordenadas
-    en EPSG:4326. Las propiedades se reducen a las que el mapa necesita
-    para no inflar el payload.
+    su densidad de población y el índice de vulnerabilidad.
+  - `web/data/edificios_top_riesgo.geojson`: TOP-2000 edificios de
+    mayor riesgo del batch, geometría centrada y simplificada. Sirve
+    como capa de hotspots en el mapa para que se vean a nivel calle.
+
+Coordenadas en EPSG:4326. Las propiedades se reducen a las que el
+mapa necesita para no inflar el payload.
 
 Uso:
     python scripts/preparar_datos_web.py
@@ -85,11 +89,50 @@ def construir_barris_riesgo() -> None:
     print(top.to_string(index=False), file=sys.stderr)
 
 
+def construir_edificios_top() -> None:
+    """Extrae los TOP-2000 edificios de mayor riesgo como puntos
+    (centroide) para mostrar como hotspots en el mapa."""
+    gpkg = PROCESSED / "riesgo_edificios.gpkg"
+    if not gpkg.exists():
+        print("  [skip] riesgo_edificios.gpkg ausente. "
+              "Ejecuta antes calcular_riesgo_batch.py.", file=sys.stderr)
+        return
+    edif = gpd.read_file(gpkg, layer="riesgo")
+    n_top = min(2000, len(edif))
+    top = edif.nlargest(n_top, "riesgo").copy()
+    # Sólo el centroide para que sea ligero
+    top["geometry"] = top.geometry.representative_point()
+    top = top.to_crs("EPSG:4326")
+    cols = [
+        "localId", "plantas", "altura_m", "anio_construccion",
+        "barrio", "parque_cercano", "tiempo_llegada_min",
+        "dist_parque_m", "dist_hidrante_m",
+        "V_intrinseca", "E_exposicion", "R_respuesta", "riesgo",
+        "geometry",
+    ]
+    cols_disp = [c for c in cols if c in top.columns]
+    top_out = top[cols_disp].copy()
+    out = WEB_DATA / "edificios_top_riesgo.geojson"
+    top_out.to_file(out, driver="GeoJSON")
+    kb = out.stat().st_size / 1024
+    print(
+        f"  → {out.relative_to(ROOT)} ({kb:.0f} KB, {len(top_out)} edificios)",
+        file=sys.stderr,
+    )
+    print(
+        f"  rango de riesgo en el top: "
+        f"{top_out['riesgo'].min():.1f} - {top_out['riesgo'].max():.1f}",
+        file=sys.stderr,
+    )
+
+
 def main() -> None:
-    print("[1/2] copiar parques_bomberos.geojson", file=sys.stderr)
+    print("[1/3] copiar parques_bomberos.geojson", file=sys.stderr)
     copiar_parques()
-    print("[2/2] construir barris_riesgo.geojson", file=sys.stderr)
+    print("[2/3] construir barris_riesgo.geojson", file=sys.stderr)
     construir_barris_riesgo()
+    print("[3/3] construir edificios_top_riesgo.geojson", file=sys.stderr)
+    construir_edificios_top()
 
 
 if __name__ == "__main__":

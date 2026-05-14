@@ -1,0 +1,25 @@
+# Cabeceras HTTP que Cloudflare Pages aplica al servir cada ruta.
+# Documentación: https://developers.cloudflare.com/pages/configuration/headers/
+
+# GeoJSONs: caché de 1 hora con revalidación; rara vez cambian fuera
+# de despliegues programados.
+/data/*
+  Cache-Control: public, max-age=3600, must-revalidate
+  Access-Control-Allow-Origin: *
+
+# JS y CSS propios: caché de 1 día, también permiten CORS por si
+# alguien los referencia desde otro origen.
+/*.css
+  Cache-Control: public, max-age=86400
+  Access-Control-Allow-Origin: *
+/*.js
+  Cache-Control: public, max-age=86400
+  Access-Control-Allow-Origin: *
+
+# HTML: caché corta (5 min) para que un nuevo despliegue se propague
+# rápido sin tener que invalidar manualmente.
+/*
+  Cache-Control: public, max-age=300
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(), microphone=(), camera=()
