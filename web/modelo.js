@@ -352,19 +352,36 @@ function recomendaciones(input) {
 }
 
 // === Banda de confianza ====================================================
-// Calcula el riesgo bajo el «mejor caso» (todos los paramétricos en óptimo)
-// y «peor caso» (todos en el extremo) manteniendo lo demás constante.
+// Calcula el rango plausible variando los paramétricos UN ESCALÓN
+// arriba o abajo de su valor actual (no extremos absolutos). Comunica
+// «lo que pasaría con una pequeña mejora» y «con un pequeño deterioro».
+//
+// Es metodológicamente más honesto que la versión anterior (que iba de
+// ladrillo + todo perfecto hasta ACM-PE + todo desfavorable, una
+// combinatoria casi imposible que daba bandas ridículamente anchas).
+
+const ORDENES_PARAM = {
+  fachada: ["ladrillo", "mortero", "vidrio", "composite-cte", "sate-combustible", "composite-acmpe"],
+  ite: ["favorable", "pendiente", "desfavorable"],
+  sci: ["completo", "parcial", "extintores", "ninguno"],
+  cubierta: ["tradicional", "mixto", "combustible"],
+};
 
 function bandaConfianza(input) {
-  const best = calcularRiesgo({
-    ...input, fachada: "ladrillo", ite: "favorable",
-    sci: "completo", cubierta: "tradicional",
-  }).riesgo_total;
-  const worst = calcularRiesgo({
-    ...input, fachada: "composite-acmpe", ite: "desfavorable",
-    sci: "ninguno", cubierta: "combustible",
-  }).riesgo_total;
-  return { best: Math.round(best * 10) / 10, worst: Math.round(worst * 10) / 10 };
+  const mejor = { ...input };
+  const peor = { ...input };
+  for (const [campo, orden] of Object.entries(ORDENES_PARAM)) {
+    const idx = orden.indexOf(input[campo]);
+    if (idx < 0) continue;
+    if (idx > 0) mejor[campo] = orden[idx - 1];
+    if (idx < orden.length - 1) peor[campo] = orden[idx + 1];
+  }
+  const b = calcularRiesgo(mejor).riesgo_total;
+  const w = calcularRiesgo(peor).riesgo_total;
+  return {
+    best: Math.round(b * 10) / 10,
+    worst: Math.round(w * 10) / 10,
+  };
 }
 
 // === Plan de respuesta operativa ===========================================
@@ -376,6 +393,7 @@ function bandaConfianza(input) {
 
 function planRespuesta(input) {
   const plantas = Math.max(1, input.plantas | 0);
+  const hora = input.hora ?? 12;
   const fachadaCritica = ["composite-acmpe", "sate-combustible"].includes(input.fachada);
 
   // Dotaciones base por altura (1 dotación ≈ 5 efectivos + 1 vehículo)
@@ -424,6 +442,22 @@ function planRespuesta(input) {
   if (fachadaCritica) t_control_min *= 2;
   if (t_control_min > 240) t_control_min = 240;  // tope realista
 
+  // Nota descriptiva sobre la hora del incidente.
+  // No alteramos los números (sería invento sin datos del SPEIS), pero
+  // explicamos qué implica la hora para el operativo.
+  let nota_hora;
+  if (hora >= 0 && hora < 6) {
+    nota_hora = "Madrugada: turno reducido en activo. Si la incidencia es grande puede ser necesario activar el Consorcio Provincial.";
+  } else if (hora >= 7 && hora <= 9) {
+    nota_hora = "Hora punta de mañana: la unidad puede tardar más por el tráfico denso.";
+  } else if (hora >= 19 && hora <= 20) {
+    nota_hora = "Hora punta de tarde: dotaciones completas pero tráfico denso.";
+  } else if (hora >= 21 || hora <= 23) {
+    nota_hora = "Noche temprana: dotaciones completas en activo.";
+  } else {
+    nota_hora = "Horario diurno: dotaciones completas y tráfico fluido.";
+  }
+
   return {
     dotaciones,
     efectivos,
@@ -433,7 +467,27 @@ function planRespuesta(input) {
     caudal_lmin,
     tiempo_control_min: Math.round(t_control_min),
     fachada_critica: fachadaCritica,
+    nota_hora,
   };
+}
+
+// Hidrantes operativos: los N más cercanos al edificio.
+// Recibe el GeoJSON de hidrants ya cargado y el punto lon/lat.
+function hidrantesOperativos(hidrantesGeo, lon, lat, n = 3) {
+  if (!hidrantesGeo?.features) return [];
+  const conDist = hidrantesGeo.features.map(f => {
+    const [hlon, hlat] = f.geometry.coordinates;
+    return { f, d: haversineMetros(lon, lat, hlon, hlat) };
+  });
+  conDist.sort((a, b) => a.d - b.d);
+  return conDist.slice(0, n).map(({ f, d }) => ({
+    codigo: f.properties.codigo,
+    calle: f.properties.calle,
+    numero: f.properties.numero,
+    distancia_m: Math.round(d),
+    lon: f.geometry.coordinates[0],
+    lat: f.geometry.coordinates[1],
+  }));
 }
 
 // === Geometría para visualizar el despliegue en el mapa ====================
@@ -459,7 +513,9 @@ window.cendraModelo = {
   recomendaciones,
   bandaConfianza,
   planRespuesta,
+  hidrantesOperativos,
   circuloGeo,
+  haversineMetros,
   ESCENARIOS,
   TABLA_FACHADA, TABLA_ITE, TABLA_SCI, TABLA_CUBIERTA,
   LABEL_FACHADA, LABEL_ITE, LABEL_SCI, LABEL_CUBIERTA,

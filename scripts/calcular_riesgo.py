@@ -432,6 +432,151 @@ def riesgo(
     }
 
 
+# === Motor de recomendaciones, banda de confianza y plan operativo =========
+# Estas funciones replican la lógica del modelo JS del frontend
+# (`web/modelo.js`). Su existencia en Python permite (a) testear la
+# lógica con pytest y (b) usarla en futuros batches o análisis.
+
+_LABEL_FACHADA = {
+    "ladrillo": "Ladrillo / mortero tradicional",
+    "mortero": "Mortero",
+    "vidrio": "Muro cortina de vidrio",
+    "composite-cte": "Composite con cumplimiento CTE",
+    "sate-combustible": "SATE con núcleo combustible (EPS/XPS)",
+    "composite-acmpe": "Composite con núcleo combustible (ACM-PE)",
+}
+_LABEL_ITE = {"favorable": "Favorable", "pendiente": "Pendiente", "desfavorable": "Desfavorable"}
+_LABEL_SCI = {"completo": "Completo", "parcial": "Parcial", "extintores": "Solo extintores", "ninguno": "Ninguno"}
+_LABEL_CUBIERTA = {"tradicional": "Tradicional", "mixto": "Mixto", "combustible": "Combustible"}
+
+_ORDENES_PARAM = {
+    "fachada": ["ladrillo", "mortero", "vidrio", "composite-cte", "sate-combustible", "composite-acmpe"],
+    "ite": ["favorable", "pendiente", "desfavorable"],
+    "sci": ["completo", "parcial", "extintores", "ninguno"],
+    "cubierta": ["tradicional", "mixto", "combustible"],
+}
+
+_VARS_MEJORABLES = [
+    ("fachada", TABLA_FACHADA, _LABEL_FACHADA, "Fachada"),
+    ("ite", TABLA_ITE, _LABEL_ITE, "ITE"),
+    ("sci", TABLA_SCI, _LABEL_SCI, "Sistema contra incendios"),
+    ("cubierta", TABLA_CUBIERTA, _LABEL_CUBIERTA, "Cubierta"),
+]
+
+
+def recomendaciones(base_input: dict, parques: list[dict] | None = None) -> dict:
+    """Devuelve top-3 mejoras paramétricas ordenadas por delta del
+    riesgo, junto con una nota si la fachada combustible domina."""
+    baseline = riesgo(parques=parques, **base_input)["riesgo_total"]
+    propuestas = []
+    for campo, tabla, etiqueta_labels, etiqueta_campo in _VARS_MEJORABLES:
+        actual = base_input[campo]
+        score_actual = tabla[actual]
+        mejor_delta = 0.0
+        mejor_val = None
+        mejor_riesgo = None
+        for nuevo_val, nuevo_score in tabla.items():
+            if nuevo_score >= score_actual:
+                continue
+            inp_mod = {**base_input, campo: nuevo_val}
+            r = riesgo(parques=parques, **inp_mod)["riesgo_total"]
+            d = baseline - r
+            if d > mejor_delta:
+                mejor_delta = d
+                mejor_val = nuevo_val
+                mejor_riesgo = r
+        if mejor_val is not None:
+            propuestas.append({
+                "campo": campo,
+                "etiqueta_campo": etiqueta_campo,
+                "valor_actual": actual,
+                "valor_propuesto": mejor_val,
+                "label_actual": etiqueta_labels[actual],
+                "label_propuesto": etiqueta_labels[mejor_val],
+                "delta": round(mejor_delta, 1),
+                "nuevo_riesgo": round(mejor_riesgo, 1),
+            })
+    propuestas.sort(key=lambda p: p["delta"], reverse=True)
+    top = [p for p in propuestas if p["delta"] >= 0.1][:3]
+    nota = None
+    fachada_critica = base_input["fachada"] in ("composite-acmpe", "sate-combustible")
+    if fachada_critica and len(top) < 3:
+        nota = (
+            "Mientras la fachada combustible persista, las otras mejoras "
+            "paramétricas (ITE, SCI, cubierta) tienen efecto muy limitado: "
+            "la vulnerabilidad estructural queda saturada por la fachada."
+        )
+    elif not top:
+        nota = "Este edificio ya está en la mejor configuración paramétrica posible."
+    return {"baseline": round(baseline, 1), "recomendaciones": top, "nota": nota}
+
+
+def banda_confianza(base_input: dict, parques: list[dict] | None = None) -> dict:
+    """Rango plausible variando los paramétricos UN escalón arriba/abajo."""
+    mejor = dict(base_input)
+    peor = dict(base_input)
+    for campo, orden in _ORDENES_PARAM.items():
+        try:
+            i = orden.index(base_input[campo])
+        except ValueError:
+            continue
+        if i > 0:
+            mejor[campo] = orden[i - 1]
+        if i < len(orden) - 1:
+            peor[campo] = orden[i + 1]
+    b = riesgo(parques=parques, **mejor)["riesgo_total"]
+    w = riesgo(parques=parques, **peor)["riesgo_total"]
+    return {"best": round(b, 1), "worst": round(w, 1)}
+
+
+def plan_respuesta(plantas: int, fachada: str, hora: int = 12,
+                   equip_sensibles: str = "ninguno") -> dict:
+    """Estima el despliegue del SPEIS. Heurística no protocolo oficial."""
+    plantas = max(1, int(plantas))
+    fachada_critica = fachada in ("composite-acmpe", "sate-combustible")
+    if plantas <= 3:
+        dotaciones, efectivos = 1, 5
+        vehiculos = ["BUL (bomba urbana ligera)"]
+    elif plantas <= 8:
+        dotaciones, efectivos = 2, 12
+        vehiculos = ["BUL", "Autoescala"]
+    elif plantas <= 14:
+        dotaciones, efectivos = 3, 18
+        vehiculos = ["BUL", "BUP", "Autoescala", "UEMSV (médico)"]
+    else:
+        dotaciones, efectivos = 4, 25
+        vehiculos = ["BUL", "BUP", "Autoescala-jumbo", "UEMSV", "Mando intermedio"]
+    if fachada_critica:
+        dotaciones += 1
+        efectivos += 7
+        vehiculos.append("Refuerzo del Consorcio Provincial")
+    if equip_sensibles in ("residencia", "hospital"):
+        dotaciones += 1
+        efectivos += 5
+        vehiculos.append("UEMSV adicional (evacuación asistida)")
+    if plantas <= 5:
+        r_evac = 50
+    elif plantas <= 10:
+        r_evac = 75
+    else:
+        r_evac = 100
+    caudal = round(dotaciones * 500 * 1.3)
+    t_control = 8 + max(0, plantas - 5) * 4
+    if fachada_critica:
+        t_control *= 2
+    t_control = min(240, t_control)
+    return {
+        "dotaciones": dotaciones,
+        "efectivos": efectivos,
+        "vehiculos": vehiculos,
+        "radio_evacuacion_m": r_evac,
+        "radio_perimetro_m": r_evac * 2,
+        "caudal_lmin": caudal,
+        "tiempo_control_min": int(t_control),
+        "fachada_critica": fachada_critica,
+    }
+
+
 # === CLI ====================================================================
 
 def construir_parser() -> argparse.ArgumentParser:
