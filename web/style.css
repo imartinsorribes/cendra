@@ -135,6 +135,106 @@ label > input[type="checkbox"] {
   color: var(--brasa);
 }
 
+/* Buscador de dirección (Nominatim) */
+.buscador-input {
+  display: flex;
+  gap: 0.4rem;
+}
+.buscador-input input {
+  flex: 1;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--linea);
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  background: white;
+}
+.buscador-input input:focus {
+  outline: 2px solid var(--brasa-claro);
+  outline-offset: -1px;
+}
+.buscador-input button {
+  padding: 0.45rem 0.85rem;
+  border: 1px solid var(--brasa);
+  background: var(--brasa);
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 700;
+  font-family: inherit;
+  font-size: 1rem;
+}
+.buscador-input button:hover { background: var(--brasa-claro); border-color: var(--brasa-claro); }
+.buscador-msg {
+  margin: 0.4rem 0 0;
+  font-size: 0.78rem;
+  color: var(--texto-suave);
+  min-height: 1.1em;
+}
+.buscador-msg.error { color: var(--brasa); }
+
+/* Botón de reset de simulación */
+.reset-btn {
+  margin-top: 0.5rem;
+  width: 100%;
+  padding: 0.45rem 0.75rem;
+  background: transparent;
+  border: 1px dashed var(--linea);
+  border-radius: 4px;
+  color: var(--texto-suave);
+  font-family: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.reset-btn:hover { border-color: var(--brasa); color: var(--brasa); }
+
+/* Popups del mapa siempre sobre el panel sticky */
+.maplibregl-popup { z-index: 50 !important; }
+
+/* Tutorial de bienvenida */
+.tutorial {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 15, 5, 0.55);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+.tutorial.oculto { display: none; }
+.tutorial-card {
+  background: var(--bg-panel);
+  border-radius: 8px;
+  padding: 1.5rem 1.75rem;
+  max-width: 480px;
+  box-shadow: 0 6px 20px rgba(20, 15, 5, 0.25);
+}
+.tutorial-card h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.15rem;
+  color: var(--brasa);
+}
+.tutorial-card ol {
+  margin: 0 0 1rem;
+  padding-left: 1.25rem;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+.tutorial-card ol li { margin-bottom: 0.5rem; }
+.tutorial-card button {
+  padding: 0.55rem 1.25rem;
+  background: var(--brasa);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: 700;
+  font-family: inherit;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+.tutorial-card button:hover { background: var(--brasa-claro); }
+
 #mapa-wrap {
   position: relative;
 }

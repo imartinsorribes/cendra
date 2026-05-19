@@ -5,10 +5,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>cendra · atlas paramétrico de riesgo de incendio en València</title>
 <meta name="description" content="¿Cuál es el riesgo de incendio de tu edificio? Atlas paramétrico de València con datos abiertos.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%94%A5%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
-<link rel="stylesheet" href="style.css?v=5">
+<link rel="stylesheet" href="style.css?v=7">
 </head>
 <body>
+
+<!-- Tutorial de bienvenida (solo primera visita, gestionado por JS) -->
+<div id="tutorial" class="tutorial oculto" role="dialog" aria-labelledby="tutorial_titulo" aria-modal="true">
+  <div class="tutorial-card">
+    <h2 id="tutorial_titulo">¿Cómo se usa cendra?</h2>
+    <ol>
+      <li>Mira el <strong>número grande del riesgo</strong> arriba del panel. Es el índice 0-100 del edificio que estás simulando.</li>
+      <li>Pulsa uno de los <strong>tres botones de escenario</strong> (Campanar, Centro Histórico o Promoción nueva) y ve cómo cambia todo en directo.</li>
+      <li>O <strong>busca tu calle</strong> y haz clic en uno de los puntos rojos del mapa para usar los datos reales de un edificio del Catastro.</li>
+      <li>Mueve los sliders (plantas, año, fachada…) y observa cómo evoluciona el riesgo, las recomendaciones y el despliegue de bomberos.</li>
+    </ol>
+    <button id="tutorial_cerrar" type="button">Entendido, vamos</button>
+  </div>
+</div>
 
 <header>
   <h1>cendra <span class="vlc">VLC</span></h1>
@@ -43,9 +58,32 @@
         </div>
       </div>
 
-      <p class="banda" id="banda">Rango plausible: <span id="banda_best">—</span> (mejor) – <span id="banda_worst">—</span> (peor)</p>
+      <p class="banda" id="banda">Rango plausible con un cambio menor: <span id="banda_best">—</span> – <span id="banda_worst">—</span></p>
 
       <p class="contexto" id="contexto">Mueve los sliders de abajo o haz clic en el mapa para ver el riesgo.</p>
+    </section>
+
+    <!-- Escenarios canónicos: lo primero accionable después del resultado -->
+    <section class="bloque escenarios">
+      <h2>Prueba un escenario</h2>
+      <p class="ayuda">Tres casos predefinidos con sus parámetros reales. Cada botón vuela el mapa al sitio y rellena los sliders.</p>
+      <div class="botones">
+        <button data-escenario="campanar">🔥 Campanar (febrero 2024)</button>
+        <button data-escenario="carmen">🏛 Edificio histórico Centro · madrugada</button>
+        <button data-escenario="quatre-carreres-nuevo">🏢 Promoción nueva · hora punta</button>
+      </div>
+      <button id="reset_btn" class="reset-btn" type="button">↻ Resetear simulación</button>
+    </section>
+
+    <!-- Buscador de dirección con Nominatim -->
+    <section class="bloque buscador">
+      <h2>Busca tu calle</h2>
+      <p class="ayuda">Escribe tu calle o un punto de València y el mapa volará allí.</p>
+      <div class="buscador-input">
+        <input type="text" id="buscador" placeholder="Calle, plaza o barrio…" autocomplete="off">
+        <button id="buscador_btn" type="button" aria-label="Buscar">→</button>
+      </div>
+      <p class="buscador-msg" id="buscador_msg"></p>
     </section>
 
     <!-- Motor de recomendaciones -->
@@ -59,6 +97,9 @@
     <section class="bloque plan-respuesta">
       <h2>🚒 Despliegue estimado del SPEIS</h2>
       <p class="ayuda">Cuántos efectivos, vehículos y caudal harían falta si este edificio ardiera. Heurística basada en doctrina, no es protocolo oficial.</p>
+      <label class="filtro-opt plan-toggle">
+        <input type="checkbox" id="f_plan_mapa"> Ver despliegue en el mapa
+      </label>
       <div class="plan-grid">
         <div class="plan-cifra">
           <span class="big" id="plan_efectivos">—</span>
@@ -79,6 +120,8 @@
       </div>
       <p class="plan-vehiculos" id="plan_vehiculos"></p>
       <p class="plan-perimetro" id="plan_perimetro"></p>
+      <p class="plan-hora" id="plan_hora"></p>
+      <p class="plan-hidrantes" id="plan_hidrantes"></p>
     </section>
 
     <section class="bloque">
@@ -93,6 +136,16 @@
       <label>Año de construcción
         <input type="range" id="anio" min="1850" max="2026" value="1980">
         <output id="anio_val">1980</output>
+      </label>
+
+      <label>Uso principal del edificio
+        <select id="uso">
+          <option value="1_residential" selected>Residencial</option>
+          <option value="4_1_office">Oficinas</option>
+          <option value="3_industrial">Industrial / logístico</option>
+          <option value="2_agriculture">Agrícola / huerta</option>
+          <option value="">Otro / desconocido</option>
+        </select>
       </label>
     </section>
 
@@ -149,15 +202,6 @@
         <input type="checkbox" id="saturacion">
         El parque más cercano está cubriendo otra intervención
       </label>
-    </section>
-
-    <section class="bloque escenarios">
-      <h2>Escenarios canónicos</h2>
-      <div class="botones">
-        <button data-escenario="campanar">Campanar (2024)</button>
-        <button data-escenario="carmen">Edificio histórico · madrugada</button>
-        <button data-escenario="quatre-carreres-nuevo">Promoción nueva · hora punta</button>
-      </div>
     </section>
 
     <!-- Filtros del mapa -->
@@ -222,7 +266,7 @@
 </footer>
 
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
-<script src="modelo.js?v=6"></script>
-<script src="app.js?v=6"></script>
+<script src="modelo.js?v=7"></script>
+<script src="app.js?v=7"></script>
 </body>
 </html>

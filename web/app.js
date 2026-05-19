@@ -14,6 +14,7 @@ const M = window.cendraModelo;
 const inputs = {
   plantas: document.getElementById('plantas'),
   anio: document.getElementById('anio'),
+  uso: document.getElementById('uso'),
   fachada: document.getElementById('fachada'),
   ite: document.getElementById('ite'),
   sci: document.getElementById('sci'),
@@ -50,7 +51,13 @@ function colorPorValor(v) {
   return '#b03a1d';
 }
 
-let _riesgoAnterior = null;
+// Baseline: el valor del riesgo en cuanto cargó la página. El delta
+// del cuadro se compara contra esto, no contra el cambio anterior.
+let _riesgoBaseline = null;
+
+// Snapshot de los valores iniciales de los controles para que «Resetear
+// simulación» pueda volverlos a poner.
+const _valoresIniciales = {};
 
 // Estado: ubicación del edificio (centro del mapa al inicio) y datos de barrio
 let estado = {
@@ -60,6 +67,7 @@ let estado = {
   densidad: 50,
   equip_sensibles: 'ninguno',
   barrio_nombre: null,
+  hidrantes_cargados: null,  // FeatureCollection cargado al inicio
 };
 
 // === MAPA ===================================================================
@@ -156,35 +164,43 @@ async function inicializarMapa() {
     },
   });
 
-  // Capas operativas (despliegue del SPEIS) — empiezan vacías y se
-  // actualizan en cada recalcular().
+  // Capas operativas (despliegue del SPEIS) — empiezan vacías E
+  // INVISIBLES. Se activan con el toggle «Ver despliegue en el mapa»
+  // del bloque del plan de respuesta.
   const emptyFC = { type: 'FeatureCollection', features: [] };
+  const opLayout = { visibility: 'none' };
   map.addSource('op_perimetro', { type: 'geojson', data: emptyFC });
   map.addLayer({
     id: 'op_perimetro_fill', source: 'op_perimetro', type: 'fill',
+    layout: opLayout,
     paint: { 'fill-color': '#1f4f8b', 'fill-opacity': 0.06 },
   });
   map.addLayer({
     id: 'op_perimetro_line', source: 'op_perimetro', type: 'line',
+    layout: opLayout,
     paint: { 'line-color': '#1f4f8b', 'line-width': 1.5, 'line-dasharray': [3, 2] },
   });
   map.addSource('op_evacuacion', { type: 'geojson', data: emptyFC });
   map.addLayer({
     id: 'op_evacuacion_fill', source: 'op_evacuacion', type: 'fill',
+    layout: opLayout,
     paint: { 'fill-color': '#b03a1d', 'fill-opacity': 0.1 },
   });
   map.addLayer({
     id: 'op_evacuacion_line', source: 'op_evacuacion', type: 'line',
+    layout: opLayout,
     paint: { 'line-color': '#b03a1d', 'line-width': 1.5 },
   });
   map.addSource('op_ruta', { type: 'geojson', data: emptyFC });
   map.addLayer({
     id: 'op_ruta_line', source: 'op_ruta', type: 'line',
+    layout: opLayout,
     paint: { 'line-color': '#1f4f8b', 'line-width': 2.5, 'line-dasharray': [1, 1.5] },
   });
   map.addSource('op_target', { type: 'geojson', data: emptyFC });
   map.addLayer({
     id: 'op_target_circle', source: 'op_target', type: 'circle',
+    layout: opLayout,
     paint: {
       'circle-radius': 9, 'circle-color': '#b03a1d',
       'circle-stroke-color': 'white', 'circle-stroke-width': 2.5,
@@ -265,6 +281,13 @@ async function inicializarMapa() {
       inputs.anio.value = a;
       outputs.anio.value = a;
     }
+    // Propagar el `uso` real del Catastro si está en el feature
+    if (p.uso) {
+      const u = String(p.uso);
+      const opcionExiste = Array.from(inputs.uso.options).some(o => o.value === u);
+      if (opcionExiste) inputs.uso.value = u;
+      else inputs.uso.value = "";  // "otro / desconocido"
+    }
     // Para la exposición, usamos los valores del barrio (ya en su CSV)
     // — los conoceríamos solo si tuviéramos la fuente original, pero
     // los datasets del frontend solo dan info del barrio agregada.
@@ -283,8 +306,9 @@ async function inicializarMapa() {
         <p class="popup-detalle">
           ${p.plantas} plantas · ${p.altura_m?.toFixed?.(0) ?? p.altura_m} m
           · año ${p.anio_construccion ? Math.round(p.anio_construccion) : '—'}<br>
-          ${p.barrio || '(sin barrio)'}<br>
-          Bomberos: ${p.parque_cercano} · ${p.tiempo_llegada_min} min
+          ${p.barrio || '(sin barrio)'}${p.uso ? ` · uso ${p.uso}` : ''}<br>
+          Bomberos: ${p.parque_cercano} · ${p.tiempo_llegada_min} min<br>
+          <span class="popup-ref">Ref. catastral: <code>${p.localId || '—'}</code></span>
         </p>
         <p class="popup-cta">
           ↑ Los sliders del panel ya están con los valores reales de este
@@ -332,7 +356,11 @@ if (map.loaded()) {
 // cálculo «en frío» para que el panel muestre algo inmediatamente
 // (riesgo, banda, recomendaciones). El mapa puede tardar en cargar el
 // estilo del CDN pero la calculadora no debería esperar.
-M.cargarParques('data/parques_bomberos.geojson').then(() => {
+Promise.all([
+  M.cargarParques('data/parques_bomberos.geojson'),
+  fetch('data/hidrants.geojson').then(r => r.ok ? r.json() : null).catch(() => null),
+]).then(([_, hidrants]) => {
+  if (hidrants) estado.hidrantes_cargados = hidrants;
   try { recalcular(); } catch (e) { /* primer recalcular puede fallar si DOM no está */ }
 }).catch(() => { /* offline o error de red */ });
 
@@ -343,6 +371,7 @@ function leerInputs() {
     lon: estado.lon, lat: estado.lat,
     plantas: parseInt(inputs.plantas.value, 10),
     anio: parseInt(inputs.anio.value, 10),
+    uso: inputs.uso.value || null,
     fachada: inputs.fachada.value,
     ite: inputs.ite.value,
     sci: inputs.sci.value,
@@ -366,23 +395,23 @@ function recalcular() {
   void resultado.total.offsetWidth;
   resultado.total.classList.add('pulsando');
 
-  // Delta respecto al cálculo anterior
-  if (_riesgoAnterior !== null) {
-    const d = r.riesgo_total - _riesgoAnterior;
+  // Delta respecto al BASELINE (lo que se calculó al cargar la página).
+  // Se mantiene visible hasta que la usuaria pulse «Resetear simulación»,
+  // así puede ver el efecto acumulado de varios cambios.
+  if (_riesgoBaseline === null) {
+    _riesgoBaseline = r.riesgo_total;
+  } else {
+    const d = r.riesgo_total - _riesgoBaseline;
     if (Math.abs(d) >= 0.1) {
       const sig = d > 0 ? '↑' : '↓';
-      resultado.delta.textContent = `${sig} ${Math.abs(d).toFixed(1)}`;
+      resultado.delta.textContent = `${sig} ${Math.abs(d).toFixed(1)} vs inicio`;
       resultado.delta.classList.toggle('up', d > 0);
       resultado.delta.classList.toggle('down', d < 0);
-      // Limpiar tras 2 s
-      clearTimeout(window.__deltaTimer);
-      window.__deltaTimer = setTimeout(() => {
-        resultado.delta.textContent = '';
-        resultado.delta.classList.remove('up', 'down');
-      }, 2500);
+    } else {
+      resultado.delta.textContent = '';
+      resultado.delta.classList.remove('up', 'down');
     }
   }
-  _riesgoAnterior = r.riesgo_total;
 
   // Barra global del riesgo total
   resultado.barra.style.width = `${r.riesgo_total}%`;
@@ -399,8 +428,8 @@ function recalcular() {
 
   // Contexto: mostrar régimen + parque + tiempo
   const reg = r.pesos.regimen === 'fachada-critica'
-    ? `⚠ régimen <strong>fachada crítica</strong>: la respuesta de bomberos deja de ser efectiva.`
-    : 'régimen normal';
+    ? `⚠ <strong>Régimen fachada crítica</strong> · la respuesta de bomberos deja de ser efectiva porque el incendio se propaga más rápido de lo que pueden contener.`
+    : `✓ <strong>Régimen normal</strong> · la respuesta de emergencia atenúa el riesgo en el modelo.`;
   const t = r.detalle_respuesta;
   resultado.contexto.innerHTML = `
     ${reg}<br>
@@ -440,6 +469,19 @@ function actualizarPlanRespuesta(input, detalleRespuesta) {
     (plan.fachada_critica
       ? 'Tiempo de contención duplicado por fachada combustible.'
       : '');
+
+  const horaEl = document.getElementById('plan_hora');
+  if (horaEl) horaEl.textContent = '🕐 ' + plan.nota_hora;
+
+  // Hidrantes operativos: los 3 más cercanos al edificio
+  const hidrEl = document.getElementById('plan_hidrantes');
+  if (hidrEl && estado.hidrantes_cargados) {
+    const hidr = M.hidrantesOperativos(estado.hidrantes_cargados, input.lon, input.lat, 3);
+    if (hidr.length) {
+      hidrEl.innerHTML = '💧 <strong>Hidrantes operativos:</strong> ' +
+        hidr.map(h => `<code>${h.codigo}</code> (${h.distancia_m} m)`).join(' · ');
+    }
+  }
 
   // Actualizar capas del mapa con los círculos y la línea al parque
   actualizarCapasOperativas(input, plan, detalleRespuesta);
@@ -526,10 +568,24 @@ function etiquetaHora(h) {
     recalcular();
   });
 });
-['fachada','ite','sci','cubierta'].forEach(k => {
+['fachada','ite','sci','cubierta','uso'].forEach(k => {
   inputs[k].addEventListener('change', recalcular);
 });
 inputs.saturacion.addEventListener('change', recalcular);
+
+// Toggle de visibilidad del despliegue operativo del SPEIS en el mapa
+const togglePlanMapa = document.getElementById('f_plan_mapa');
+function visibilidadPlanMapa() {
+  if (!window.__map) return;
+  const on = togglePlanMapa.checked ? 'visible' : 'none';
+  ['op_evacuacion_fill', 'op_evacuacion_line',
+   'op_perimetro_fill', 'op_perimetro_line',
+   'op_ruta_line', 'op_target_circle'].forEach(id => {
+    if (window.__map.getLayer(id))
+      window.__map.setLayoutProperty(id, 'visibility', on);
+  });
+}
+if (togglePlanMapa) togglePlanMapa.addEventListener('change', visibilidadPlanMapa);
 
 // === Filtros del mapa ======================================================
 
@@ -573,6 +629,128 @@ function aplicarFiltros() {
 Object.values(filtros).forEach(el => {
   if (el) el.addEventListener('change', aplicarFiltros);
 });
+
+// === Buscador de dirección con Nominatim ===================================
+// Usa la API pública de OpenStreetMap, limitada al término de València.
+// Cuando encuentra un resultado, vuela el mapa allí y dispara el click
+// programático sobre el barrio que contiene ese punto.
+
+const buscadorInput = document.getElementById('buscador');
+const buscadorBtn = document.getElementById('buscador_btn');
+const buscadorMsg = document.getElementById('buscador_msg');
+
+async function buscarDireccion() {
+  const q = buscadorInput.value.trim();
+  if (!q) { buscadorMsg.textContent = ''; return; }
+  buscadorMsg.classList.remove('error');
+  buscadorMsg.textContent = 'Buscando…';
+  // Restringimos al bbox del término municipal de València
+  const bbox = '-0.50,39.28,-0.20,39.60';  // lon_min, lat_min, lon_max, lat_max
+  const url = 'https://nominatim.openstreetmap.org/search?'
+    + `q=${encodeURIComponent(q + ', València')}`
+    + `&format=json&limit=1&countrycodes=es&viewbox=${bbox}&bounded=1`;
+  try {
+    const r = await fetch(url, { headers: { 'Accept-Language': 'es' } });
+    const data = await r.json();
+    if (!data?.length) {
+      buscadorMsg.classList.add('error');
+      buscadorMsg.textContent = 'Sin resultados en València. Prueba otra dirección.';
+      return;
+    }
+    const lat = parseFloat(data[0].lat);
+    const lon = parseFloat(data[0].lon);
+    buscadorMsg.textContent = data[0].display_name.split(',').slice(0, 2).join(', ');
+    if (window.__map) {
+      window.__map.flyTo({ center: [lon, lat], zoom: 16, duration: 1200 });
+      // Después del vuelo, disparar la lógica del click en barrio
+      // como si la usuaria hubiera clickado en esa coordenada.
+      window.__map.once('moveend', () => {
+        const pt = window.__map.project([lon, lat]);
+        const feats = window.__map.queryRenderedFeatures(pt, { layers: ['barris-fill'] });
+        if (feats.length) {
+          window.__map.fire('click', {
+            lngLat: { lng: lon, lat },
+            point: pt,
+            features: feats,
+          });
+        } else {
+          // Si no cae en un barrio (pedanía sin polígono visible),
+          // al menos actualizamos coords y recalculamos.
+          estado.lon = lon; estado.lat = lat;
+          recalcular();
+        }
+      });
+    } else {
+      estado.lon = lon; estado.lat = lat;
+      recalcular();
+    }
+  } catch (e) {
+    buscadorMsg.classList.add('error');
+    buscadorMsg.textContent = 'Error al buscar. Intenta de nuevo.';
+  }
+}
+if (buscadorBtn) buscadorBtn.addEventListener('click', buscarDireccion);
+if (buscadorInput) buscadorInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); buscarDireccion(); }
+});
+
+// === Tutorial de bienvenida (solo primera visita) ==========================
+
+const tutorialEl = document.getElementById('tutorial');
+const tutorialCerrar = document.getElementById('tutorial_cerrar');
+const TUTORIAL_KEY = 'cendra_tutorial_visto_v1';
+if (tutorialEl && !localStorage.getItem(TUTORIAL_KEY)) {
+  tutorialEl.classList.remove('oculto');
+}
+function cerrarTutorial() {
+  if (tutorialEl) tutorialEl.classList.add('oculto');
+  try { localStorage.setItem(TUTORIAL_KEY, '1'); } catch (e) { /* localStorage no disp. */ }
+}
+if (tutorialCerrar) tutorialCerrar.addEventListener('click', cerrarTutorial);
+if (tutorialEl) tutorialEl.addEventListener('click', e => {
+  if (e.target === tutorialEl) cerrarTutorial();
+});
+
+// === Resetear simulación ===================================================
+
+// Capturar los valores iniciales de los controles (antes de que el primer
+// recalcular o el click de escenario los toque).
+Object.entries(inputs).forEach(([k, el]) => {
+  if (!el) return;
+  if (el.type === 'checkbox') _valoresIniciales[k] = el.checked;
+  else _valoresIniciales[k] = el.value;
+});
+const _estadoInicial = { ...estado };
+
+const resetBtn = document.getElementById('reset_btn');
+if (resetBtn) {
+  resetBtn.addEventListener('click', () => {
+    Object.entries(inputs).forEach(([k, el]) => {
+      if (!el || !(k in _valoresIniciales)) return;
+      if (el.type === 'checkbox') el.checked = _valoresIniciales[k];
+      else el.value = _valoresIniciales[k];
+    });
+    // Sincronizar outputs de los range con su nuevo valor
+    outputs.plantas.value = inputs.plantas.value;
+    outputs.anio.value = inputs.anio.value;
+    outputs.hora.value = etiquetaHora(parseInt(inputs.hora.value, 10));
+    // Restaurar el estado del barrio
+    Object.assign(estado, _estadoInicial);
+    // Limpiar baseline para que el siguiente cálculo lo fije de nuevo
+    _riesgoBaseline = null;
+    resultado.delta.textContent = '';
+    resultado.delta.classList.remove('up', 'down');
+    // Limpiar buscador
+    if (buscadorInput) { buscadorInput.value = ''; buscadorMsg.textContent = ''; }
+    // Cerrar popups
+    document.querySelectorAll('.maplibregl-popup').forEach(p => p.remove());
+    // Quitar resaltado de barrio
+    if (window.__map?.getLayer('barris-hover')) {
+      window.__map.setFilter('barris-hover', ['==', 'codbarrio', -1]);
+    }
+    recalcular();
+  });
+}
 
 // Escenarios canónicos
 document.querySelectorAll('.botones button').forEach(b => {
