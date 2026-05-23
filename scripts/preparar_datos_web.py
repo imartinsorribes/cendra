@@ -42,6 +42,20 @@ def copiar_parques() -> None:
           file=sys.stderr)
 
 
+def copiar_hidrantes() -> None:
+    """Copia los 1.923 hidrantes municipales al frontend para que el plan
+    de respuesta pueda mostrar los 3 más cercanos a cualquier edificio."""
+    src = RAW_LARGE / "hidrants.geojson"
+    if not src.exists():
+        print("  [skip] hidrants.geojson ausente en data/raw/large/",
+              file=sys.stderr)
+        return
+    dst = WEB_DATA / "hidrants.geojson"
+    shutil.copyfile(src, dst)
+    kb = dst.stat().st_size / 1024
+    print(f"  → {dst.relative_to(ROOT)} ({kb:.0f} KB)", file=sys.stderr)
+
+
 def construir_barris_riesgo() -> None:
     barris = gpd.read_file(RAW_LARGE / "barris.geojson").to_crs("EPSG:4326")
     riesgo = pd.read_csv(PROCESSED / "riesgo_por_barrio.csv")
@@ -127,11 +141,14 @@ def construir_edificios_top() -> None:
 
 
 def main() -> None:
-    print("[1/3] copiar parques_bomberos.geojson", file=sys.stderr)
+    print("[1/4] copiar parques_bomberos.geojson", file=sys.stderr)
     copiar_parques()
-    print("[2/3] construir barris_riesgo.geojson", file=sys.stderr)
+    print("[2/4] copiar hidrants.geojson (para hidrantes operativos en el plan SPEIS)",
+          file=sys.stderr)
+    copiar_hidrantes()
+    print("[3/4] construir barris_riesgo.geojson", file=sys.stderr)
     construir_barris_riesgo()
-    print("[3/3] construir edificios_top_riesgo.geojson", file=sys.stderr)
+    print("[4/4] construir edificios_top_riesgo.geojson", file=sys.stderr)
     construir_edificios_top()
 
 

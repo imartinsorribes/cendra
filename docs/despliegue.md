@@ -45,11 +45,11 @@ npm install -g wrangler
 npx wrangler pages deploy web --project-name cendra
 ```
 
-No se incluye un `wrangler.toml` en el repositorio: si Cloudflare lo
-encuentra, intenta desplegar el proyecto como Worker en lugar de como
-Pages y el build falla. La configuración de Pages se hace
-íntegramente desde el dashboard (output directory `web`, branch
-`main`) o pasando los flags al CLI como en el ejemplo anterior.
+El repositorio **no incluye `wrangler.toml`** a propósito: si
+Cloudflare lo encontrara, podría intentar desplegar el proyecto como
+Worker (que necesita un script JS/TS de entrada) en lugar de como
+Pages estático. Los flags `pages deploy ... --project-name` son
+suficientes para identificar el proyecto.
 
 ## Opción B · GitHub Pages
 
