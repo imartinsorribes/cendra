@@ -9,10 +9,10 @@ todo ejecutando los scripts indicados.
 
 | Archivo | Origen | Estado |
 |---|---|---|
-| `ckan_package_search_0.json` | `opendata.vlci.valencia.es/api/3/action/package_search?rows=1000` | ✅ 3,6 MB · 294 datasets |
-| `ckan_package_list.json` | `…/package_list` | ✅ 11 KB |
-| `ckan_group_list.json` | `…/group_list?all_fields=true` | ✅ 15 KB |
-| `ckan_organization_list.json` | `…/organization_list?all_fields=true` | ✅ 1,4 KB |
+| `ckan_package_search_0.json` | `opendata.vlci.valencia.es/api/3/action/package_search?rows=1000` | 3,6 MB · 294 datasets |
+| `ckan_package_list.json` | `…/package_list` | 11 KB |
+| `ckan_group_list.json` | `…/group_list?all_fields=true` | 15 KB |
+| `ckan_organization_list.json` | `…/organization_list?all_fields=true` | 1,4 KB |
 
 Reproducible con: `python scripts/fetch_catalogo_vlci.py`
 
@@ -52,15 +52,15 @@ Reproducible con: `python scripts/descargar_catastro.py`
 
 | Archivo | Cómo se construye | Estado |
 |---|---|---|
-| `parques_bomberos.geojson` | `scripts/construir_parques_bomberos.py` · Nominatim + datos verificados de `valencia.es/cas/bomberos/parques/` | ✅ 6 parques · ver `parques_bomberos_FUENTES.md` |
+| `parques_bomberos.geojson` | `scripts/construir_parques_bomberos.py` · Nominatim + datos verificados de `valencia.es/cas/bomberos/parques/` | 6 parques · ver `parques_bomberos_FUENTES.md` |
 
 ## 5. Procesados · `data/processed/` (versionado salvo `.gpkg`)
 
 | Archivo | Origen | Estado |
 |---|---|---|
-| `edificios_3d_valencia.gpkg` | `extraer_alturas_ciudad.py` sobre `buildingpart.gml` | ✅ 72 MB · 214.000 edificios reales · altura media 13,1 m · máxima 108 m (no versionado, regenerable) |
-| `viviendas_por_barrio.csv` | `extraer_viviendas.py` sobre `building.gml` × `barris.geojson` | ✅ 88 barrios · 1.012.050 hab estimados (factor INE 2,4 hab/vivienda) |
-| `catalogo_incendio.csv` | `filtrar_catalogo_incendio.py` sobre el dump CKAN | ✅ 130 datasets clasificados en 5 temas |
+| `edificios_3d_valencia.gpkg` | `extraer_alturas_ciudad.py` sobre `buildingpart.gml` | 72 MB · 214.000 edificios reales · altura media 13,1 m · máxima 108 m (no versionado, regenerable) |
+| `viviendas_por_barrio.csv` | `extraer_viviendas.py` sobre `building.gml` × `barris.geojson` | 88 barrios · 1.012.050 hab estimados (factor INE 2,4 hab/vivienda) |
+| `catalogo_incendio.csv` | `filtrar_catalogo_incendio.py` sobre el dump CKAN | 130 datasets clasificados en 5 temas |
 
 ## 6. Documentos
 
@@ -74,11 +74,11 @@ Reproducible con: `python scripts/descargar_catastro.py`
 ## 7. Lo que aún no está
 
 - **Cálculo batch de riesgo** para los 214.000 edificios: requiere el
-  cruce de `edificios_3d_valencia.gpkg` con `parques_bomberos.geojson`,
-  `hidrants.geojson` y `vulnerabilitat_barris.geojson`. Script
-  `scripts/calcular_riesgo_batch.py` pendiente.
+ cruce de `edificios_3d_valencia.gpkg` con `parques_bomberos.geojson`,
+ `hidrants.geojson` y `vulnerabilitat_barris.geojson`. Script
+ `scripts/calcular_riesgo_batch.py` pendiente.
 - **Frontend web**: aún no.
 - **Año de construcción por edificio**: el Catastro INSPIRE no expone
-  este campo de forma estructurada en sus GML; habría que extraerlo de
-  la consulta SOAP de Catastro o cruzar con el censo del padrón. Por
-  ahora el modelo usa el año como parámetro de escenario.
+ este campo de forma estructurada en sus GML; habría que extraerlo de
+ la consulta SOAP de Catastro o cruzar con el censo del padrón. Por
+ ahora el modelo usa el año como parámetro de escenario.

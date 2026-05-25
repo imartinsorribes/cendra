@@ -403,8 +403,7 @@ function recalcular() {
   } else {
     const d = r.riesgo_total - _riesgoBaseline;
     if (Math.abs(d) >= 0.1) {
-      const sig = d > 0 ? '↑' : '↓';
-      resultado.delta.textContent = `${sig} ${Math.abs(d).toFixed(1)} vs inicio`;
+      resultado.delta.textContent = `${d > 0 ? '+' : '−'}${Math.abs(d).toFixed(1)} vs inicio`;
       resultado.delta.classList.toggle('up', d > 0);
       resultado.delta.classList.toggle('down', d < 0);
     } else {
@@ -428,8 +427,8 @@ function recalcular() {
 
   // Contexto: mostrar régimen + parque + tiempo
   const reg = r.pesos.regimen === 'fachada-critica'
-    ? `⚠ <strong>Régimen fachada crítica</strong> · la respuesta de bomberos deja de ser efectiva porque el incendio se propaga más rápido de lo que pueden contener.`
-    : `✓ <strong>Régimen normal</strong> · la respuesta de emergencia atenúa el riesgo en el modelo.`;
+    ? `<strong>Régimen fachada crítica</strong>: la respuesta de bomberos deja de ser efectiva porque el incendio se propaga más rápido de lo que pueden contener.`
+    : `<strong>Régimen normal</strong>: la respuesta de emergencia atenúa el riesgo en el modelo.`;
   const t = r.detalle_respuesta;
   resultado.contexto.innerHTML = `
     ${reg}<br>
@@ -465,20 +464,20 @@ function actualizarPlanRespuesta(input, detalleRespuesta) {
   const per = document.getElementById('plan_perimetro');
   per.textContent =
     `Evacuación inmediata en radio ${plan.radio_evacuacion_m} m. ` +
-    `Perímetro operativo del SPEIS hasta ${plan.radio_perimetro_m} m. ` +
+    `Perímetro operativo del SPEIS hasta ${plan.radio_perimetro_m} m.` +
     (plan.fachada_critica
-      ? 'Tiempo de contención duplicado por fachada combustible.'
+      ? ' Tiempo de contención duplicado por fachada combustible.'
       : '');
 
   const horaEl = document.getElementById('plan_hora');
-  if (horaEl) horaEl.textContent = '🕐 ' + plan.nota_hora;
+  if (horaEl) horaEl.textContent = plan.nota_hora;
 
   // Hidrantes operativos: los 3 más cercanos al edificio
   const hidrEl = document.getElementById('plan_hidrantes');
   if (hidrEl && estado.hidrantes_cargados) {
     const hidr = M.hidrantesOperativos(estado.hidrantes_cargados, input.lon, input.lat, 3);
     if (hidr.length) {
-      hidrEl.innerHTML = '💧 <strong>Hidrantes operativos:</strong> ' +
+      hidrEl.innerHTML = '<strong>Hidrantes operativos:</strong> ' +
         hidr.map(h => `<code>${h.codigo}</code> (${h.distancia_m} m)`).join(' · ');
     }
   }

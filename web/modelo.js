@@ -34,8 +34,8 @@ const LABEL_FACHADA = {
   "mortero": "Mortero (encalado tradicional)",
   "vidrio": "Muro cortina de vidrio",
   "composite-cte": "Composite con cumplimiento CTE",
-  "sate-combustible": "SATE con núcleo combustible (EPS/XPS) ⚠",
-  "composite-acmpe": "Composite con núcleo combustible (ACM-PE) ⚠",
+  "sate-combustible": "SATE con núcleo combustible (EPS/XPS)",
+  "composite-acmpe": "Composite con núcleo combustible (ACM-PE)",
 };
 const LABEL_ITE = {
   "favorable": "Favorable",
@@ -193,6 +193,9 @@ function vulnerabilidadIntrinseca({ plantas, anio, fachada, ite, sci, cubierta }
   }
   return { V, sub, fachadaCritica };
 }
+
+// Mantenemos también el viejo nombre en español para los popups
+// (cuando los popups consultaban si fachada crítica está activa).
 
 // Probabilidad de ocupación efectiva por uso y hora del día.
 function factorUsoOcupacion(uso, hora) {

@@ -30,16 +30,16 @@ Aquellas que pueden derivarse de fuentes públicas sin necesidad de
 inspección física:
 
 - **Geometría y atributos catastrales** (`Catastro INSPIRE
-  Buildings 46900`): año de construcción, número de plantas, número de
-  viviendas, uso (`currentUse`).
+ Buildings 46900`): año de construcción, número de plantas, número de
+ viviendas, uso (`currentUse`).
 - **Geometría territorial** (`barris.geojson`): asignación a barrio.
 - **Vulnerabilidad social del barrio** (`vulnerabilitat_barris.geojson`):
-  índice 2021 publicado por el Ajuntament.
+ índice 2021 publicado por el Ajuntament.
 - **Equipamientos sensibles cercanos** (residencias, hospitales,
-  centros educativos, ya descargados): proximidad < 200 m amplifica el
-  impacto.
+ centros educativos, ya descargados): proximidad < 200 m amplifica el
+ impacto.
 - **Infraestructura de respuesta** (hidrantes municipales, fites bombers,
-  parques de bomberos): distancia a cada uno.
+ parques de bomberos): distancia a cada uno.
 
 ### 2.2 Paramétricas (las decide la persona usuaria)
 
@@ -47,17 +47,17 @@ Los datos críticos que **no son abiertos** y por buenas razones
 (privacidad, seguridad):
 
 - **Tipo de fachada**: ladrillo · mortero · vidrio · composite con
-  cumplimiento CTE · composite con núcleo combustible tipo ACM-PE
-  (el caso Campanar).
+ cumplimiento CTE · composite con núcleo combustible tipo ACM-PE
+ (el caso Campanar).
 - **Estado de la ITE**: favorable · pendiente · desfavorable.
 - **Sistemas de protección contra incendios (SCI)**: completo
-  (rociadores + detección + columna seca) · parcial · solo extintores ·
-  ninguno.
+ (rociadores + detección + columna seca) · parcial · solo extintores ·
+ ninguno.
 - **Estado de la cubierta**: tradicional · mixto · combustible.
 - **Hora del incidente**: franja horaria de 0-23 (afecta al tiempo de
-  respuesta de los bomberos por el tráfico).
+ respuesta de los bomberos por el tráfico).
 - **Saturación del parque más cercano**: libre · ocupado en otra
-  intervención (en ese caso el segundo parque más cercano).
+ intervención (en ese caso el segundo parque más cercano).
 
 El producto **no almacena** las hipótesis de la persona usuaria sobre
 edificios concretos. La simulación es local y efímera (criterio ético).
@@ -89,7 +89,7 @@ Combinación interna (pesos a refinar tras pruebas):
 
 ```
 V_intrínseca = 0.10·V_edad + 0.15·V_altura + 0.30·V_fachada
-             + 0.15·V_ITE  + 0.20·V_SCI    + 0.10·V_cubierta
+ + 0.15·V_ITE + 0.20·V_SCI + 0.10·V_cubierta
 ```
 
 **Por qué la fachada pesa 30 %**: la investigación post-Campanar
@@ -144,30 +144,30 @@ El tiempo de llegada estimado a un edificio se calcula así:
 
 ```
 T_llegada(edificio, hora, escenario_saturación) =
-    T_movilización
-    + ( D_ruta(edificio, parque_efectivo) / V_efectiva(hora) )
+ T_movilización
+ + ( D_ruta(edificio, parque_efectivo) / V_efectiva(hora) )
 ```
 
 con:
 
 - **`T_movilización`** = 1,0 min (tiempo entre la alerta y la salida
-  del vehículo, valor estándar para parques municipales urbanos).
+ del vehículo, valor estándar para parques municipales urbanos).
 - **`D_ruta`** = distancia por la red viaria desde el parque al
-  edificio. Aproximación inicial: distancia euclidiana × 1,3
-  (factor de tortuosidad típico de retículas urbanas mediterráneas).
-  Refinamiento posterior con `velocitat_carrers` + grafo de calles.
+ edificio. Aproximación inicial: distancia euclidiana × 1,3
+ (factor de tortuosidad típico de retículas urbanas mediterráneas).
+ Refinamiento posterior con `velocitat_carrers` + grafo de calles.
 - **`V_efectiva(hora)`** = velocidad media de los vehículos de
-  emergencia a esa hora. Punto de partida:
-  - Madrugada 00-06: 60 km/h
-  - Hora punta mañana 07-09: 30 km/h
-  - Mañana 10-13: 45 km/h
-  - Mediodía 14-15: 40 km/h
-  - Tarde 16-18: 40 km/h
-  - Hora punta tarde 19-20: 30 km/h
-  - Noche 21-23: 50 km/h
+ emergencia a esa hora. Punto de partida:
+ - Madrugada 00-06: 60 km/h
+ - Hora punta mañana 07-09: 30 km/h
+ - Mañana 10-13: 45 km/h
+ - Mediodía 14-15: 40 km/h
+ - Tarde 16-18: 40 km/h
+ - Hora punta tarde 19-20: 30 km/h
+ - Noche 21-23: 50 km/h
 - **`parque_efectivo`** = el parque de bomberos más cercano salvo que
-  el escenario marque saturación, en cuyo caso el segundo más
-  cercano. Si el segundo también está saturado, el tercero.
+ el escenario marque saturación, en cuyo caso el segundo más
+ cercano. Si el segundo también está saturado, el tercero.
 
 #### 3.3.2 Mapeo tiempo → puntuación de riesgo
 
@@ -198,13 +198,13 @@ Riesgo = 0.45·V_intrínseca + 0.30·E_exposición + 0.25·R_respuesta
 Justificación:
 
 - **V_intrínseca 45 %**: la causa material es lo que enciende y
-  propaga. Sin V_intrínseca alta, los otros factores son irrelevantes
-  (no hay incendio).
+ propaga. Sin V_intrínseca alta, los otros factores son irrelevantes
+ (no hay incendio).
 - **E_exposición 30 %**: importante para la política pública
-  (priorizar inspección en zonas con mayor impacto humano) pero
-  secundario respecto al edificio.
+ (priorizar inspección en zonas con mayor impacto humano) pero
+ secundario respecto al edificio.
 - **R_respuesta 25 %**: factor modulador. No "crea" el incendio pero
-  determina su gravedad final.
+ determina su gravedad final.
 
 ### Régimen «fachada crítica»
 
@@ -226,12 +226,12 @@ envuelta de arriba a abajo antes de que pudieran establecer un perímetro.
 En este régimen:
 
 - la respuesta deja de ser un atenuador eficaz (peso baja del 25 % al
-  5 %);
+ 5 %);
 - la exposición poblacional sigue importando porque determina las
-  víctimas, pero cede peso a la vulnerabilidad estructural (del 30 %
-  al 20 %);
+ víctimas, pero cede peso a la vulnerabilidad estructural (del 30 %
+ al 20 %);
 - la vulnerabilidad intrínseca pasa a ser el factor dominante (45 %
-  → 75 %).
+ → 75 %).
 
 Esta regla es **explícita y única** del modelo: un único «interruptor»
 documentado, no una colección de casos especiales ad hoc. El régimen
@@ -250,13 +250,13 @@ El frontend ofrecerá **tres escenarios pre-configurados** además del
 modo manual:
 
 1. **"Edificio Campanar"** · 14 plantas · 2006 · fachada
-   composite-ACM-PE · SCI parcial · ITE pendiente · cubierta mixta ·
-   parque más cercano libre · 18:00 (hora real del incidente).
+ composite-ACM-PE · SCI parcial · ITE pendiente · cubierta mixta ·
+ parque más cercano libre · 18:00 (hora real del incidente).
 2. **"Edificio histórico Carmen"** · 5 plantas · 1920 · fachada
-   ladrillo · sin SCI · ITE pendiente · cubierta combustible (madera) ·
-   acceso por vía estrecha · 03:00 (hora baja).
+ ladrillo · sin SCI · ITE pendiente · cubierta combustible (madera) ·
+ acceso por vía estrecha · 03:00 (hora baja).
 3. **"Edificio nuevo Quatre Carreres"** · 8 plantas · 2020 · fachada
-   cumple CTE · SCI completo · ITE favorable · 09:00 (hora punta).
+ cumple CTE · SCI completo · ITE favorable · 09:00 (hora punta).
 
 El objetivo es que la persona usuaria compare estos tres anclajes y
 después juegue con los parámetros para ver el efecto de cada decisión
@@ -267,49 +267,49 @@ constructiva o de mantenimiento.
 El modelo se validará en cuatro direcciones:
 
 1. **Test del caso Campanar**: con los parámetros del incidente real,
-   el modelo debe arrojar un riesgo `≥ 80`. Esto significa que cae en
-   el quintil superior de la escala. No exigimos `= 100` porque un
-   edificio con fachada ACM-PE Y sin ningún sistema SCI Y con ITE
-   desfavorable Y en zona ultra-vulnerable representa un caso aún
-   peor; la escala debe dejar margen para distinguir los dos.
+ el modelo debe arrojar un riesgo `≥ 80`. Esto significa que cae en
+ el quintil superior de la escala. No exigimos `= 100` porque un
+ edificio con fachada ACM-PE Y sin ningún sistema SCI Y con ITE
+ desfavorable Y en zona ultra-vulnerable representa un caso aún
+ peor; la escala debe dejar margen para distinguir los dos.
 2. **Test de sensibilidad a la fachada**: un edificio idéntico al de
-   Campanar pero con fachada de ladrillo debe arrojar al menos
-   **30 % menos de riesgo**. Esto demuestra que la variable más crítica
-   del modelo (la fachada) realmente domina cuando se activa.
+ Campanar pero con fachada de ladrillo debe arrojar al menos
+ **30 % menos de riesgo**. Esto demuestra que la variable más crítica
+ del modelo (la fachada) realmente domina cuando se activa.
 3. **Sanidad por barrio**: la distribución de riesgos medios por
-   barrio debe correlacionar (Pearson > 0,5) con el índice de
-   vulnerabilidad publicado por el Ajuntament, manteniendo todos los
-   parámetros constantes en su valor «intermedio».
+ barrio debe correlacionar (Pearson > 0,5) con el índice de
+ vulnerabilidad publicado por el Ajuntament, manteniendo todos los
+ parámetros constantes en su valor «intermedio».
 4. **Sanidad por hora**: para un edificio **lejano** del parque más
-   cercano (distancia euclidiana ≥ 3 km), el riesgo en hora punta
-   (08:00 o 20:00) debe ser estrictamente mayor que en madrugada
-   (04:00). Para edificios próximos a un parque, ambos tiempos pueden
-   caer bajo el umbral mínimo (`≤ 4 min`) y la hora deja de discriminar
-   — esto es realista: cerca del parque la respuesta es robusta a la
-   hora del día. Bajo régimen de fachada crítica, esta sensibilidad es
-   pequeña en cualquier caso porque la respuesta pesa solo el 5 %.
+ cercano (distancia euclidiana ≥ 3 km), el riesgo en hora punta
+ (08:00 o 20:00) debe ser estrictamente mayor que en madrugada
+ (04:00). Para edificios próximos a un parque, ambos tiempos pueden
+ caer bajo el umbral mínimo (`≤ 4 min`) y la hora deja de discriminar
+ — esto es realista: cerca del parque la respuesta es robusta a la
+ hora del día. Bajo régimen de fachada crítica, esta sensibilidad es
+ pequeña en cualquier caso porque la respuesta pesa solo el 5 %.
 
 Los tres tests viven en `tests/test_modelo.py` (pendiente).
 
 ## 7. Limitaciones que el jurado debe conocer
 
 - **No es un dictamen técnico** para edificios concretos. Es una
-  herramienta educativa y de priorización política. Cualquier decisión
-  jurídica o de inspección debe basarse en peritaje físico.
+ herramienta educativa y de priorización política. Cualquier decisión
+ jurídica o de inspección debe basarse en peritaje físico.
 - **Los pesos son arbitrarios** en su valor concreto, aunque
-  justificados en su orden de magnitud. Refinarlos requeriría
-  estadísticas históricas de siniestros que no son públicas.
+ justificados en su orden de magnitud. Refinarlos requeriría
+ estadísticas históricas de siniestros que no son públicas.
 - **La velocidad por hora del día** es una heurística, no un dato
-  medido. La modelización detallada requeriría datos reales de
-  movilidad por hora (`velocitat_carrers` solo da velocidad
-  nominal por tramo, no por franja horaria).
+ medido. La modelización detallada requeriría datos reales de
+ movilidad por hora (`velocitat_carrers` solo da velocidad
+ nominal por tramo, no por franja horaria).
 - **No se modeliza** el viento, la temperatura ambiente, ni la
-  hidráulica de la red contra incendios (presión, caudal). Son
-  factores reales pero los datos abiertos no permiten introducirlos
-  sin inventárselos.
+ hidráulica de la red contra incendios (presión, caudal). Son
+ factores reales pero los datos abiertos no permiten introducirlos
+ sin inventárselos.
 - **El usuario no puede consultar el modelo sobre edificios concretos
-  "qué fachada tiene"**. El producto no etiqueta edificios reales;
-  solo permite explorar el espacio de escenarios.
+ "qué fachada tiene"**. El producto no etiqueta edificios reales;
+ solo permite explorar el espacio de escenarios.
 
 ## 8. Extensiones derivadas del modelo (v0.2.1)
 
@@ -341,11 +341,11 @@ Para cualquier edificio, el modelo estima el despliegue de bomberos
 necesario en caso de incendio:
 
 - **Dotaciones y efectivos** según altura (1 dotación ≤ 3 plantas,
-  hasta 4-5 si fachada combustible + altura > 14).
+ hasta 4-5 si fachada combustible + altura > 14).
 - **Vehículos**: BUL, BUP, autoescala, UEMSV, refuerzo provincial.
 - **Caudal hidráulico**: 500 L/min por dotación + 30 % de reserva.
 - **Tiempo estimado de contención**: 8 min base + 4 min por planta
-  > 5, duplicado si fachada combustible (aprendizaje de Campanar).
+ > 5, duplicado si fachada combustible (aprendizaje de Campanar).
 - **Radio de evacuación inmediata**: 50-100 m según altura.
 - **Radio del perímetro operativo**: el doble del de evacuación.
 

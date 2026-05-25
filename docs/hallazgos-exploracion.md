@@ -15,25 +15,25 @@ de València bajo licencia CC BY 4.0.
 
 - **Dataset**: `hidrants-per-als-bombers`
 - **Endpoint estable (GeoJSON)**:
-  `https://geoportal.valencia.es/server/rest/services/OPENDATA/UrbanismoEInfraestructuras/MapServer/222/query?where=1=1&outFields=*&f=geojson`
+ `https://geoportal.valencia.es/server/rest/services/OPENDATA/UrbanismoEInfraestructuras/MapServer/222/query?where=1=1&outFields=*&f=geojson`
 - **Última actualización portal**: 2026-02-19
 - **Volumen esperado**: ~1.923 hidrantes municipales según
-  documentación previa.
+ documentación previa.
 - **Uso en el modelo**: factor "distancia al hidrante más cercano".
-  Cuanto mayor la distancia, mayor el riesgo de propagación una vez
-  iniciado el incendio.
+ Cuanto mayor la distancia, mayor el riesgo de propagación una vez
+ iniciado el incendio.
 
 ### 1.2 Fites Bombers (postes flexibles)
 
 - **Dataset**: `fites-bombers-hitos-bomberos`
 - **Endpoint estable (GeoJSON)**:
-  `https://geoportal.valencia.es/server/rest/services/OPENDATA/Trafico/MapServer/239/query?where=1=1&outFields=*&f=geojson`
+ `https://geoportal.valencia.es/server/rest/services/OPENDATA/Trafico/MapServer/239/query?where=1=1&outFields=*&f=geojson`
 - **Última actualización portal**: 2026-02-18
 - **Descripción**: postes de material elastómero que flexionan 90º
-  para permitir el paso de vehículos de bomberos a calles
-  semipeatonalizadas.
+ para permitir el paso de vehículos de bomberos a calles
+ semipeatonalizadas.
 - **Uso en el modelo**: marcador de calles preparadas para acceso de
-  emergencia; complementario al análisis de tiempo de respuesta.
+ emergencia; complementario al análisis de tiempo de respuesta.
 
 ## 2. Ausencia significativa · parques de bomberos
 
@@ -41,16 +41,16 @@ de València bajo licencia CC BY 4.0.
 parques de bomberos de València.** Comprobado en dos sentidos:
 
 1. El filtrado por keywords (`bomber|incendi|emergència|protecció civil`)
-   solo devuelve hidrantes y fites; ningún punto de servicio.
+ solo devuelve hidrantes y fites; ningún punto de servicio.
 2. El dataset `equipamients-municipals-equipamientos-municipales`
-   tiene 2.915 puntos clasificados en 19 categorías (`clase`):
-   `Bienestar Social`, `Instalaciones educativas`, `Instalaciones
-   sanitarias`, `Policía`, `Bibliotecas`, `Mercados`, `Museos`,
-   `Centros juveniles`, `Oficinas municipales`, `Puntos de venta EMT`,
-   `Teatros`, `Archivos`, `Alojamiento`, `Correos`, `Oficina
-   información turística`, `Zonas de escolarización`, `Sin clase Mapa`,
-   `invisible`, e `Instalaciones deportivas`. **Ninguna clase corresponde
-   a parques de bomberos.**
+ tiene 2.915 puntos clasificados en 19 categorías (`clase`):
+ `Bienestar Social`, `Instalaciones educativas`, `Instalaciones
+ sanitarias`, `Policía`, `Bibliotecas`, `Mercados`, `Museos`,
+ `Centros juveniles`, `Oficinas municipales`, `Puntos de venta EMT`,
+ `Teatros`, `Archivos`, `Alojamiento`, `Correos`, `Oficina
+ información turística`, `Zonas de escolarización`, `Sin clase Mapa`,
+ `invisible`, e `Instalaciones deportivas`. **Ninguna clase corresponde
+ a parques de bomberos.**
 
 ### Decisión metodológica
 
@@ -109,14 +109,14 @@ descargar ambos y deduplicar por coordenadas.
 ## 5. Limitaciones reconocidas del catálogo
 
 - **No hay tiempo de respuesta histórico** de los bomberos a
-  intervenciones. Solo el dataset `Número de incidències` (`is_sct_230307`,
-  formato CSV) pero su contexto no se ha verificado.
+ intervenciones. Solo el dataset `Número de incidències` (`is_sct_230307`,
+ formato CSV) pero su contexto no se ha verificado.
 - **No hay padrón a nivel manzana** ni a nivel edificio. La densidad
-  poblacional se estimará desde Catastro INSPIRE (`numberOfDwellings`)
-  con el factor 2,4 hab/vivienda (INE Encuesta Continua de Hogares
-  València 2021).
+ poblacional se estimará desde Catastro INSPIRE (`numberOfDwellings`)
+ con el factor 2,4 hab/vivienda (INE Encuesta Continua de Hogares
+ València 2021).
 - **No hay datos de ITE** (Inspección Técnica de Edificios) abiertos.
-  Es el motivo principal de pasar a un modelo paramétrico donde la
-  persona usuaria propone el escenario "ITE realizada / pendiente".
+ Es el motivo principal de pasar a un modelo paramétrico donde la
+ persona usuaria propone el escenario "ITE realizada / pendiente".
 - **No hay materiales de fachada** abiertos. Igual que ITE, entra como
-  variable paramétrica.
+ variable paramétrica.

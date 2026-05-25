@@ -31,13 +31,13 @@ _2 datasets._
 - Organización: Ajuntament de València
 - Última actualización: 2026-02-19
 - Licencia: cc-by
-- Descripción: Xarxa d'hidrants de protecció contra incendis.    Font: Geoportal https://geoportal.valencia.es/apps/GeoportalHome/es/inicio/geodatos-abiertos  
+- Descripción: Xarxa d'hidrants de protecció contra incendis. Font: Geoportal https://geoportal.valencia.es/apps/GeoportalHome/es/inicio/geodatos-abiertos  
 - Recursos (5):
-  - **JSON** Hidrants per als bombers — <https://geoportal.valencia.es/server/rest/services/OPENDATA/UrbanismoEInfraestructuras/MapServer/222/query?where=1=1&outFields=*&f=json>
-  - **HTML** Hidrants per als bombers — <https://geoportal.valencia.es/server/rest/services/OPENDATA/UrbanismoEInfraestructuras/MapServer/222/query?where=1=1&outFields=*&f=html>
-  - **KMZ** Hidrants per als bombers — <https://geoportal.valencia.es/server/rest/services/OPENDATA/UrbanismoEInfraestructuras/MapServer/222/query?where=1=1&outFields=*&f=kmz>
-  - **GeoJSON** Hidrants per als bombers — <https://geoportal.valencia.es/server/rest/services/OPENDATA/UrbanismoEInfraestructuras/MapServer/222/query?where=1=1&outFields=*&f=geojson>
-  - **pbf** Hidrants per als bombers — <https://geoportal.valencia.es/server/rest/services/OPENDATA/UrbanismoEInfraestructuras/MapServer/222/query?where=1=1&outFields=*&f=pbf>
+ - **JSON** Hidrants per als bombers — <https://geoportal.valencia.es/server/rest/services/OPENDATA/UrbanismoEInfraestructuras/MapServer/222/query?where=1=1&outFields=*&f=json>
+ - **HTML** Hidrants per als bombers — <https://geoportal.valencia.es/server/rest/services/OPENDATA/UrbanismoEInfraestructuras/MapServer/222/query?where=1=1&outFields=*&f=html>
+ - **KMZ** Hidrants per als bombers — <https://geoportal.valencia.es/server/rest/services/OPENDATA/UrbanismoEInfraestructuras/MapServer/222/query?where=1=1&outFields=*&f=kmz>
+ - **GeoJSON** Hidrants per als bombers — <https://geoportal.valencia.es/server/rest/services/OPENDATA/UrbanismoEInfraestructuras/MapServer/222/query?where=1=1&outFields=*&f=geojson>
+ - **pbf** Hidrants per als bombers — <https://geoportal.valencia.es/server/rest/services/OPENDATA/UrbanismoEInfraestructuras/MapServer/222/query?where=1=1&outFields=*&f=pbf>
 
 #### Fites Bombers
 
@@ -47,11 +47,11 @@ _2 datasets._
 - Licencia: cc-by
 - Descripción: Fites de material elastòmer que flexionen 90º per a l'accés de vehicles de bombers. 
 - Recursos (5):
-  - **JSON** Fites Bombers — <https://geoportal.valencia.es/server/rest/services/OPENDATA/Trafico/MapServer/239/query?where=1=1&outFields=*&f=json>
-  - **HTML** Fites Bombers — <https://geoportal.valencia.es/server/rest/services/OPENDATA/Trafico/MapServer/239/query?where=1=1&outFields=*&f=html>
-  - **KMZ** Fites Bombers — <https://geoportal.valencia.es/server/rest/services/OPENDATA/Trafico/MapServer/239/query?where=1=1&outFields=*&f=kmz>
-  - **GeoJSON** Fites Bombers — <https://geoportal.valencia.es/server/rest/services/OPENDATA/Trafico/MapServer/239/query?where=1=1&outFields=*&f=geojson>
-  - **pbf** Fites Bombers — <https://geoportal.valencia.es/server/rest/services/OPENDATA/Trafico/MapServer/239/query?where=1=1&outFields=*&f=pbf>
+ - **JSON** Fites Bombers — <https://geoportal.valencia.es/server/rest/services/OPENDATA/Trafico/MapServer/239/query?where=1=1&outFields=*&f=json>
+ - **HTML** Fites Bombers — <https://geoportal.valencia.es/server/rest/services/OPENDATA/Trafico/MapServer/239/query?where=1=1&outFields=*&f=html>
+ - **KMZ** Fites Bombers — <https://geoportal.valencia.es/server/rest/services/OPENDATA/Trafico/MapServer/239/query?where=1=1&outFields=*&f=kmz>
+ - **GeoJSON** Fites Bombers — <https://geoportal.valencia.es/server/rest/services/OPENDATA/Trafico/MapServer/239/query?where=1=1&outFields=*&f=geojson>
+ - **pbf** Fites Bombers — <https://geoportal.valencia.es/server/rest/services/OPENDATA/Trafico/MapServer/239/query?where=1=1&outFields=*&f=pbf>
 
 
 ## Vulnerabilidad social y riesgo

@@ -12,19 +12,19 @@ Licencia de los datos derivados: **CC BY 4.0**.
 ## Procedimiento
 
 1. **Listado de parques operativos** obtenido de la página oficial
-   <https://www.valencia.es/cas/bomberos/parques/>.
+ <https://www.valencia.es/cas/bomberos/parques/>.
 2. **Dirección postal canónica** de cada parque obtenida de la ficha
-   correspondiente del directorio Infociudad municipal
-   (`valencia.es/-/infociudad-parque-...`).
+ correspondiente del directorio Infociudad municipal
+ (`valencia.es/-/infociudad-parque-...`).
 3. **Verificación cruzada** con Páginas Amarillas y, donde aplica,
-   con el foro corporativo Foro-Bomberos.
+ con el foro corporativo Foro-Bomberos.
 4. **Geocodificación** con Nominatim de OpenStreetMap (API pública
-   gratuita, política de 1 petición por segundo respetada).
+ gratuita, política de 1 petición por segundo respetada).
 5. **Coordenadas de respaldo** verificadas en el mapa oficial del
-   Ajuntament para los casos en que Nominatim devuelve algo fuera del
-   término municipal o no encuentra resultado. La columna
-   `fuente_coordenadas` del GeoJSON indica para cada parque cuál se
-   usó.
+ Ajuntament para los casos en que Nominatim devuelve algo fuera del
+ término municipal o no encuentra resultado. La columna
+ `fuente_coordenadas` del GeoJSON indica para cada parque cuál se
+ usó.
 
 ## Detalle por parque
 
@@ -43,12 +43,12 @@ Cuerpo operativo: **Servei de Prevenció, Extinció d'Incendis i Salvament
 ## Lo que NO está incluido
 
 - **Servicios Generales** (parque administrativo / logística). Es una
-  instalación de soporte sin operativa de respuesta a incendios.
+ instalación de soporte sin operativa de respuesta a incendios.
 - **Parques del Consorcio Provincial de Bombers de València** que estén
-  fuera del término municipal. Son competencia provincial y atienden a
-  los municipios de la provincia, no a la ciudad de València. Sus
-  parques sí pueden cubrir reservas, pero el SPEIS municipal es el
-  servicio primario dentro de la ciudad.
+ fuera del término municipal. Son competencia provincial y atienden a
+ los municipios de la provincia, no a la ciudad de València. Sus
+ parques sí pueden cubrir reservas, pero el SPEIS municipal es el
+ servicio primario dentro de la ciudad.
 
 ## Versionado de la capa
 

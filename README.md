@@ -3,7 +3,7 @@
 > **¿Cuál es el riesgo de incendio de tu edificio?**  
 > Atlas paramétrico de València con datos abiertos.
 >
-> 🌐 **Atlas público**: <https://cendra.pages.dev>
+> **Atlas público**: <https://cendra.pages.dev>
 
 Proyecto para la **IV Convocatoria de Premios para proyectos de datos
 abiertos y periodismo de datos del Ajuntament de València (2026)**,
@@ -37,29 +37,29 @@ la ciudadanía para entender el problema.
 Atlas web interactivo con tres capas combinadas:
 
 1. **Mapa de edificios con factores conocidos** del Catastro:
-   altura, año de construcción, uso, geometría 3D, densidad
-   poblacional residencial estimada.
+ altura, año de construcción, uso, geometría 3D, densidad
+ poblacional residencial estimada.
 2. **Calculadora de escenarios paramétricos**: la persona usuaria
-   puede introducir hipótesis sobre el edificio (tipo de fachada,
-   sistema SCI, estado ITE) y la herramienta calcula el índice de
-   riesgo resultante. El modelo está documentado y es auditable.
+ puede introducir hipótesis sobre el edificio (tipo de fachada,
+ sistema SCI, estado ITE) y la herramienta calcula el índice de
+ riesgo resultante. El modelo está documentado y es auditable.
 3. **Mapa de respuesta de bomberos**: tiempo de llegada estimado
-   desde el parque más cercano, ubicación de los hidrantes
-   municipales, equipamientos sensibles (residencias de mayores,
-   centros sanitarios y escolares).
+ desde el parque más cercano, ubicación de los hidrantes
+ municipales, equipamientos sensibles (residencias de mayores,
+ centros sanitarios y escolares).
 
 ## Estructura
 
 ```
 cendraVLC/
 ├── data/
-│   ├── raw/           # descargas crudas del portal (CKAN)
-│   ├── processed/     # derivados del análisis (CSV, GPKG)
-│   └── external/      # Catastro INSPIRE, fuentes externas
-├── scripts/           # pipelines reproducibles
-├── docs/              # metodología, fuentes, memoria Anexo II
-├── notebooks/         # análisis exploratorios
-└── web/               # frontend desplegable estático
+│ ├── raw/ # descargas crudas del portal (CKAN)
+│ ├── processed/ # derivados del análisis (CSV, GPKG)
+│ └── external/ # Catastro INSPIRE, fuentes externas
+├── scripts/ # pipelines reproducibles
+├── docs/ # metodología, fuentes, memoria Anexo II
+├── notebooks/ # análisis exploratorios
+└── web/ # frontend desplegable estático
 ```
 
 ## Estado de los datos
@@ -68,22 +68,22 @@ Inventario completo y trazable en [`docs/inventario-datos.md`](docs/inventario-d
 
 | Pieza | Estado |
 |---|---|
-| Volcado del catálogo CKAN | ✅ 294 datasets descargados (`data/raw/ckan_*.json`) |
-| Inventario de fuentes relevantes | ✅ [`docs/fuentes-encontradas.md`](docs/fuentes-encontradas.md), 130 datasets clasificados |
-| Hallazgos de la exploración | ✅ [`docs/hallazgos-exploracion.md`](docs/hallazgos-exploracion.md) |
-| 10 capas geoespaciales del portal | ✅ descargadas (hidrantes, fites bombers, barris, equipamientos, mayores, área prioridad residencial, vulnerabilidad, hospitales, centros educativos, manzanas) |
-| Parques de bomberos | ✅ capa propia con 6 parques del SPEIS verificados ([`data/raw/parques_bomberos.geojson`](data/raw/parques_bomberos.geojson) + [`FUENTES.md`](data/raw/parques_bomberos_FUENTES.md)) |
-| Catastro INSPIRE Buildings 46900 | ✅ descargado (~163 MB ZIP, 3 GML descomprimidos) |
-| Edificios 3D | ✅ procesado: 214.000 edificios con altura (media 13,1 m, máx 108 m) |
-| Viviendas por barrio | ✅ procesado: 88 barrios, 1.012.050 hab estimados ([`data/processed/viviendas_por_barrio.csv`](data/processed/viviendas_por_barrio.csv)) |
-| Modelo paramétrico de riesgo v0.2.1 | ✅ diseñado e implementado ([`docs/modelo-riesgo.md`](docs/modelo-riesgo.md) · [`scripts/calcular_riesgo.py`](scripts/calcular_riesgo.py)) con cortes normativos, motor de recomendaciones, banda de confianza y plan de respuesta operativa del SPEIS |
-| Tests automatizados | ✅ 28 tests en [`tests/`](tests/) (escenarios canónicos, sensibilidades, sincronía Python↔JS) |
-| Validación y auditoría de datos | ✅ ([`docs/validacion-datos.md`](docs/validacion-datos.md) · [`scripts/validar_datos.py`](scripts/validar_datos.py)) |
-| Cálculo batch sobre los 214k edificios | ✅ ([`data/processed/riesgo_edificios.gpkg`](data/processed/riesgo_edificios.gpkg) · gpkg no versionado) + agregado por barrio ([`data/processed/riesgo_por_barrio.csv`](data/processed/riesgo_por_barrio.csv)) |
-| Frontend web interactivo | ✅ ([`web/`](web/) · HTML + MapLibre + modelo en JS + calculadora paramétrica + capa de los 2.000 edificios de mayor riesgo) |
-| Memoria Anexo II del concurso | ✅ ([`docs/memoria/anexo-ii.md`](docs/memoria/anexo-ii.md)) |
-| Configuración de despliegue público | ✅ ([`docs/despliegue.md`](docs/despliegue.md)) |
-| Despliegue efectivo | ✅ <https://cendra.pages.dev> (Cloudflare Pages, despliegue continuo desde `main`) |
+| Volcado del catálogo CKAN | 294 datasets descargados (`data/raw/ckan_*.json`) |
+| Inventario de fuentes relevantes | [`docs/fuentes-encontradas.md`](docs/fuentes-encontradas.md), 130 datasets clasificados |
+| Hallazgos de la exploración | [`docs/hallazgos-exploracion.md`](docs/hallazgos-exploracion.md) |
+| 10 capas geoespaciales del portal | descargadas (hidrantes, fites bombers, barris, equipamientos, mayores, área prioridad residencial, vulnerabilidad, hospitales, centros educativos, manzanas) |
+| Parques de bomberos | capa propia con 6 parques del SPEIS verificados ([`data/raw/parques_bomberos.geojson`](data/raw/parques_bomberos.geojson) + [`FUENTES.md`](data/raw/parques_bomberos_FUENTES.md)) |
+| Catastro INSPIRE Buildings 46900 | descargado (~163 MB ZIP, 3 GML descomprimidos) |
+| Edificios 3D | procesado: 214.000 edificios con altura (media 13,1 m, máx 108 m) |
+| Viviendas por barrio | procesado: 88 barrios, 1.012.050 hab estimados ([`data/processed/viviendas_por_barrio.csv`](data/processed/viviendas_por_barrio.csv)) |
+| Modelo paramétrico de riesgo v0.2.1 | diseñado e implementado ([`docs/modelo-riesgo.md`](docs/modelo-riesgo.md) · [`scripts/calcular_riesgo.py`](scripts/calcular_riesgo.py)) con cortes normativos, motor de recomendaciones, banda de confianza y plan de respuesta operativa del SPEIS |
+| Tests automatizados | 28 tests en [`tests/`](tests/) (escenarios canónicos, sensibilidades, sincronía Python↔JS) |
+| Validación y auditoría de datos | ([`docs/validacion-datos.md`](docs/validacion-datos.md) · [`scripts/validar_datos.py`](scripts/validar_datos.py)) |
+| Cálculo batch sobre los 214k edificios | ([`data/processed/riesgo_edificios.gpkg`](data/processed/riesgo_edificios.gpkg) · gpkg no versionado) + agregado por barrio ([`data/processed/riesgo_por_barrio.csv`](data/processed/riesgo_por_barrio.csv)) |
+| Frontend web interactivo | ([`web/`](web/) · HTML + MapLibre + modelo en JS + calculadora paramétrica + capa de los 2.000 edificios de mayor riesgo) |
+| Memoria Anexo II del concurso | ([`docs/memoria/anexo-ii.md`](docs/memoria/anexo-ii.md)) |
+| Configuración de despliegue público | ([`docs/despliegue.md`](docs/despliegue.md)) |
+| Despliegue efectivo | <https://cendra.pages.dev> (Cloudflare Pages, despliegue continuo desde `main`) |
 
 Las descargas grandes (`data/raw/large/`, `data/external/`) no se
 versionan: están en `.gitignore`. Cualquier persona puede reproducir
@@ -134,8 +134,8 @@ python scripts/calcular_riesgo.py --todos-escenarios
 
 # Parámetros libres
 python scripts/calcular_riesgo.py --plantas 14 --anio 2006 \
-    --lon -0.398 --lat 39.485 --fachada composite-acmpe \
-    --ite pendiente --sci parcial --cubierta mixto --hora 18
+ --lon -0.398 --lat 39.485 --fachada composite-acmpe \
+ --ite pendiente --sci parcial --cubierta mixto --hora 18
 ```
 
 Desde el frontend la calculadora es reactiva: se hace clic en un
@@ -159,6 +159,6 @@ Proyecto en arranque · 2026-05-14.
 
 - Código bajo MIT (`LICENSE`).
 - Datos derivados publicados en `data/processed/` bajo CC BY 4.0,
-  citando como fuente los conjuntos del Ayuntamiento de València y de
-  la Dirección General del Catastro.
+ citando como fuente los conjuntos del Ayuntamiento de València y de
+ la Dirección General del Catastro.
 - Visualizaciones y memoria (`docs/memoria/`) bajo CC BY 4.0.

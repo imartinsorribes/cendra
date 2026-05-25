@@ -33,8 +33,8 @@ Se recalibra el factor empíricamente contra el padrón INE:
 
 ```
 factor = 791.413 hab / 421.687 viviendas catastradas
-       = 1,8769...
-       ≈ 1,88 hab / vivienda catastrada
+ = 1,8769...
+ ≈ 1,88 hab / vivienda catastrada
 ```
 
 Este es el factor que `extraer_viviendas.py` aplica desde ahora. La
@@ -73,12 +73,12 @@ algunos rascacielos puntuales. Los **2 edificios > 100 m** son partes
 catastrales (`localId` terminado en `_part##`) de torres reales:
 
 - **108 m / 36 plantas** y **105 m / 35 plantas** comparten el localId
-  base `7913901YJ2771D`, que corresponde al área de Av. de Francia /
-  Torres de Francia (Quatre Carreres). Cuadra con la documentación
-  pública: Torre de Francia I tiene 115 m / 33 plantas.
+ base `7913901YJ2771D`, que corresponde al área de Av. de Francia /
+ Torres de Francia (Quatre Carreres). Cuadra con la documentación
+ pública: Torre de Francia I tiene 115 m / 33 plantas.
 - **99-96 m / 32-33 plantas** con localId base `3551701YJ2735B` y
-  `3449301YJ2734G`, en zona de avenidas anchas con altura permitida
-  alta.
+ `3449301YJ2734G`, en zona de avenidas anchas con altura permitida
+ alta.
 
 No son errores: son los rascacielos reales de la ciudad.
 
@@ -112,13 +112,13 @@ a `(-0,50, 39,28, -0,20, 39,60)` para abarcar el término municipal
 completo (Pueblos del Sur al sur de la Albufera, Pueblos del Norte
 en Borbotó/Carpesa), desaparecen los falsos positivos previos:
 
-- `hidrants`: pasó de 9 fuera a 0 ✅
-- `barris`: pasó de 2 fuera a 0 ✅
+- `hidrants`: pasó de 9 fuera a 0
+- `barris`: pasó de 2 fuera a 0
 - `equipamientos`: pasó de 26 fuera a algunos pocos en quioscos
-  cerca del límite municipal (legítimos según el dataset)
+ cerca del límite municipal (legítimos según el dataset)
 - `manzanas_poblacion`: pasó de 30 fuera a 7 marginalmente fuera
-  (lat 39,2796 frente al corte 39,28 — 40 m de margen, son del
-  límite sur de Pinedo / El Saler)
+ (lat 39,2796 frente al corte 39,28 — 40 m de margen, son del
+ límite sur de Pinedo / El Saler)
 
 ### 3.4 Polígonos con topología inválida
 
@@ -133,7 +133,7 @@ no caen dentro de ningún polígono de `barris.geojson`. Razones probables:
 - Edificios justo en el borde administrativo (resolución de los polígonos).
 - Pequeñas zonas no asignadas (parcelas industriales o servidumbres).
 - Edificios en los límites con municipios vecinos (Mislata, Burjassot,
-  Alboraia).
+ Alboraia).
 
 Extrapolando al total: ~300 edificios de 214.000 sin barrio. Para el
 modelo agregado por barrio se ignorarán; para el modelo individual la
@@ -144,10 +144,10 @@ exposición.
 
 | Verificación | Resultado |
 |---|---|
-| Número de features | 6 (esperado: 6) ✅ |
-| Todos dentro del bbox del término | ✅ |
-| Direcciones verificadas en Infociudad | ✅ (ver `data/raw/parques_bomberos_FUENTES.md`) |
-| Coordenadas geocodificadas con Nominatim | ✅ |
+| Número de features | 6 (esperado: 6) |
+| Todos dentro del bbox del término |  |
+| Direcciones verificadas en Infociudad | (ver `data/raw/parques_bomberos_FUENTES.md`) |
+| Coordenadas geocodificadas con Nominatim |  |
 
 ## 5. Coherencia interna del modelo de riesgo
 
@@ -166,16 +166,16 @@ Repetidos tras la corrección de `extraer_viviendas.py`:
 
 | Test | Resultado |
 |---|---|
-| Campanar real ≥ 80 | **84,8** ✅ |
-| Sensibilidad fachada (Campanar real vs ladrillo) | **-60 %** (umbral ≥ 30 %) ✅ |
-| Sensibilidad horaria edificio lejano (Borbotó 4 h vs 8 h) | **28,4 → 34,9** ✅ |
-| Orden de escenarios canónicos | Campanar > Carmen > Quatre Carreres ✅ |
+| Campanar real ≥ 80 | **84,8** |
+| Sensibilidad fachada (Campanar real vs ladrillo) | **-60 %** (umbral ≥ 30 %) |
+| Sensibilidad horaria edificio lejano (Borbotó 4 h vs 8 h) | **28,4 → 34,9** |
+| Orden de escenarios canónicos | Campanar > Carmen > Quatre Carreres |
 
 ## 6. Conclusión
 
 - Un bug grave detectado y corregido (sobreestimación poblacional del
-  28 %, ahora dentro del 0,2 % del padrón oficial).
+ 28 %, ahora dentro del 0,2 % del padrón oficial).
 - Anomalías residuales documentadas y catalogadas como legítimas del
-  dataset original o como cosméticas.
+ dataset original o como cosméticas.
 - Modelo de riesgo coherente bajo edge cases y casos canónicos.
 - Validación reproducible con `python scripts/validar_datos.py`.

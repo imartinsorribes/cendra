@@ -14,19 +14,19 @@ Por qué encaja: gratis, despliegue continuo desde GitHub, dominio
 ### Pasos
 
 1. Acceder a <https://dash.cloudflare.com/?to=/:account/pages> y
-   pulsar **Create a project → Connect to Git**.
+ pulsar **Create a project → Connect to Git**.
 2. Conectar la cuenta de GitHub y elegir el repositorio
-   `imartinsorribes/cendra`.
+ `imartinsorribes/cendra`.
 3. En la configuración del proyecto:
-   - **Project name**: `cendra`
-   - **Production branch**: `main`
-   - **Build command**: _(dejar vacío)_
-   - **Build output directory**: `web`
-   - **Root directory**: `/`
+ - **Project name**: `cendra`
+ - **Production branch**: `main`
+ - **Build command**: _(dejar vacío)_
+ - **Build output directory**: `web`
+ - **Root directory**: `/`
 4. Pulsar **Save and Deploy**. Cloudflare hace el primer despliegue
-   en ~30 segundos y devuelve una URL del tipo
-   `https://cendra.pages.dev` (o `https://cendra-XX.pages.dev` si
-   ese subdominio está cogido).
+ en ~30 segundos y devuelve una URL del tipo
+ `https://cendra.pages.dev` (o `https://cendra-XX.pages.dev` si
+ ese subdominio está cogido).
 5. Cada `git push` a `main` lanza un nuevo despliegue automáticamente.
 
 Las cabeceras HTTP que Cloudflare aplica al servir el sitio están en
@@ -66,7 +66,7 @@ configurar GitHub Pages para servir desde `web/` en la rama `main`.
 2. **Source**: Deploy from a branch.
 3. **Branch**: `main` · **Folder**: `/web`.
 4. Save. GitHub publica el sitio en
-   `https://imartinsorribes.github.io/cendra/` en ~1 minuto.
+ `https://imartinsorribes.github.io/cendra/` en ~1 minuto.
 
 ## Opción C · Netlify
 
@@ -88,7 +88,7 @@ despliegue:
 - [ ] Al hacer zoom ≥ 13 aparecen los 2.000 edificios destacados.
 - [ ] La calculadora reacciona en vivo a cualquier cambio de slider.
 - [ ] Los tres botones de escenarios canónicos cargan parámetros y
-      mueven el mapa correctamente.
+ mueven el mapa correctamente.
 - [ ] La leyenda flotante de la esquina inferior izquierda es legible.
 - [ ] En móvil el panel pasa a apilado sobre el mapa.
 
