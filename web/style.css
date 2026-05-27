@@ -631,21 +631,34 @@ footer a {
 }
 footer a:hover { text-decoration: underline; }
 
-/* Responsive: en móvil, panel sobre el mapa */
+/* Responsive: en móvil panel sobre mapa, scroll natural de la página
+ * en lugar de dos áreas scrolleables independientes (que daba doble
+ * barra de scroll y hacía que el sticky del resultado se solapara
+ * con el mapa al sobresalir del panel). */
 @media (max-width: 800px) {
+  html, body { height: auto; }
   main {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr;
+    display: block;
     height: auto;
   }
   #panel {
-    max-height: 50vh;
+    max-height: none;
+    overflow: visible;
     border-right: none;
     border-bottom: 1px solid var(--linea);
   }
-  #mapa { min-height: 60vh; }
-  .resultado {
-    width: calc(100% - 2rem);
-    top: 0.5rem; right: 0.5rem; left: 0.5rem;
+  /* El cuadro de resultado deja de ser sticky en móvil y pierde el
+   * margen negativo para no salirse del panel. */
+  .resultado-panel {
+    position: static;
+    margin: 0 -1.25rem 1rem;
+    padding: 1rem 1.25rem 1.25rem;
+    border-bottom: 2px solid var(--brasa);
   }
+  #mapa-wrap {
+    height: 70vh;
+    min-height: 400px;
+    position: relative;
+  }
+  #mapa { width: 100%; height: 100%; }
 }
