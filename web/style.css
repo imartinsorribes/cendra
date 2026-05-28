@@ -56,24 +56,26 @@ main {
 }
 
 #panel {
-  background: var(--bg-panel);
+  background: var(--bg);
   border-right: 1px solid var(--linea);
   overflow-y: auto;
-  padding: 1rem 1.25rem;
+  padding: 1rem 1rem;
 }
 
 .bloque {
-  margin-bottom: 1.5rem;
-  padding-bottom: 1.25rem;
-  border-bottom: 1px solid var(--linea);
+  margin-bottom: 1.25rem;
+  padding: 0.85rem 1rem 1rem;
+  border: 1px solid var(--linea);
+  border-radius: 6px;
+  background: var(--bg-panel);
 }
-.bloque:last-child { border-bottom: none; }
+.bloque:last-child { margin-bottom: 0.5rem; }
 .bloque h2 {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--texto-suave);
-  margin: 0 0 0.5rem;
+  margin: 0 0 0.4rem;
   font-weight: 600;
 }
 .bloque .ayuda {
@@ -243,15 +245,19 @@ label > input[type="checkbox"] {
   height: 100%;
 }
 
-/* Bloque de resultado al TOP del panel — pieza más visible */
+/* Bloque de resultado al TOP del panel — pieza más visible.
+ * Antes era position: sticky con margen negativo, lo que causaba
+ * solapamientos visuales con los bloques siguientes al hacer scroll.
+ * Ahora es un bloque normal pero visualmente destacado con el borde
+ * brasa inferior y el fondo más claro. */
 .resultado-panel {
-  position: sticky;
-  top: 0;
   background: var(--bg-panel);
-  margin: -1rem -1.25rem 1rem;
-  padding: 0.9rem 1.25rem 1.1rem;
-  border-bottom: 2px solid var(--brasa);
-  z-index: 5;
+  margin: 0 0 1.25rem;
+  padding: 1rem 1rem 1.1rem;
+  border: 1px solid var(--linea);
+  border-bottom: 3px solid var(--brasa);
+  border-radius: 6px;
+  box-shadow: var(--sombra);
 }
 .titulo-resultado {
   margin: 0 0 0.15rem;
@@ -439,8 +445,8 @@ label > input[type="checkbox"] {
   line-height: 1.45;
 }
 
-/* Plan de respuesta operativa */
-.plan-respuesta { background: rgba(31, 79, 139, 0.04); border-radius: 6px; padding: 0.9rem 1rem; }
+/* Plan de respuesta operativa — color azul SPEIS para distinguirlo */
+.plan-respuesta { background: rgba(31, 79, 139, 0.04); border-color: rgba(31, 79, 139, 0.2); }
 .plan-respuesta h2 { color: var(--acento); }
 .plan-grid {
   display: grid;
@@ -647,14 +653,9 @@ footer a:hover { text-decoration: underline; }
     border-right: none;
     border-bottom: 1px solid var(--linea);
   }
-  /* El cuadro de resultado deja de ser sticky en móvil y pierde el
-   * margen negativo para no salirse del panel. */
-  .resultado-panel {
-    position: static;
-    margin: 0 -1.25rem 1rem;
-    padding: 1rem 1.25rem 1.25rem;
-    border-bottom: 2px solid var(--brasa);
-  }
+  /* En móvil el resultado mantiene el mismo estilo que desktop: bloque
+   * normal con borde brasa inferior. Sin sticky ni márgenes negativos. */
+  .resultado-panel { margin: 0 0 1rem; }
   #mapa-wrap {
     height: 70vh;
     min-height: 400px;
