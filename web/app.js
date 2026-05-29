@@ -31,6 +31,7 @@ const outputs = {
 const resultado = {
   total: document.getElementById('riesgo_total'),
   delta: document.getElementById('riesgo_delta'),
+  baseline: document.getElementById('baseline_val'),
   barra: document.getElementById('barra_relleno'),
   V: document.getElementById('V_val'),
   E: document.getElementById('E_val'),
@@ -395,21 +396,20 @@ function recalcular() {
   void resultado.total.offsetWidth;
   resultado.total.classList.add('pulsando');
 
-  // Delta respecto al BASELINE (lo que se calculó al cargar la página).
-  // Se mantiene visible hasta que la usuaria pulse «Resetear simulación»,
-  // así puede ver el efecto acumulado de varios cambios.
+  // Baseline: el primer riesgo calculado al cargar la página o tras un
+  // reset. El cambio acumulado del aside se compara contra esto.
   if (_riesgoBaseline === null) {
     _riesgoBaseline = r.riesgo_total;
+  }
+  resultado.baseline.textContent = _riesgoBaseline.toFixed(1);
+  const d = r.riesgo_total - _riesgoBaseline;
+  if (Math.abs(d) >= 0.1) {
+    resultado.delta.textContent = `${d > 0 ? '+' : '−'}${Math.abs(d).toFixed(1)}`;
+    resultado.delta.classList.toggle('up', d > 0);
+    resultado.delta.classList.toggle('down', d < 0);
   } else {
-    const d = r.riesgo_total - _riesgoBaseline;
-    if (Math.abs(d) >= 0.1) {
-      resultado.delta.textContent = `${d > 0 ? '+' : '−'}${Math.abs(d).toFixed(1)} vs inicio`;
-      resultado.delta.classList.toggle('up', d > 0);
-      resultado.delta.classList.toggle('down', d < 0);
-    } else {
-      resultado.delta.textContent = '';
-      resultado.delta.classList.remove('up', 'down');
-    }
+    resultado.delta.textContent = '±0';
+    resultado.delta.classList.remove('up', 'down');
   }
 
   // Barra global del riesgo total
