@@ -257,7 +257,7 @@ async function inicializarMapa() {
           Tiempo medio bomberos: ${p.tiempo_llegada_medio?.toFixed?.(1) ?? '?'} min
         </p>
         <p class="popup-cta">
-          ↑ Ahora el panel simula un edificio aquí. Mueve los sliders
+          Ahora el panel simula un edificio aquí. Mueve los sliders
           para explorar escenarios, o haz zoom y clic en un punto rojo
           para usar los datos reales de un edificio concreto.
         </p>
@@ -311,7 +311,7 @@ async function inicializarMapa() {
           <span class="popup-ref">Ref. catastral: <code>${p.localId || '—'}</code></span>
         </p>
         <p class="popup-cta">
-          ↑ Los sliders del panel ya están con los valores reales de este
+          Los sliders del panel ya están con los valores reales de este
           edificio. Cambia fachada / ITE / SCI / cubierta para ver qué
           pasaría bajo otros escenarios.
         </p>

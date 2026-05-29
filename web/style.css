@@ -245,17 +245,15 @@ label > input[type="checkbox"] {
   height: 100%;
 }
 
-/* Bloque de resultado al TOP del panel — pieza más visible.
- * Antes era position: sticky con margen negativo, lo que causaba
- * solapamientos visuales con los bloques siguientes al hacer scroll.
- * Ahora es un bloque normal pero visualmente destacado con el borde
- * brasa inferior y el fondo más claro. */
+/* Bloque de resultado al TOP del panel — tarjeta destacada con
+ * sombra. Sin sticky, sin márgenes negativos, sin línea brasa
+ * gruesa abajo (que pegaba visualmente con la tarjeta siguiente). */
 .resultado-panel {
   background: var(--bg-panel);
   margin: 0 0 1.25rem;
   padding: 1rem 1rem 1.1rem;
   border: 1px solid var(--linea);
-  border-bottom: 3px solid var(--brasa);
+  border-top: 3px solid var(--brasa);
   border-radius: 6px;
   box-shadow: var(--sombra);
 }
@@ -653,8 +651,8 @@ footer a:hover { text-decoration: underline; }
     border-right: none;
     border-bottom: 1px solid var(--linea);
   }
-  /* En móvil el resultado mantiene el mismo estilo que desktop: bloque
-   * normal con borde brasa inferior. Sin sticky ni márgenes negativos. */
+  /* En móvil el resultado mantiene el mismo estilo que desktop:
+   * tarjeta con borde brasa arriba. Sin sticky ni márgenes negativos. */
   .resultado-panel { margin: 0 0 1rem; }
   #mapa-wrap {
     height: 70vh;
