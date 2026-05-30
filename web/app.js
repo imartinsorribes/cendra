@@ -144,7 +144,7 @@ async function inicializarMapa() {
         'interpolate', ['linear'], ['zoom'],
         11, 2.5, 13, 4.5, 16, 7, 19, 11,
       ],
-      'circle-color': colorRiesgo('riesgo'),
+      'circle-color': colorRiesgo('r'),
       'circle-stroke-color': '#222220',
       'circle-stroke-width': 0.8,
       'circle-opacity': 0.95,
@@ -196,7 +196,28 @@ async function inicializarMapa() {
   map.addLayer({
     id: 'op_ruta_line', source: 'op_ruta', type: 'line',
     layout: opLayout,
-    paint: { 'line-color': '#1f4f8b', 'line-width': 2.5, 'line-dasharray': [1, 1.5] },
+    paint: {
+      // Color por orden: 0 azul oscuro, 1 medio, 2 claro
+      'line-color': [
+        'match', ['get', 'orden'],
+        0, '#1f4f8b',
+        1, '#5a7ba8',
+        2, '#9ab0c8',
+        '#cccccc',
+      ],
+      // Grosor decreciente por orden
+      'line-width': [
+        'match', ['get', 'orden'],
+        0, 4, 1, 3, 2, 2, 1.5,
+      ],
+      // Las rutas reales (de OSRM) van sólidas; las de fallback (línea recta)
+      // van punteadas para que se entienda que es estimación.
+      'line-dasharray': [
+        'case',
+        ['==', ['get', 'real'], true], ['literal', [1]],
+        ['literal', [2, 2]],
+      ],
+    },
   });
   map.addSource('op_target', { type: 'geojson', data: emptyFC });
   map.addLayer({
@@ -274,20 +295,19 @@ async function inicializarMapa() {
     const p = e.features[0].properties;
     estado.lon = e.lngLat.lng;
     estado.lat = e.lngLat.lat;
-    estado.barrio_nombre = p.barrio;
-    inputs.plantas.value = p.plantas;
-    outputs.plantas.value = p.plantas;
-    if (p.anio_construccion && !isNaN(p.anio_construccion)) {
-      const a = Math.round(p.anio_construccion);
+    estado.barrio_nombre = p.b;  // barrio
+    inputs.plantas.value = p.p;
+    outputs.plantas.value = p.p;
+    if (p.a != null && !isNaN(p.a)) {
+      const a = Math.round(p.a);
       inputs.anio.value = a;
       outputs.anio.value = a;
     }
-    // Propagar el `uso` real del Catastro si está en el feature
-    if (p.uso) {
-      const u = String(p.uso);
+    if (p.u) {
+      const u = String(p.u);
       const opcionExiste = Array.from(inputs.uso.options).some(o => o.value === u);
       if (opcionExiste) inputs.uso.value = u;
-      else inputs.uso.value = "";  // "otro / desconocido"
+      else inputs.uso.value = "";
     }
     // Para la exposición, usamos los valores del barrio (ya en su CSV)
     // — los conoceríamos solo si tuviéramos la fuente original, pero
@@ -301,15 +321,15 @@ async function inicializarMapa() {
       .setHTML(`
         <div class="popup-titulo">Edificio del Catastro</div>
         <div class="popup-num">
-          <span class="popup-num-val" style="color:${colorPorValor(p.riesgo || 0)}">${p.riesgo}</span>
+          <span class="popup-num-val" style="color:${colorPorValor(p.r || 0)}">${p.r}</span>
           <span class="popup-num-lab">riesgo del modelo · escenario base</span>
         </div>
         <p class="popup-detalle">
-          ${p.plantas} plantas · ${p.altura_m?.toFixed?.(0) ?? p.altura_m} m
-          · año ${p.anio_construccion ? Math.round(p.anio_construccion) : '—'}<br>
-          ${p.barrio || '(sin barrio)'}${p.uso ? ` · uso ${p.uso}` : ''}<br>
-          Bomberos: ${p.parque_cercano} · ${p.tiempo_llegada_min} min<br>
-          <span class="popup-ref">Ref. catastral: <code>${p.localId || '—'}</code></span>
+          ${p.p ?? '?'} plantas · ${p.h ?? '?'} m
+          · año ${p.a ? Math.round(p.a) : '—'}<br>
+          ${p.b || '(sin barrio)'}${p.u ? ` · uso ${p.u}` : ''}<br>
+          Bomberos: ${p.k ?? '—'} · ${p.t ?? '?'} min<br>
+          <span class="popup-ref">Ref. catastral: <code>${p.i || '—'}</code></span>
         </p>
         <p class="popup-cta">
           Los sliders del panel ya están con los valores reales de este
@@ -398,17 +418,21 @@ function recalcular() {
 
   // Baseline: el primer riesgo calculado al cargar la página o tras un
   // reset. El cambio acumulado del aside se compara contra esto.
+  // Mientras la usuaria no haya tocado nada (delta = 0), mostramos «—»
+  // en ambos campos para no inducir a pensar que son dos valores
+  // distintos.
   if (_riesgoBaseline === null) {
     _riesgoBaseline = r.riesgo_total;
   }
-  resultado.baseline.textContent = _riesgoBaseline.toFixed(1);
   const d = r.riesgo_total - _riesgoBaseline;
   if (Math.abs(d) >= 0.1) {
+    resultado.baseline.textContent = _riesgoBaseline.toFixed(1);
     resultado.delta.textContent = `${d > 0 ? '+' : '−'}${Math.abs(d).toFixed(1)}`;
     resultado.delta.classList.toggle('up', d > 0);
     resultado.delta.classList.toggle('down', d < 0);
   } else {
-    resultado.delta.textContent = '±0';
+    resultado.baseline.textContent = '—';
+    resultado.delta.textContent = '—';
     resultado.delta.classList.remove('up', 'down');
   }
 
@@ -490,36 +514,87 @@ function actualizarCapasOperativas(input, plan, detalle) {
   if (!window.__map || !window.__map.getSource('op_evacuacion')) return;
 
   const lon = input.lon, lat = input.lat;
-  // Círculo de evacuación
   window.__map.getSource('op_evacuacion').setData({
     type: 'Feature', properties: {}, geometry: M.circuloGeo(lon, lat, plan.radio_evacuacion_m),
   });
-  // Círculo de perímetro
   window.__map.getSource('op_perimetro').setData({
     type: 'Feature', properties: {}, geometry: M.circuloGeo(lon, lat, plan.radio_perimetro_m),
   });
-  // Línea al parque efectivo
-  const parqueNombre = detalle?.parque_efectivo;
-  const parques = window.cendraModelo.PARQUES || [];
-  // Como PARQUES está en el closure de modelo.js no es accesible directamente,
-  // usamos el detalle. Si no hay nombre, ocultamos.
-  if (parqueNombre) {
-    // Volver a fetch parques si no están cargados — debe ser raro
-    fetch('data/parques_bomberos.geojson').then(r => r.json()).then(g => {
-      const f = g.features.find(f => f.properties.nombre === parqueNombre);
-      if (!f) return;
-      const [plon, plat] = f.geometry.coordinates;
-      window.__map.getSource('op_ruta').setData({
-        type: 'Feature', properties: {}, geometry: {
-          type: 'LineString', coordinates: [[plon, plat], [lon, lat]],
-        },
-      });
-    });
-  }
-  // Marker del edificio simulado
   window.__map.getSource('op_target').setData({
     type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: [lon, lat] },
   });
+
+  // Rutas reales por calles desde los N parques que responden, con
+  // debounce para no saturar el router OSRM mientras se mueven sliders.
+  actualizarRutasOSRM(input, plan);
+}
+
+let _rutasTimer = null;
+async function actualizarRutasOSRM(input, plan) {
+  if (_rutasTimer) clearTimeout(_rutasTimer);
+  _rutasTimer = setTimeout(async () => {
+    const parquesResp = M.parquesQueResponden(
+      input.lon, input.lat, plan.fachada_critica, input.plantas,
+    );
+    // Dibujamos primero líneas rectas como placeholder mientras OSRM responde
+    const placeholder = parquesResp.map((p, i) => ({
+      type: 'Feature',
+      properties: { orden: i, parque: p.nombre, real: false },
+      geometry: { type: 'LineString', coordinates: [
+        [p.lon, p.lat], [input.lon, input.lat],
+      ]},
+    }));
+    if (window.__map?.getSource('op_ruta')) {
+      window.__map.getSource('op_ruta').setData({
+        type: 'FeatureCollection', features: placeholder,
+      });
+    }
+
+    // Ahora intentamos OSRM en paralelo
+    const rutas = await Promise.all(parquesResp.map(p =>
+      M.rutaPorCalles({ lon: p.lon, lat: p.lat }, { lon: input.lon, lat: input.lat }),
+    ));
+
+    const features = rutas.map((r, i) => {
+      const p = parquesResp[i];
+      if (!r) {
+        return {
+          type: 'Feature',
+          properties: { orden: i, parque: p.nombre, real: false },
+          geometry: { type: 'LineString', coordinates: [
+            [p.lon, p.lat], [input.lon, input.lat],
+          ]},
+        };
+      }
+      return {
+        type: 'Feature',
+        properties: {
+          orden: i, parque: p.nombre, real: true,
+          duration_min: Math.round(r.duration_s / 60 * 10) / 10,
+          distance_m: Math.round(r.distance_m),
+        },
+        geometry: r.geometry,
+      };
+    });
+    if (window.__map?.getSource('op_ruta')) {
+      window.__map.getSource('op_ruta').setData({
+        type: 'FeatureCollection', features,
+      });
+    }
+
+    // Actualizar el texto del panel con los detalles reales
+    const txt = parquesResp.map((p, i) => {
+      const r = rutas[i];
+      if (r) {
+        const t = Math.round(r.duration_s / 60 * 10) / 10;
+        const km = (r.distance_m / 1000).toFixed(2);
+        return `${p.nombre} → ${km} km, ${t} min reales`;
+      }
+      return `${p.nombre} → ${Math.round(p.distancia_m)} m en línea recta`;
+    }).join(' · ');
+    const rutasEl = document.getElementById('plan_rutas');
+    if (rutasEl) rutasEl.innerHTML = `<strong>Parques que responden:</strong> ${txt}`;
+  }, 400);
 }
 
 // Pintar la lista de recomendaciones
@@ -602,15 +677,15 @@ function aplicarFiltros() {
   if (!window.__map?.getSource?.('edificios')) return;
   const cond = ['all'];
   if (filtros.alto?.checked)
-    cond.push(['>=', ['get', 'riesgo'], 55]);
+    cond.push(['>=', ['get', 'r'], 55]);
   if (filtros.lejos?.checked)
-    cond.push(['>=', ['get', 'tiempo_llegada_min'], 8]);
+    cond.push(['>=', ['get', 't'], 8]);
   if (filtros.alto_plantas?.checked)
-    cond.push(['>', ['get', 'plantas'], 12]);
+    cond.push(['>', ['get', 'p'], 12]);
   if (filtros.pre1991?.checked)
     cond.push(['all',
-      ['has', 'anio_construccion'],
-      ['<', ['get', 'anio_construccion'], 1991],
+      ['has', 'a'],
+      ['<', ['get', 'a'], 1991],
     ]);
   window.__map.setFilter('edificios', cond.length > 1 ? cond : null);
 

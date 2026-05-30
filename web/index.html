@@ -7,7 +7,7 @@
 <meta name="description" content="¿Cuál es el riesgo de incendio de tu edificio? Atlas paramétrico de València con datos abiertos.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%23fbf8f3'/%3E%3Cpath d='M50 16 L78 70 L22 70 Z' fill='%23b03a1d'/%3E%3Cpath d='M50 38 L66 64 L34 64 Z' fill='%23fbf8f3'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
-<link rel="stylesheet" href="style.css?v=11">
+<link rel="stylesheet" href="style.css?v=12">
 </head>
 <body>
 
@@ -31,55 +31,11 @@
 </header>
 
 <main>
-  <aside id="panel">
-    <!-- Resultado de la simulación: lo primero que se ve siempre -->
-    <section class="resultado-panel">
-      <p class="titulo-resultado">Riesgo simulado de tu edificio</p>
-
-      <div class="cabecera-resultado">
-        <div class="num-bloque">
-          <span class="numero" id="riesgo_total">—</span>
-          <span class="etiqueta">/ 100</span>
-        </div>
-        <aside class="resultado-aside">
-          <div class="aside-col">
-            <p class="aside-titulo">Cambio</p>
-            <div class="delta-grande" id="riesgo_delta">—</div>
-            <p class="aside-sub">vs inicio</p>
-          </div>
-          <div class="aside-col">
-            <p class="aside-titulo">Inicial</p>
-            <strong id="baseline_val">—</strong>
-          </div>
-        </aside>
-      </div>
-
-      <div class="barra"><div class="barra-relleno" id="barra_relleno"></div></div>
-
-      <div class="componentes-detalle">
-        <div class="comp">
-          <div class="comp-cabecera"><span>Edificio (V)</span><span id="V_val">—</span></div>
-          <div class="comp-barra"><div class="comp-relleno" id="V_bar"></div></div>
-        </div>
-        <div class="comp">
-          <div class="comp-cabecera"><span>Población (E)</span><span id="E_val">—</span></div>
-          <div class="comp-barra"><div class="comp-relleno" id="E_bar"></div></div>
-        </div>
-        <div class="comp">
-          <div class="comp-cabecera"><span>Bomberos (R)</span><span id="R_val">—</span></div>
-          <div class="comp-barra"><div class="comp-relleno" id="R_bar"></div></div>
-        </div>
-      </div>
-
-      <p class="banda" id="banda">Rango plausible con un cambio menor: <span id="banda_best">—</span> – <span id="banda_worst">—</span></p>
-
-      <p class="contexto" id="contexto">Mueve los sliders de abajo o haz clic en el mapa para ver el riesgo.</p>
-    </section>
-
-    <!-- Escenarios canónicos: lo primero accionable después del resultado -->
+  <!-- Panel izquierdo: controles y filtros -->
+  <aside id="panel-izq" class="panel-lateral">
     <section class="bloque escenarios">
       <h2>Prueba un escenario</h2>
-      <p class="ayuda">Tres casos predefinidos con sus parámetros reales. Cada botón vuela el mapa al sitio y rellena los sliders.</p>
+      <p class="ayuda">Tres casos predefinidos. Cada botón vuela el mapa al sitio y rellena los sliders.</p>
       <div class="botones">
         <button data-escenario="campanar">Campanar (febrero 2024)</button>
         <button data-escenario="carmen">Edificio histórico Centro · madrugada</button>
@@ -88,7 +44,6 @@
       <button id="reset_btn" class="reset-btn" type="button">Resetear simulación</button>
     </section>
 
-    <!-- Buscador de dirección con Nominatim -->
     <section class="bloque buscador">
       <h2>Busca tu calle</h2>
       <p class="ayuda">Escribe tu calle o un punto de València y el mapa volará allí.</p>
@@ -99,47 +54,9 @@
       <p class="buscador-msg" id="buscador_msg"></p>
     </section>
 
-    <!-- Motor de recomendaciones -->
-    <section class="bloque recomendaciones">
-      <h2>Cómo bajaría más el riesgo</h2>
-      <p class="ayuda">Las tres mejoras que más impacto tendrían en este edificio, ordenadas por impacto.</p>
-      <ol id="lista_recomendaciones" class="reco-lista"></ol>
-    </section>
-
-    <!-- Plan de respuesta operativa -->
-    <section class="bloque plan-respuesta">
-      <h2>Despliegue estimado del SPEIS</h2>
-      <p class="ayuda">Cuántos efectivos, vehículos y caudal harían falta si este edificio ardiera. Heurística basada en doctrina, no es protocolo oficial.</p>
-      <label class="filtro-opt plan-toggle">
-        <input type="checkbox" id="f_plan_mapa"> Ver despliegue en el mapa
-      </label>
-      <div class="plan-grid">
-        <div class="plan-cifra">
-          <span class="big" id="plan_efectivos">—</span>
-          <span>efectivos</span>
-        </div>
-        <div class="plan-cifra">
-          <span class="big" id="plan_dotaciones">—</span>
-          <span>dotaciones</span>
-        </div>
-        <div class="plan-cifra">
-          <span class="big" id="plan_caudal">—</span>
-          <span>L/min de agua</span>
-        </div>
-        <div class="plan-cifra">
-          <span class="big" id="plan_tiempo">—</span>
-          <span>min para contener</span>
-        </div>
-      </div>
-      <p class="plan-vehiculos" id="plan_vehiculos"></p>
-      <p class="plan-perimetro" id="plan_perimetro"></p>
-      <p class="plan-hora" id="plan_hora"></p>
-      <p class="plan-hidrantes" id="plan_hidrantes"></p>
-    </section>
-
     <section class="bloque">
       <h2>Tu edificio</h2>
-      <p class="ayuda">Plantas y año son datos del Catastro. <strong>Haz clic en un punto rojo del mapa (zoom alto)</strong> para usar los datos reales de un edificio, o muévelos a mano.</p>
+      <p class="ayuda">Plantas, año y uso son datos del Catastro. <strong>Haz clic en un punto rojo del mapa</strong> para usar los reales, o muévelos a mano.</p>
 
       <label>Plantas sobre rasante
         <input type="range" id="plantas" min="1" max="36" value="6">
@@ -164,7 +81,7 @@
 
     <section class="bloque">
       <h2>Lo que no es dato abierto · escenario</h2>
-      <p class="ayuda">Materiales y mantenimiento del edificio. Aquí está la gracia del modelo: la persona usuaria decide.</p>
+      <p class="ayuda">Materiales y mantenimiento. Aquí está la gracia del modelo: lo decides tú.</p>
 
       <label>Tipo de fachada
         <select id="fachada">
@@ -205,66 +122,116 @@
 
     <section class="bloque">
       <h2>El día del incidente</h2>
-
       <label>Hora del día
         <input type="range" id="hora" min="0" max="23" value="12">
         <output id="hora_val">12:00 · mediodía · 45 km/h</output>
       </label>
-
       <label>
         <input type="checkbox" id="saturacion">
         El parque más cercano está cubriendo otra intervención
       </label>
     </section>
 
-    <!-- Filtros del mapa -->
     <section class="bloque filtros">
       <h2>Filtros del mapa</h2>
       <p class="ayuda">Quédate solo con los edificios que te interesan.</p>
-
-      <label class="filtro-opt">
-        <input type="checkbox" id="f_alto"> Solo con riesgo ≥ 55
-      </label>
-      <label class="filtro-opt">
-        <input type="checkbox" id="f_lejos"> Solo con bomberos a > 8 min
-      </label>
-      <label class="filtro-opt">
-        <input type="checkbox" id="f_alto_plantas"> Solo con > 12 plantas
-      </label>
-      <label class="filtro-opt">
-        <input type="checkbox" id="f_pre1991"> Solo construidos antes de 1991
-      </label>
-
+      <label class="filtro-opt"><input type="checkbox" id="f_alto"> Solo con riesgo ≥ 55</label>
+      <label class="filtro-opt"><input type="checkbox" id="f_lejos"> Solo con bomberos a > 8 min</label>
+      <label class="filtro-opt"><input type="checkbox" id="f_alto_plantas"> Solo con > 12 plantas</label>
+      <label class="filtro-opt"><input type="checkbox" id="f_pre1991"> Solo construidos antes de 1991</label>
       <p class="filtro-titulo">Capas visibles</p>
-      <label class="filtro-opt">
-        <input type="checkbox" id="f_barris" checked> Mapa de barrios (coroplético)
-      </label>
-      <label class="filtro-opt">
-        <input type="checkbox" id="f_edificios" checked> Edificios individuales
-      </label>
-      <label class="filtro-opt">
-        <input type="checkbox" id="f_parques" checked> Parques de bomberos
-      </label>
+      <label class="filtro-opt"><input type="checkbox" id="f_barris" checked> Mapa de barrios (coroplético)</label>
+      <label class="filtro-opt"><input type="checkbox" id="f_edificios" checked> Edificios individuales</label>
+      <label class="filtro-opt"><input type="checkbox" id="f_parques" checked> Parques de bomberos</label>
     </section>
   </aside>
 
+  <!-- Mapa central -->
   <section id="mapa-wrap">
     <div id="mapa"></div>
-
     <div id="ayuda-zoom" class="ayuda-zoom">
       Haz zoom hasta nivel 11+ para ver los edificios individuales con su riesgo
     </div>
-
     <div id="leyenda" class="leyenda">
       <strong>Riesgo medio del barrio</strong>
       <div class="gradiente"></div>
       <div class="ejes"><span>bajo · 25</span><span>medio · 45</span><span>alto · 65</span></div>
       <div class="explica">
         <span class="punto parque"></span> Parque de bomberos del SPEIS<br>
-        <span class="punto edif"></span> Edificio en el top-2000 de riesgo (zoom alto)
+        <span class="punto edif"></span> Edificio del Catastro destacado
       </div>
     </div>
   </section>
+
+  <!-- Panel derecho: información del riesgo simulado -->
+  <aside id="panel-der" class="panel-lateral">
+    <section class="resultado-panel">
+      <p class="titulo-resultado">Riesgo simulado de tu edificio</p>
+
+      <div class="cabecera-resultado">
+        <div class="num-bloque">
+          <span class="numero" id="riesgo_total">—</span>
+          <span class="etiqueta">/ 100</span>
+        </div>
+        <aside class="resultado-aside">
+          <div class="aside-col">
+            <p class="aside-titulo">Cambio</p>
+            <div class="delta-grande" id="riesgo_delta">—</div>
+            <p class="aside-sub">vs inicio</p>
+          </div>
+          <div class="aside-col">
+            <p class="aside-titulo">Inicial</p>
+            <strong id="baseline_val">—</strong>
+          </div>
+        </aside>
+      </div>
+
+      <div class="barra"><div class="barra-relleno" id="barra_relleno"></div></div>
+
+      <div class="componentes-detalle">
+        <div class="comp">
+          <div class="comp-cabecera"><span>Edificio (V)</span><span id="V_val">—</span></div>
+          <div class="comp-barra"><div class="comp-relleno" id="V_bar"></div></div>
+        </div>
+        <div class="comp">
+          <div class="comp-cabecera"><span>Población (E)</span><span id="E_val">—</span></div>
+          <div class="comp-barra"><div class="comp-relleno" id="E_bar"></div></div>
+        </div>
+        <div class="comp">
+          <div class="comp-cabecera"><span>Bomberos (R)</span><span id="R_val">—</span></div>
+          <div class="comp-barra"><div class="comp-relleno" id="R_bar"></div></div>
+        </div>
+      </div>
+
+      <p class="banda" id="banda">Rango plausible con un cambio menor: <span id="banda_best">—</span> – <span id="banda_worst">—</span></p>
+      <p class="contexto" id="contexto">Mueve los sliders o haz clic en el mapa para ver el riesgo.</p>
+    </section>
+
+    <section class="bloque recomendaciones">
+      <h2>Cómo bajaría más el riesgo</h2>
+      <p class="ayuda">Las tres mejoras de mayor impacto en este edificio.</p>
+      <ol id="lista_recomendaciones" class="reco-lista"></ol>
+    </section>
+
+    <section class="bloque plan-respuesta">
+      <h2>Despliegue estimado del SPEIS</h2>
+      <p class="ayuda">Efectivos, vehículos, caudal y rutas si este edificio ardiera. Heurística basada en doctrina, no protocolo oficial.</p>
+      <label class="filtro-opt plan-toggle">
+        <input type="checkbox" id="f_plan_mapa"> Ver despliegue en el mapa
+      </label>
+      <div class="plan-grid">
+        <div class="plan-cifra"><span class="big" id="plan_efectivos">—</span><span>efectivos</span></div>
+        <div class="plan-cifra"><span class="big" id="plan_dotaciones">—</span><span>dotaciones</span></div>
+        <div class="plan-cifra"><span class="big" id="plan_caudal">—</span><span>L/min de agua</span></div>
+        <div class="plan-cifra"><span class="big" id="plan_tiempo">—</span><span>min para contener</span></div>
+      </div>
+      <p class="plan-vehiculos" id="plan_vehiculos"></p>
+      <p class="plan-perimetro" id="plan_perimetro"></p>
+      <p class="plan-hora" id="plan_hora"></p>
+      <p class="plan-hidrantes" id="plan_hidrantes"></p>
+      <p class="plan-rutas" id="plan_rutas"></p>
+    </section>
+  </aside>
 </main>
 
 <footer>
@@ -279,7 +246,7 @@
 </footer>
 
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
-<script src="modelo.js?v=10"></script>
-<script src="app.js?v=11"></script>
+<script src="modelo.js?v=12"></script>
+<script src="app.js?v=12"></script>
 </body>
 </html>
