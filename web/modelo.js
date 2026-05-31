@@ -474,6 +474,44 @@ function planRespuesta(input) {
   };
 }
 
+// Parques de bomberos que responderían a un incidente, ordenados por
+// distancia. La doctrina común dispone que para un incendio
+// estructural urbano sale el parque más cercano y, si es alta
+// magnitud, refuerzos del Consorcio Provincial. Aproximamos:
+//   - bajo / sin fachada combustible: 1 parque
+//   - alto u oficinas con fachada combustible: 2 parques
+//   - alto + fachada combustible: 3 parques (cercano + 2 refuerzos)
+function parquesQueResponden(lon, lat, fachadaCritica = false, plantas = 1) {
+  const conDist = PARQUES.map(p => ({
+    nombre: p.nombre, lon: p.lon, lat: p.lat,
+    distancia_m: haversineMetros(lon, lat, p.lon, p.lat),
+  })).sort((a, b) => a.distancia_m - b.distancia_m);
+  let n = 1;
+  if (plantas > 8 || fachadaCritica) n = 2;
+  if (fachadaCritica && plantas > 12) n = 3;
+  return conDist.slice(0, n);
+}
+
+// Ruta real desde un parque al edificio usando OSRM (router público
+// gratuito de OpenStreetMap). Devuelve { geometry, duration_s, distance_m }
+// o null si OSRM falla / responde mal. Caller debe gestionar fallback.
+async function rutaPorCalles(orig, dest) {
+  const url = `https://router.project-osrm.org/route/v1/driving/${orig.lon},${orig.lat};${dest.lon},${dest.lat}?overview=full&geometries=geojson`;
+  try {
+    const r = await fetch(url);
+    if (!r.ok) return null;
+    const data = await r.json();
+    if (!data?.routes?.length) return null;
+    return {
+      geometry: data.routes[0].geometry,
+      duration_s: data.routes[0].duration,
+      distance_m: data.routes[0].distance,
+    };
+  } catch (e) {
+    return null;
+  }
+}
+
 // Hidrantes operativos: los N más cercanos al edificio.
 // Recibe el GeoJSON de hidrants ya cargado y el punto lon/lat.
 function hidrantesOperativos(hidrantesGeo, lon, lat, n = 3) {
@@ -516,6 +554,8 @@ window.cendraModelo = {
   recomendaciones,
   bandaConfianza,
   planRespuesta,
+  parquesQueResponden,
+  rutaPorCalles,
   hidrantesOperativos,
   circuloGeo,
   haversineMetros,
