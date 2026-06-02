@@ -64,13 +64,50 @@ main {
 #panel-der { border-left: 1px solid var(--linea); }
 
 .bloque {
-  margin-bottom: 1.25rem;
-  padding: 0.85rem 1rem 1rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem 0.9rem 0.85rem;
   border: 1px solid var(--linea);
   border-radius: 6px;
   background: var(--bg-panel);
 }
 .bloque:last-child { margin-bottom: 0.5rem; }
+
+/* Bloques plegables: details/summary nativo del navegador.
+ * El triángulo del navegador se oculta y se sustituye por una flecha
+ * a la derecha que rota cuando el bloque está abierto. */
+details.bloque > summary {
+  cursor: pointer;
+  list-style: none;
+  position: relative;
+  padding-right: 1.4rem;
+  user-select: none;
+}
+details.bloque > summary::-webkit-details-marker { display: none; }
+details.bloque > summary::after {
+  content: '';
+  position: absolute;
+  right: 0.1rem;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid var(--texto-suave);
+  border-bottom: 2px solid var(--texto-suave);
+  transform: translateY(-65%) rotate(45deg);
+  transition: transform 0.18s ease;
+}
+details.bloque[open] > summary::after {
+  transform: translateY(-30%) rotate(-135deg);
+}
+details.bloque > summary > h2 {
+  display: inline-block;
+  margin: 0;
+}
+details.bloque:not([open]) {
+  padding-bottom: 0.75rem;
+}
+details.bloque[open] > summary {
+  margin-bottom: 0.4rem;
+}
 .bloque h2 {
   font-size: 0.8rem;
   text-transform: uppercase;
@@ -141,15 +178,17 @@ label > input[type="checkbox"] {
 /* Buscador de dirección (Nominatim) */
 .buscador-input {
   display: flex;
-  gap: 0.4rem;
+  gap: 0.3rem;
+  min-width: 0;       /* permite que el input se contraiga */
 }
 .buscador-input input {
-  flex: 1;
-  padding: 0.45rem 0.6rem;
+  flex: 1 1 auto;
+  min-width: 0;       /* clave para que el input pueda achicarse en panel estrecho */
+  padding: 0.4rem 0.55rem;
   border: 1px solid var(--linea);
   border-radius: 4px;
   font-family: inherit;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   background: white;
 }
 .buscador-input input:focus {
@@ -157,15 +196,17 @@ label > input[type="checkbox"] {
   outline-offset: -1px;
 }
 .buscador-input button {
-  padding: 0.45rem 0.85rem;
+  flex: 0 0 auto;
+  padding: 0.4rem 0.7rem;
   border: 1px solid var(--brasa);
   background: var(--brasa);
   color: white;
   border-radius: 4px;
   cursor: pointer;
-  font-weight: 700;
+  font-weight: 600;
   font-family: inherit;
-  font-size: 1rem;
+  font-size: 0.85rem;
+  white-space: nowrap;
 }
 .buscador-input button:hover { background: var(--brasa-claro); border-color: var(--brasa-claro); }
 .buscador-msg {

@@ -7,7 +7,7 @@
 <meta name="description" content="¿Cuál es el riesgo de incendio de tu edificio? Atlas paramétrico de València con datos abiertos.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%23fbf8f3'/%3E%3Cpath d='M50 16 L78 70 L22 70 Z' fill='%23b03a1d'/%3E%3Cpath d='M50 38 L66 64 L34 64 Z' fill='%23fbf8f3'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
-<link rel="stylesheet" href="style.css?v=12">
+<link rel="stylesheet" href="style.css?v=13">
 </head>
 <body>
 
@@ -33,8 +33,8 @@
 <main>
   <!-- Panel izquierdo: controles y filtros -->
   <aside id="panel-izq" class="panel-lateral">
-    <section class="bloque escenarios">
-      <h2>Prueba un escenario</h2>
+    <details class="bloque escenarios" open>
+      <summary><h2>Prueba un escenario</h2></summary>
       <p class="ayuda">Tres casos predefinidos. Cada botón vuela el mapa al sitio y rellena los sliders.</p>
       <div class="botones">
         <button data-escenario="campanar">Campanar (febrero 2024)</button>
@@ -42,20 +42,20 @@
         <button data-escenario="quatre-carreres-nuevo">Promoción nueva · hora punta</button>
       </div>
       <button id="reset_btn" class="reset-btn" type="button">Resetear simulación</button>
-    </section>
+    </details>
 
-    <section class="bloque buscador">
-      <h2>Busca tu calle</h2>
+    <details class="bloque buscador" open>
+      <summary><h2>Busca tu calle</h2></summary>
       <p class="ayuda">Escribe tu calle o un punto de València y el mapa volará allí.</p>
       <div class="buscador-input">
         <input type="text" id="buscador" placeholder="Calle, plaza o barrio…" autocomplete="off">
         <button id="buscador_btn" type="button">Buscar</button>
       </div>
       <p class="buscador-msg" id="buscador_msg"></p>
-    </section>
+    </details>
 
-    <section class="bloque">
-      <h2>Tu edificio</h2>
+    <details class="bloque" open>
+      <summary><h2>Tu edificio</h2></summary>
       <p class="ayuda">Plantas, año y uso son datos del Catastro. <strong>Haz clic en un punto rojo del mapa</strong> para usar los reales, o muévelos a mano.</p>
 
       <label>Plantas sobre rasante
@@ -77,10 +77,10 @@
           <option value="">Otro / desconocido</option>
         </select>
       </label>
-    </section>
+    </details>
 
-    <section class="bloque">
-      <h2>Lo que no es dato abierto · escenario</h2>
+    <details class="bloque" open>
+      <summary><h2>Lo que no es dato abierto · escenario</h2></summary>
       <p class="ayuda">Materiales y mantenimiento. Aquí está la gracia del modelo: lo decides tú.</p>
 
       <label>Tipo de fachada
@@ -118,10 +118,10 @@
           <option value="combustible">Combustible (madera, lámina bituminosa)</option>
         </select>
       </label>
-    </section>
+    </details>
 
-    <section class="bloque">
-      <h2>El día del incidente</h2>
+    <details class="bloque" open>
+      <summary><h2>El día del incidente</h2></summary>
       <label>Hora del día
         <input type="range" id="hora" min="0" max="23" value="12">
         <output id="hora_val">12:00 · mediodía · 45 km/h</output>
@@ -130,10 +130,10 @@
         <input type="checkbox" id="saturacion">
         El parque más cercano está cubriendo otra intervención
       </label>
-    </section>
+    </details>
 
-    <section class="bloque filtros">
-      <h2>Filtros del mapa</h2>
+    <details class="bloque filtros">
+      <summary><h2>Filtros del mapa</h2></summary>
       <p class="ayuda">Quédate solo con los edificios que te interesan.</p>
       <label class="filtro-opt"><input type="checkbox" id="f_alto"> Solo con riesgo ≥ 55</label>
       <label class="filtro-opt"><input type="checkbox" id="f_lejos"> Solo con bomberos a > 8 min</label>
@@ -143,7 +143,7 @@
       <label class="filtro-opt"><input type="checkbox" id="f_barris" checked> Mapa de barrios (coroplético)</label>
       <label class="filtro-opt"><input type="checkbox" id="f_edificios" checked> Edificios individuales</label>
       <label class="filtro-opt"><input type="checkbox" id="f_parques" checked> Parques de bomberos</label>
-    </section>
+    </details>
   </aside>
 
   <!-- Mapa central -->
@@ -207,17 +207,17 @@
       <p class="contexto" id="contexto">Mueve los sliders o haz clic en el mapa para ver el riesgo.</p>
     </section>
 
-    <section class="bloque recomendaciones">
-      <h2>Cómo bajaría más el riesgo</h2>
+    <details class="bloque recomendaciones" open>
+      <summary><h2>Cómo bajaría más el riesgo</h2></summary>
       <p class="ayuda">Las tres mejoras de mayor impacto en este edificio.</p>
       <ol id="lista_recomendaciones" class="reco-lista"></ol>
-    </section>
+    </details>
 
-    <section class="bloque plan-respuesta">
-      <h2>Despliegue estimado del SPEIS</h2>
+    <details class="bloque plan-respuesta" open>
+      <summary><h2>Despliegue estimado del SPEIS</h2></summary>
       <p class="ayuda">Efectivos, vehículos, caudal y rutas si este edificio ardiera. Heurística basada en doctrina, no protocolo oficial.</p>
       <label class="filtro-opt plan-toggle">
-        <input type="checkbox" id="f_plan_mapa"> Ver despliegue en el mapa
+        <input type="checkbox" id="f_plan_mapa" checked> Ver despliegue en el mapa
       </label>
       <div class="plan-grid">
         <div class="plan-cifra"><span class="big" id="plan_efectivos">—</span><span>efectivos</span></div>
@@ -230,7 +230,7 @@
       <p class="plan-hora" id="plan_hora"></p>
       <p class="plan-hidrantes" id="plan_hidrantes"></p>
       <p class="plan-rutas" id="plan_rutas"></p>
-    </section>
+    </details>
   </aside>
 </main>
 
@@ -246,7 +246,7 @@
 </footer>
 
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
-<script src="modelo.js?v=12"></script>
-<script src="app.js?v=12"></script>
+<script src="modelo.js?v=13"></script>
+<script src="app.js?v=13"></script>
 </body>
 </html>

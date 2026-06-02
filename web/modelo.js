@@ -449,16 +449,22 @@ function planRespuesta(input) {
   // No alteramos los números (sería invento sin datos del SPEIS), pero
   // explicamos qué implica la hora para el operativo.
   let nota_hora;
-  if (hora >= 0 && hora < 6) {
+  if (hora < 6) {
     nota_hora = "Madrugada: turno reducido en activo. Si la incidencia es grande puede ser necesario activar el Consorcio Provincial.";
-  } else if (hora >= 7 && hora <= 9) {
+  } else if (hora < 7) {
+    nota_hora = "Cambio de turno: dotaciones en relevo, posible refuerzo provincial.";
+  } else if (hora < 10) {
     nota_hora = "Hora punta de mañana: la unidad puede tardar más por el tráfico denso.";
-  } else if (hora >= 19 && hora <= 20) {
+  } else if (hora < 14) {
+    nota_hora = "Mañana: dotaciones completas y tráfico moderado.";
+  } else if (hora < 16) {
+    nota_hora = "Sobremesa: tráfico ligero, dotaciones completas.";
+  } else if (hora < 19) {
+    nota_hora = "Tarde: dotaciones completas, tráfico moderado.";
+  } else if (hora < 21) {
     nota_hora = "Hora punta de tarde: dotaciones completas pero tráfico denso.";
-  } else if (hora >= 21 || hora <= 23) {
-    nota_hora = "Noche temprana: dotaciones completas en activo.";
   } else {
-    nota_hora = "Horario diurno: dotaciones completas y tráfico fluido.";
+    nota_hora = "Noche: turno reducido en activo, dotaciones operativas.";
   }
 
   return {

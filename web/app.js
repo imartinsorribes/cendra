@@ -151,25 +151,42 @@ async function inicializarMapa() {
     },
   });
 
-  // Parques de bomberos
+  // Parques de bomberos: cuadrado azul con la letra B encima
+  // (más reconocible que un simple círculo, sin usar emojis ni iconos
+  // raster).
   map.addSource('parques', { type: 'geojson', data: 'data/parques_bomberos.geojson' });
   map.addLayer({
     id: 'parques',
     source: 'parques',
     type: 'circle',
     paint: {
-      'circle-radius': 9,
+      'circle-radius': 13,
       'circle-color': '#1f4f8b',
       'circle-stroke-color': 'white',
-      'circle-stroke-width': 2,
+      'circle-stroke-width': 2.5,
+    },
+  });
+  map.addLayer({
+    id: 'parques-label',
+    source: 'parques',
+    type: 'symbol',
+    layout: {
+      'text-field': 'B',
+      'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+      'text-size': 13,
+      'text-allow-overlap': true,
+      'text-ignore-placement': true,
+    },
+    paint: {
+      'text-color': 'white',
     },
   });
 
-  // Capas operativas (despliegue del SPEIS) — empiezan vacías E
-  // INVISIBLES. Se activan con el toggle «Ver despliegue en el mapa»
-  // del bloque del plan de respuesta.
+  // Capas operativas (despliegue del SPEIS) — empiezan vacías y
+  // VISIBLES. La usuaria puede ocultarlas con el toggle «Ver despliegue
+  // en el mapa» del bloque del plan de respuesta.
   const emptyFC = { type: 'FeatureCollection', features: [] };
-  const opLayout = { visibility: 'none' };
+  const opLayout = { visibility: 'visible' };
   map.addSource('op_perimetro', { type: 'geojson', data: emptyFC });
   map.addLayer({
     id: 'op_perimetro_fill', source: 'op_perimetro', type: 'fill',
@@ -329,7 +346,7 @@ async function inicializarMapa() {
           · año ${p.a ? Math.round(p.a) : '—'}<br>
           ${p.b || '(sin barrio)'}${p.u ? ` · uso ${p.u}` : ''}<br>
           Bomberos: ${p.k ?? '—'} · ${p.t ?? '?'} min<br>
-          <span class="popup-ref">Ref. catastral: <code>${p.i || '—'}</code></span>
+          ${p.i ? `<span class="popup-ref">Ref. catastral: <a href="https://www1.sedecatastro.gob.es/CYCBienInmueble/OVCListaBienes.aspx?rc1=${p.i.slice(0,7)}&rc2=${p.i.slice(7)}" target="_blank" rel="noopener"><code>${p.i}</code></a></span>` : ''}
         </p>
         <p class="popup-cta">
           Los sliders del panel ya están con los valores reales de este
