@@ -184,15 +184,21 @@ def v_altura(plantas: int) -> float:
 
 
 def r_tiempo(t_min: float) -> float:
-    """Penalización por tiempo de llegada de bomberos (§3.3.2)."""
-    if t_min <= 4:
+    """Penalización por tiempo de llegada de bomberos (§3.3.2).
+    Curva continua por tramos (no escalonada) para que pequeñas
+    variaciones de la ubicación del edificio den variaciones
+    proporcionales en el factor R."""
+    t = max(0.0, t_min)
+    if t <= 2.0:
         return 0.0
-    if t_min <= 6:
-        return 30.0
-    if t_min <= 8:
-        return 60.0
-    if t_min <= 12:
-        return 85.0
+    if t <= 4.0:
+        return (t - 2.0) * 15.0          # 2 → 0   · 4 → 30
+    if t <= 6.0:
+        return 30.0 + (t - 4.0) * 15.0   # 4 → 30  · 6 → 60
+    if t <= 8.0:
+        return 60.0 + (t - 6.0) * 12.5   # 6 → 60  · 8 → 85
+    if t <= 12.0:
+        return 85.0 + (t - 8.0) * 3.75   # 8 → 85  · 12 → 100
     return 100.0
 
 

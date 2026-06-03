@@ -133,10 +133,15 @@ function vAltura(plantas) {
 }
 
 function rTiempo(tMin) {
-  if (tMin <= 4) return 0;
-  if (tMin <= 6) return 30;
-  if (tMin <= 8) return 60;
-  if (tMin <= 12) return 85;
+  // Curva continua por tramos: variaciones pequeñas de tiempo dan
+  // variaciones proporcionales del factor R, en lugar de saltos
+  // bruscos de 30 puntos al cruzar un umbral.
+  const t = Math.max(0, tMin);
+  if (t <= 2) return 0;
+  if (t <= 4) return (t - 2) * 15;            // 2→0   · 4→30
+  if (t <= 6) return 30 + (t - 4) * 15;       // 4→30  · 6→60
+  if (t <= 8) return 60 + (t - 6) * 12.5;     // 6→60  · 8→85
+  if (t <= 12) return 85 + (t - 8) * 3.75;    // 8→85  · 12→100
   return 100;
 }
 

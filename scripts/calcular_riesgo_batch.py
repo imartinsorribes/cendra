@@ -185,11 +185,23 @@ def calc_R_respuesta_vectorizado(
     v_kmh = V_HORA_KMH[DEFAULT_HORA]
     t_min = T_MOVILIZACION_MIN + (d_ruta / 1000.0) / v_kmh * 60.0
 
-    # r_tiempo vectorizado
-    r_t = np.select(
-        [t_min <= 4, t_min <= 6, t_min <= 8, t_min <= 12],
-        [0.0, 30.0, 60.0, 85.0],
-        default=100.0,
+    # r_tiempo vectorizado · curva continua por tramos
+    t_clip = np.maximum(0.0, t_min)
+    r_t = np.where(
+        t_clip <= 2.0, 0.0,
+        np.where(
+            t_clip <= 4.0, (t_clip - 2.0) * 15.0,
+            np.where(
+                t_clip <= 6.0, 30.0 + (t_clip - 4.0) * 15.0,
+                np.where(
+                    t_clip <= 8.0, 60.0 + (t_clip - 6.0) * 12.5,
+                    np.where(
+                        t_clip <= 12.0, 85.0 + (t_clip - 8.0) * 3.75,
+                        100.0,
+                    ),
+                ),
+            ),
+        ),
     )
 
     # r_hidrante por distancia (en metros)

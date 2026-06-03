@@ -128,21 +128,100 @@ async function inicializarMapa() {
     filter: ['==', 'codbarrio', -1],
   });
 
-  // Capa de TOP-2000 edificios de mayor riesgo (puntos)
-  // Solo se ve a zoom alto para no saturar la vista general.
+  // Polígonos REALES del Top-500 edificios de mayor riesgo
+  // (huella catastral completa, no centroide). Se ven a partir de
+  // zoom 14 en rojo brasa translúcido, dan inmediatamente la idea
+  // de qué casas son críticas.
+  map.addSource('edificios-poligonos', {
+    type: 'geojson',
+    data: 'data/edificios_top_poligonos.geojson',
+  });
+  map.addLayer({
+    id: 'edificios-poligonos-fill',
+    source: 'edificios-poligonos',
+    type: 'fill',
+    minzoom: 14,
+    paint: {
+      'fill-color': colorRiesgo('r'),
+      'fill-opacity': [
+        'interpolate', ['linear'], ['zoom'],
+        14, 0.35, 17, 0.6,
+      ],
+    },
+  });
+  map.addLayer({
+    id: 'edificios-poligonos-line',
+    source: 'edificios-poligonos',
+    type: 'line',
+    minzoom: 14,
+    paint: {
+      'line-color': '#222220',
+      'line-width': 0.7,
+    },
+  });
+
+  // Source de los 10.000 edificios destacados con CLUSTERING.
+  // A zoom bajo se agrupan en burbujas con número; al hacer zoom se
+  // separan hasta verse individualmente. Click en cluster: zoom in.
   map.addSource('edificios', {
     type: 'geojson',
     data: 'data/edificios_top_riesgo.geojson',
+    cluster: true,
+    clusterMaxZoom: 14,
+    clusterRadius: 38,
   });
+
+  // Layer 1: clusters (burbujas grandes)
+  map.addLayer({
+    id: 'edificios-cluster',
+    source: 'edificios',
+    type: 'circle',
+    filter: ['has', 'point_count'],
+    paint: {
+      // Color y tamaño escalan con el número de edificios del cluster
+      'circle-color': [
+        'step', ['get', 'point_count'],
+        '#f5b400', 30,
+        '#e57a37', 100,
+        '#b03a1d',
+      ],
+      'circle-radius': [
+        'step', ['get', 'point_count'],
+        14, 30, 18, 100, 24,
+      ],
+      'circle-stroke-color': 'rgba(255,255,255,0.85)',
+      'circle-stroke-width': 2,
+      'circle-opacity': 0.85,
+    },
+  });
+
+  // Layer 2: número de edificios en cada cluster
+  map.addLayer({
+    id: 'edificios-cluster-count',
+    source: 'edificios',
+    type: 'symbol',
+    filter: ['has', 'point_count'],
+    layout: {
+      'text-field': ['get', 'point_count_abbreviated'],
+      'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+      'text-size': 12,
+      'text-allow-overlap': true,
+    },
+    paint: {
+      'text-color': 'white',
+    },
+  });
+
+  // Layer 3: edificios individuales (cuando ya no están agrupados)
   map.addLayer({
     id: 'edificios',
     source: 'edificios',
     type: 'circle',
-    minzoom: 11,
+    filter: ['!', ['has', 'point_count']],
     paint: {
       'circle-radius': [
         'interpolate', ['linear'], ['zoom'],
-        11, 2.5, 13, 4.5, 16, 7, 19, 11,
+        11, 3, 13, 5, 16, 7, 19, 11,
       ],
       'circle-color': colorRiesgo('r'),
       'circle-stroke-color': '#222220',
@@ -150,6 +229,18 @@ async function inicializarMapa() {
       'circle-opacity': 0.95,
     },
   });
+
+  // Click en cluster: zoom in al área del cluster
+  map.on('click', 'edificios-cluster', e => {
+    const features = map.queryRenderedFeatures(e.point, { layers: ['edificios-cluster'] });
+    if (!features.length) return;
+    const clusterId = features[0].properties.cluster_id;
+    map.getSource('edificios').getClusterExpansionZoom(clusterId).then(zoom => {
+      map.easeTo({ center: features[0].geometry.coordinates, zoom });
+    }).catch(() => {});
+  });
+  map.on('mouseenter', 'edificios-cluster', () => map.getCanvas().style.cursor = 'pointer');
+  map.on('mouseleave', 'edificios-cluster', () => map.getCanvas().style.cursor = '');
 
   // Parques de bomberos: cuadrado azul con la letra B encima
   // (más reconocible que un simple círculo, sin usar emojis ni iconos
@@ -209,31 +300,34 @@ async function inicializarMapa() {
     layout: opLayout,
     paint: { 'line-color': '#b03a1d', 'line-width': 1.5 },
   });
+  // Source de rutas operativas: contiene tanto rutas reales (OSRM)
+  // como fallbacks de línea recta. Usamos DOS layers separadas para
+  // poder darle a cada una su línea sólida o punteada
+  // (line-dasharray no admite expresiones data-driven en MapLibre).
   map.addSource('op_ruta', { type: 'geojson', data: emptyFC });
+  const colorRuta = [
+    'match', ['get', 'orden'],
+    0, '#1f4f8b',
+    1, '#5a7ba8',
+    2, '#9ab0c8',
+    '#cccccc',
+  ];
+  const grosorRuta = ['match', ['get', 'orden'], 0, 4, 1, 3, 2, 2, 1.5];
+
   map.addLayer({
     id: 'op_ruta_line', source: 'op_ruta', type: 'line',
     layout: opLayout,
+    filter: ['==', ['get', 'real'], true],
+    paint: { 'line-color': colorRuta, 'line-width': grosorRuta },
+  });
+  map.addLayer({
+    id: 'op_ruta_line_fallback', source: 'op_ruta', type: 'line',
+    layout: opLayout,
+    filter: ['!=', ['get', 'real'], true],
     paint: {
-      // Color por orden: 0 azul oscuro, 1 medio, 2 claro
-      'line-color': [
-        'match', ['get', 'orden'],
-        0, '#1f4f8b',
-        1, '#5a7ba8',
-        2, '#9ab0c8',
-        '#cccccc',
-      ],
-      // Grosor decreciente por orden
-      'line-width': [
-        'match', ['get', 'orden'],
-        0, 4, 1, 3, 2, 2, 1.5,
-      ],
-      // Las rutas reales (de OSRM) van sólidas; las de fallback (línea recta)
-      // van punteadas para que se entienda que es estimación.
-      'line-dasharray': [
-        'case',
-        ['==', ['get', 'real'], true], ['literal', [1]],
-        ['literal', [2, 2]],
-      ],
+      'line-color': colorRuta,
+      'line-width': grosorRuta,
+      'line-dasharray': [2, 2],
     },
   });
   map.addSource('op_target', { type: 'geojson', data: emptyFC });
@@ -671,7 +765,7 @@ function visibilidadPlanMapa() {
   const on = togglePlanMapa.checked ? 'visible' : 'none';
   ['op_evacuacion_fill', 'op_evacuacion_line',
    'op_perimetro_fill', 'op_perimetro_line',
-   'op_ruta_line', 'op_target_circle'].forEach(id => {
+   'op_ruta_line', 'op_ruta_line_fallback', 'op_target_circle'].forEach(id => {
     if (window.__map.getLayer(id))
       window.__map.setLayoutProperty(id, 'visibility', on);
   });
@@ -693,6 +787,9 @@ const filtros = {
 function aplicarFiltros() {
   if (!window.__map?.getSource?.('edificios')) return;
   const cond = ['all'];
+  // El filtro 'all' aplica solo a edificios individuales (no clusters).
+  // El cluster mantiene su propio filtro 'has point_count'.
+  cond.push(['!', ['has', 'point_count']]);
   if (filtros.alto?.checked)
     cond.push(['>=', ['get', 'r'], 55]);
   if (filtros.lejos?.checked)
@@ -704,7 +801,7 @@ function aplicarFiltros() {
       ['has', 'a'],
       ['<', ['get', 'a'], 1991],
     ]);
-  window.__map.setFilter('edificios', cond.length > 1 ? cond : null);
+  window.__map.setFilter('edificios', cond);
 
   // Visibilidad de capas
   const setVis = (layer, on) => {
@@ -714,7 +811,12 @@ function aplicarFiltros() {
   setVis('barris-fill', filtros.barris.checked);
   setVis('barris-hover', filtros.barris.checked);
   setVis('edificios', filtros.edificios.checked);
+  setVis('edificios-cluster', filtros.edificios.checked);
+  setVis('edificios-cluster-count', filtros.edificios.checked);
+  setVis('edificios-poligonos-fill', filtros.edificios.checked);
+  setVis('edificios-poligonos-line', filtros.edificios.checked);
   setVis('parques', filtros.parques.checked);
+  setVis('parques-label', filtros.parques.checked);
 }
 
 Object.values(filtros).forEach(el => {

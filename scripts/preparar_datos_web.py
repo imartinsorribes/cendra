@@ -187,6 +187,40 @@ def construir_edificios_todos() -> None:
         print(f"  borrado legacy {todos.name}", file=sys.stderr)
 
 
+def construir_edificios_poligonos() -> None:
+    """Exporta la geometría POLIGONAL real (huella catastral) de los
+    TOP-500 edificios de mayor riesgo. Sirve para destacarlos en el
+    mapa como sombras rojas en lugar de simples puntos, mucho más
+    impactante visualmente y más realista (la usuaria ve la huella
+    real del edificio, no solo un punto).
+    """
+    gpkg = PROCESSED / "riesgo_edificios.gpkg"
+    if not gpkg.exists():
+        return
+    edif = gpd.read_file(gpkg, layer="riesgo")
+    n = min(500, len(edif))
+    top = edif.nlargest(n, "riesgo").to_crs("EPSG:4326")
+    cols = ["riesgo", "plantas", "altura_m", "anio_construccion",
+            "barrio", "geometry"]
+    cols_disp = [c for c in cols if c in top.columns]
+    out = top[cols_disp].copy()
+    # Renombrar a propiedades cortas para coherencia con el otro fichero
+    out = out.rename(columns={
+        "riesgo": "r", "plantas": "p", "altura_m": "h",
+        "anio_construccion": "a", "barrio": "b",
+    })
+    # Simplificar geometría a 1 m (~ 0,00001 grados) para reducir tamaño
+    out["geometry"] = out.geometry.simplify(0.00001, preserve_topology=True)
+    out_path = WEB_DATA / "edificios_top_poligonos.geojson"
+    out.to_file(out_path, driver="GeoJSON", coordinate_precision=5)
+    kb = out_path.stat().st_size / 1024
+    print(
+        f"  → {out_path.relative_to(ROOT)} ({kb:.0f} KB, "
+        f"{len(out)} polígonos del top de riesgo)",
+        file=sys.stderr,
+    )
+
+
 def main() -> None:
     print("[1/4] copiar parques_bomberos.geojson", file=sys.stderr)
     copiar_parques()
@@ -195,9 +229,12 @@ def main() -> None:
     copiar_hidrantes()
     print("[3/4] construir barris_riesgo.geojson", file=sys.stderr)
     construir_barris_riesgo()
-    print("[4/4] construir edificios_todos.geojson + edificios_top_riesgo.geojson",
+    print("[4/5] construir edificios_top_riesgo.geojson (puntos)",
           file=sys.stderr)
     construir_edificios_todos()
+    print("[5/5] construir edificios_top_poligonos.geojson (huellas reales)",
+          file=sys.stderr)
+    construir_edificios_poligonos()
 
 
 if __name__ == "__main__":
