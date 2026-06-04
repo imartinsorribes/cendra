@@ -7,7 +7,7 @@
 <meta name="description" content="¿Cuál es el riesgo de incendio de tu edificio? Atlas paramétrico de València con datos abiertos.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%23fbf8f3'/%3E%3Cpath d='M50 16 L78 70 L22 70 Z' fill='%23b03a1d'/%3E%3Cpath d='M50 38 L66 64 L34 64 Z' fill='%23fbf8f3'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
-<link rel="stylesheet" href="style.css?v=13">
+<link rel="stylesheet" href="style.css?v=15">
 </head>
 <body>
 
@@ -213,6 +213,17 @@
       <ol id="lista_recomendaciones" class="reco-lista"></ol>
     </details>
 
+    <details class="bloque criticos" open>
+      <summary><h2>Edificios más críticos</h2></summary>
+      <p class="ayuda">Dos rankings basados en el modelo. El primero es el riesgo absoluto bajo escenario base. El segundo identifica edificios «perfil Campanar»: ≥ 10 plantas y construidos en la era del composite ACM (2000-2017), candidatos prioritarios a inspección municipal aunque su riesgo base no sea el máximo.</p>
+      <div class="criticos-tabs">
+        <button class="critico-tab activo" data-tab="riesgo" type="button">Top riesgo</button>
+        <button class="critico-tab" data-tab="campanar" type="button">Perfil Campanar</button>
+      </div>
+      <p id="criticos_resumen" class="criticos-resumen"></p>
+      <ol id="criticos_lista" class="criticos-lista"></ol>
+    </details>
+
     <details class="bloque plan-respuesta" open>
       <summary><h2>Despliegue estimado del SPEIS</h2></summary>
       <p class="ayuda">Efectivos, vehículos, caudal y rutas si este edificio ardiera. Heurística basada en doctrina, no protocolo oficial.</p>
@@ -246,7 +257,7 @@
 </footer>
 
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
-<script src="modelo.js?v=14"></script>
-<script src="app.js?v=14"></script>
+<script src="modelo.js?v=15"></script>
+<script src="app.js?v=15"></script>
 </body>
 </html>

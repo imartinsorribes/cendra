@@ -482,6 +482,25 @@ def main() -> None:
     edif["tiempo_llegada_min"] = t_llegada
     edif["fachada_critica"] = fachada_crit
 
+    # Edificios «candidatos al perfil Campanar»: edificios construidos
+    # en la era del composite ACM (2000-2017) y altos (≥ 10 plantas).
+    # No sabemos si tienen fachada combustible (el dato no es abierto)
+    # pero estos son los que el Ayuntamiento debería priorizar para
+    # inspección. Es la pieza más accionable del modelo.
+    a_clean = edif["anio_construccion"]
+    edif["candidato_campanar"] = (
+        (edif["plantas"] >= 10)
+        & (a_clean >= 2000)
+        & (a_clean <= 2017)
+        & (a_clean.notna())
+    )
+    n_cand = int(edif["candidato_campanar"].sum())
+    print(
+        f"  candidatos perfil Campanar (≥10 plantas, 2000-2017): "
+        f"{n_cand:,} edificios ({n_cand/len(edif)*100:.2f} %)",
+        file=sys.stderr,
+    )
+
     # Combinación con régimen condicional
     riesgo = np.where(
         fachada_crit,
@@ -507,7 +526,7 @@ def main() -> None:
         "densidad_hab_km2", "ind_vulnerab_norm", "E_sensibles",
         "parque_cercano", "dist_parque_m", "dist_hidrante_m", "dist_fite_m",
         "tiempo_llegada_min", "V_intrinseca", "E_exposicion", "R_respuesta",
-        "R_acceso", "fachada_critica", "riesgo",
+        "R_acceso", "fachada_critica", "candidato_campanar", "riesgo",
         "geometry",
     ]
     edif_out = edif_out[cols]

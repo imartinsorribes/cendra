@@ -159,6 +159,13 @@ def construir_edificios_todos() -> None:
             prop["k"] = str(row["parque_cercano"])
         if "localId" in cols and pd.notna(row["localId"]):
             prop["i"] = str(row["localId"])
+        # Bandera «candidato Campanar»: edificios construidos en la era
+        # del composite ACM-PE (2000-2017) con ≥10 plantas. Son los
+        # edificios que el Ayuntamiento debería priorizar para
+        # inspección de fachada (sin estigmatizarlos: NO sabemos si
+        # tienen ACM-PE, pero cumplen el perfil temporal).
+        if "candidato_campanar" in cols and bool(row["candidato_campanar"]):
+            prop["c"] = 1
         # Limpiar Nones
         prop = {k: v for k, v in prop.items() if v is not None}
         features.append({
@@ -201,14 +208,18 @@ def construir_edificios_poligonos() -> None:
     n = min(500, len(edif))
     top = edif.nlargest(n, "riesgo").to_crs("EPSG:4326")
     cols = ["riesgo", "plantas", "altura_m", "anio_construccion",
-            "barrio", "geometry"]
+            "barrio", "candidato_campanar", "geometry"]
     cols_disp = [c for c in cols if c in top.columns]
     out = top[cols_disp].copy()
     # Renombrar a propiedades cortas para coherencia con el otro fichero
     out = out.rename(columns={
         "riesgo": "r", "plantas": "p", "altura_m": "h",
         "anio_construccion": "a", "barrio": "b",
+        "candidato_campanar": "c",
     })
+    # Asegurar que `c` (candidato_campanar) es int/bool en el GeoJSON
+    if "c" in out.columns:
+        out["c"] = out["c"].fillna(False).astype(int)
     # Simplificar geometría a 1 m (~ 0,00001 grados) para reducir tamaño
     out["geometry"] = out.geometry.simplify(0.00001, preserve_topology=True)
     out_path = WEB_DATA / "edificios_top_poligonos.geojson"
@@ -217,6 +228,96 @@ def construir_edificios_poligonos() -> None:
     print(
         f"  → {out_path.relative_to(ROOT)} ({kb:.0f} KB, "
         f"{len(out)} polígonos del top de riesgo)",
+        file=sys.stderr,
+    )
+
+
+def _fila_lista(row, pt_4326) -> dict:
+    """Helper: convierte una fila del gpkg en dict para la lista
+    JSON del frontend."""
+    ref = str(row.get("localId", "") or "").split("_part")[0]
+    return {
+        "lon": round(pt_4326.x, 5),
+        "lat": round(pt_4326.y, 5),
+        "barrio": str(row.get("barrio", "") or ""),
+        "plantas": int(row.get("plantas", 0) or 0),
+        "anio": int(row["anio_construccion"]) if pd.notna(row.get("anio_construccion")) else None,
+        "altura_m": int(row.get("altura_m", 0) or 0),
+        "uso": str(row.get("uso", "") or ""),
+        "riesgo": round(float(row["riesgo"]), 1),
+        "candidato_campanar": bool(row.get("candidato_campanar", False)),
+        "ref": ref,
+        "tiempo_llegada_min": round(float(row.get("tiempo_llegada_min", 0)), 1),
+        "parque_cercano": str(row.get("parque_cercano", "") or ""),
+    }
+
+
+def construir_lista_top_critical() -> None:
+    """Genera un JSON con DOS rankings de edificios para el panel:
+
+      - `top_riesgo`: TOP 20 con mayor índice de riesgo del modelo bajo
+        el escenario base. Suelen ser pedanías y zonas urbanas densas
+        con tiempo de bomberos elevado.
+
+      - `top_candidatos_campanar`: TOP 20 entre los edificios con
+        perfil temporal del incidente Campanar (≥10 plantas y
+        construcción 2000-2017, era del composite ACM). Son los que
+        DEBERÍAN inspeccionarse prioritariamente, aunque su riesgo
+        en el modelo «escenario base» NO sea máximo (porque el modelo
+        no asume fachada combustible por defecto).
+
+    La distinción entre ambos rankings es metodológicamente importante:
+    el primero es el ranking PASIVO del modelo, el segundo es la
+    pregunta proactiva «¿dónde está la próxima Campanar latente?».
+    """
+    gpkg = PROCESSED / "riesgo_edificios.gpkg"
+    if not gpkg.exists():
+        return
+    edif = gpd.read_file(gpkg, layer="riesgo")
+
+    # Agrupar por localId base (sin _part) para no listar varias partes
+    # del mismo edificio. Nos quedamos con la fila de mayor riesgo de
+    # cada edificio único.
+    edif["localId_base"] = edif["localId"].str.split("_part").str[0]
+    edif = edif.sort_values("riesgo", ascending=False)
+    edif = edif.drop_duplicates(subset="localId_base", keep="first")
+
+    pts_all = edif.geometry.representative_point().to_crs("EPSG:4326")
+
+    def _construir_top(subset, n=20):
+        sub = subset.head(n)
+        items = []
+        for rank, idx in enumerate(sub.index, start=1):
+            pt = pts_all.loc[idx]
+            row = sub.loc[idx]
+            item = _fila_lista(row, pt)
+            item["rank"] = rank
+            items.append(item)
+        return items
+
+    top_riesgo = _construir_top(edif, n=20)
+
+    candidatos = edif[edif["candidato_campanar"] == True]  # noqa: E712
+    top_campanar = _construir_top(candidatos, n=20)
+
+    n_total_cand = int((edif["candidato_campanar"] == True).sum())  # noqa: E712
+
+    salida = {
+        "top_riesgo": top_riesgo,
+        "top_candidatos_campanar": top_campanar,
+        "n_total_candidatos_campanar": n_total_cand,
+        "n_total_edificios": int(len(edif)),
+    }
+    out_path = WEB_DATA / "edificios_top_lista.json"
+    out_path.write_text(
+        json.dumps(salida, ensure_ascii=False, separators=(",", ":")),
+        encoding="utf-8",
+    )
+    kb = out_path.stat().st_size / 1024
+    print(
+        f"  → {out_path.relative_to(ROOT)} ({kb:.0f} KB) · "
+        f"{n_total_cand:,} candidatos Campanar entre "
+        f"{len(edif):,} edificios únicos",
         file=sys.stderr,
     )
 
@@ -232,9 +333,12 @@ def main() -> None:
     print("[4/5] construir edificios_top_riesgo.geojson (puntos)",
           file=sys.stderr)
     construir_edificios_todos()
-    print("[5/5] construir edificios_top_poligonos.geojson (huellas reales)",
+    print("[5/6] construir edificios_top_poligonos.geojson (huellas reales)",
           file=sys.stderr)
     construir_edificios_poligonos()
+    print("[6/6] construir edificios_top_lista.json (top-30 más críticos)",
+          file=sys.stderr)
+    construir_lista_top_critical()
 
 
 if __name__ == "__main__":

@@ -536,6 +536,108 @@ label > input[type="checkbox"] {
 /* Plan de respuesta operativa — color azul SPEIS para distinguirlo */
 .plan-respuesta { background: rgba(31, 79, 139, 0.04); border-color: rgba(31, 79, 139, 0.2); }
 .plan-respuesta h2 { color: var(--acento); }
+
+/* Edificios más críticos: tabs + tabla */
+.criticos-tabs {
+  display: flex;
+  gap: 0.25rem;
+  margin: 0.4rem 0 0.6rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--linea);
+}
+.critico-tab {
+  flex: 1;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--linea);
+  background: white;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 0.78rem;
+  cursor: pointer;
+  color: var(--texto-suave);
+  font-weight: 600;
+}
+.critico-tab.activo {
+  background: var(--brasa);
+  color: white;
+  border-color: var(--brasa);
+}
+.criticos-resumen {
+  margin: 0 0 0.5rem;
+  font-size: 0.78rem;
+  color: var(--texto-suave);
+  font-style: italic;
+}
+.criticos-lista {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+  max-height: 360px;
+  overflow-y: auto;
+  counter-reset: critico;
+}
+.critico-item {
+  counter-increment: critico;
+  position: relative;
+  padding: 0.5rem 0.6rem 0.55rem 2.1rem;
+  margin-bottom: 0.35rem;
+  border: 1px solid var(--linea);
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  transition: border-color 0.15s;
+}
+.critico-item:hover {
+  border-color: var(--brasa);
+  background: rgba(176, 58, 29, 0.04);
+}
+.critico-item::before {
+  content: counter(critico);
+  position: absolute;
+  left: 0.45rem; top: 0.5rem;
+  width: 1.3rem; height: 1.3rem;
+  background: var(--texto-suave);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.7rem;
+}
+.critico-item.candidato::before {
+  background: #c47f1c;  /* dorado para candidatos Campanar */
+}
+.critico-item .critico-barrio {
+  font-weight: 600;
+  color: var(--texto);
+}
+.critico-item .critico-meta {
+  font-size: 0.72rem;
+  color: var(--texto-suave);
+  margin-top: 0.1rem;
+}
+.critico-item .critico-riesgo {
+  float: right;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.95rem;
+  color: var(--brasa);
+}
+.critico-item .critico-flag {
+  display: inline-block;
+  margin-left: 0.3rem;
+  padding: 0.05rem 0.4rem;
+  border-radius: 3px;
+  background: rgba(196, 127, 28, 0.15);
+  color: #8b5a14;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
 .plan-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

@@ -159,6 +159,20 @@ async function inicializarMapa() {
       'line-width': 0.7,
     },
   });
+  // Borde dorado para los candidatos perfil Campanar (≥10 plantas
+  // construidos 2000-2017): edificios prioritarios para inspección
+  // municipal de fachada
+  map.addLayer({
+    id: 'edificios-candidatos-line',
+    source: 'edificios-poligonos',
+    type: 'line',
+    minzoom: 13,
+    filter: ['==', ['get', 'c'], 1],
+    paint: {
+      'line-color': '#c47f1c',
+      'line-width': 2.5,
+    },
+  });
 
   // Source de los 10.000 edificios destacados con CLUSTERING.
   // A zoom bajo se agrupan en burbujas con número; al hacer zoom se
@@ -440,7 +454,13 @@ async function inicializarMapa() {
           · año ${p.a ? Math.round(p.a) : '—'}<br>
           ${p.b || '(sin barrio)'}${p.u ? ` · uso ${p.u}` : ''}<br>
           Bomberos: ${p.k ?? '—'} · ${p.t ?? '?'} min<br>
-          ${p.i ? `<span class="popup-ref">Ref. catastral: <a href="https://www1.sedecatastro.gob.es/CYCBienInmueble/OVCListaBienes.aspx?rc1=${p.i.slice(0,7)}&rc2=${p.i.slice(7)}" target="_blank" rel="noopener"><code>${p.i}</code></a></span>` : ''}
+          ${p.i ? (() => {
+            // El localId del Catastro INSPIRE viene como
+            // «000100100YJ27F_part1» (la parte buildingpart). La referencia
+            // catastral REAL es la base sin el sufijo _partN.
+            const ref = p.i.split('_part')[0];
+            return `<span class="popup-ref">Ref. catastral: <a href="https://www1.sedecatastro.gob.es/CYCBienInmueble/OVCListaBienes.aspx?rc1=${ref.slice(0,7)}&rc2=${ref.slice(7)}" target="_blank" rel="noopener"><code>${ref}</code></a></span>`;
+          })() : ''}
         </p>
         <p class="popup-cta">
           Los sliders del panel ya están con los valores reales de este
@@ -886,6 +906,79 @@ if (buscadorBtn) buscadorBtn.addEventListener('click', buscarDireccion);
 if (buscadorInput) buscadorInput.addEventListener('keydown', e => {
   if (e.key === 'Enter') { e.preventDefault(); buscarDireccion(); }
 });
+
+// === Tabla de edificios más críticos =======================================
+
+let _criticosData = null;
+let _criticosTabActivo = 'riesgo';
+
+async function cargarCriticos() {
+  try {
+    const r = await fetch('data/edificios_top_lista.json');
+    if (!r.ok) return;
+    _criticosData = await r.json();
+    pintarCriticos();
+  } catch (e) {
+    /* offline o error */
+  }
+}
+
+function pintarCriticos() {
+  if (!_criticosData) return;
+  const lista = document.getElementById('criticos_lista');
+  const resumen = document.getElementById('criticos_resumen');
+  if (!lista || !resumen) return;
+  const items = _criticosTabActivo === 'campanar'
+    ? _criticosData.top_candidatos_campanar
+    : _criticosData.top_riesgo;
+  resumen.textContent = _criticosTabActivo === 'campanar'
+    ? `${_criticosData.n_total_candidatos_campanar.toLocaleString('es-ES')} edificios cumplen el perfil Campanar en València. Top 20 por riesgo:`
+    : `Top 20 edificios con mayor riesgo del modelo (de ${_criticosData.n_total_edificios.toLocaleString('es-ES')} totales):`;
+  lista.innerHTML = items.map(it => `
+    <li class="critico-item ${it.candidato_campanar ? 'candidato' : ''}" data-lon="${it.lon}" data-lat="${it.lat}" data-plantas="${it.plantas}" data-anio="${it.anio || ''}" data-uso="${it.uso || ''}">
+      <span class="critico-riesgo">${it.riesgo}</span>
+      <span class="critico-barrio">${it.barrio || '(sin barrio)'}</span>
+      ${it.candidato_campanar ? '<span class="critico-flag">perfil Campanar</span>' : ''}
+      <div class="critico-meta">
+        ${it.plantas} plantas${it.altura_m ? ` · ${it.altura_m} m` : ''}
+        ${it.anio ? ` · ${it.anio}` : ''}
+        · bomberos ${it.tiempo_llegada_min} min
+      </div>
+    </li>
+  `).join('');
+  // Click en una fila: vuela el mapa y simula
+  lista.querySelectorAll('.critico-item').forEach(li => {
+    li.addEventListener('click', () => {
+      const lon = parseFloat(li.dataset.lon);
+      const lat = parseFloat(li.dataset.lat);
+      const plantas = parseInt(li.dataset.plantas, 10);
+      const anio = parseInt(li.dataset.anio, 10);
+      const uso = li.dataset.uso;
+      estado.lon = lon; estado.lat = lat;
+      inputs.plantas.value = plantas; outputs.plantas.value = plantas;
+      if (!isNaN(anio)) { inputs.anio.value = anio; outputs.anio.value = anio; }
+      if (uso) {
+        const opcionExiste = Array.from(inputs.uso.options).some(o => o.value === uso);
+        inputs.uso.value = opcionExiste ? uso : '';
+      }
+      if (window.__map) {
+        window.__map.flyTo({ center: [lon, lat], zoom: 17, duration: 1200 });
+      }
+      recalcular();
+    });
+  });
+}
+
+document.querySelectorAll('.critico-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.critico-tab').forEach(b => b.classList.remove('activo'));
+    btn.classList.add('activo');
+    _criticosTabActivo = btn.dataset.tab;
+    pintarCriticos();
+  });
+});
+
+cargarCriticos();
 
 // === Tutorial de bienvenida (solo primera visita) ==========================
 
