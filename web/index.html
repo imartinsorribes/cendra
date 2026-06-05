@@ -7,7 +7,7 @@
 <meta name="description" content="¿Cuál es el riesgo de incendio de tu edificio? Atlas paramétrico de València con datos abiertos.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%23fbf8f3'/%3E%3Cpath d='M50 16 L78 70 L22 70 Z' fill='%23b03a1d'/%3E%3Cpath d='M50 38 L66 64 L34 64 Z' fill='%23fbf8f3'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
-<link rel="stylesheet" href="style.css?v=15">
+<link rel="stylesheet" href="style.css?v=16">
 </head>
 <body>
 
@@ -26,11 +26,17 @@
 </div>
 
 <header>
-  <h1>cendra <span class="vlc">VLC</span></h1>
-  <p class="tagline">¿Cuál es el riesgo de incendio de tu edificio? Atlas paramétrico de València con datos abiertos.</p>
+  <div class="header-titulo">
+    <h1>cendra <span class="vlc">VLC</span></h1>
+    <p class="tagline">¿Cuál es el riesgo de incendio de tu edificio? Atlas paramétrico de València con datos abiertos.</p>
+  </div>
+  <nav class="header-tabs">
+    <button class="header-tab activa" data-vista="analisis" type="button">Análisis</button>
+    <button class="header-tab" data-vista="propuestas" type="button">Propuestas</button>
+  </nav>
 </header>
 
-<main>
+<main class="vista" id="vista-analisis">
   <!-- Panel izquierdo: controles y filtros -->
   <aside id="panel-izq" class="panel-lateral">
     <details class="bloque escenarios" open>
@@ -245,6 +251,128 @@
   </aside>
 </main>
 
+<section class="vista vista-propuestas" id="vista-propuestas" hidden>
+  <div class="propuestas-wrap">
+
+    <header class="prop-hero">
+      <p class="prop-pretitulo">Después de Campanar</p>
+      <h2>Lo que cendra propone hacer con los datos abiertos de València</h2>
+      <p class="prop-intro">El atlas no se queda en el diagnóstico. Estas son las acciones concretas que pueden derivarse de los 214.000 edificios analizados, los 154 candidatos identificados, los 6 parques operativos y los 1.923 hidrantes.</p>
+    </header>
+
+    <section class="cifras-clave">
+      <div class="cifra"><span class="big">214.000</span><span>edificios analizados del Catastro INSPIRE</span></div>
+      <div class="cifra brasa"><span class="big">154</span><span>edificios cumplen el «perfil Campanar»</span></div>
+      <div class="cifra"><span class="big">10</span><span>capas geoespaciales del portal cruzadas</span></div>
+      <div class="cifra"><span class="big">6</span><span>parques del SPEIS (capa propia)</span></div>
+      <div class="cifra"><span class="big">1.923</span><span>hidrantes municipales</span></div>
+      <div class="cifra"><span class="big">28</span><span>tests automatizados de validación</span></div>
+    </section>
+
+    <section class="prop-bloque">
+      <h3>Por qué cendra existe: cronología del fuego de fachada combustible</h3>
+      <p class="prop-ayuda">Los grandes incendios de fachada de la última década dibujan un patrón claro. Todos comparten la combinación de revestimiento exterior con núcleo combustible (composite ACM con polietileno, SATE con poliestireno) y altura suficiente para que el efecto chimenea propague el fuego en minutos.</p>
+      <ol class="cronologia">
+        <li>
+          <span class="crono-fecha">2014 · Lacrosse Tower</span>
+          <span class="crono-lugar">Melbourne, Australia</span>
+          <p>21 plantas. Una colilla en la planta 8 causó un incendio que recorrió la fachada de composite ACM en 11 minutos hasta la cubierta. Sin víctimas mortales pero con evacuación masiva.</p>
+        </li>
+        <li>
+          <span class="crono-fecha">2015 · The Address Downtown</span>
+          <span class="crono-lugar">Dubái, Emiratos</span>
+          <p>63 plantas. Incendio de fachada en Nochevieja durante el espectáculo pirotécnico ante miles de espectadores. Sin víctimas pero la torre quedó inutilizable durante años.</p>
+        </li>
+        <li>
+          <span class="crono-fecha">2017 · Grenfell Tower</span>
+          <span class="crono-lugar">Londres, Reino Unido</span>
+          <p>24 plantas. El incendio más mortífero de fachada combustible de la historia reciente: 72 personas murieron. El revestimiento exterior se había instalado en una rehabilitación energética. Disparó la revisión normativa europea.</p>
+        </li>
+        <li>
+          <span class="crono-fecha">2022 · Mocejón</span>
+          <span class="crono-lugar">Toledo, España</span>
+          <p>Edificio residencial con SATE de poliestireno. Incendio de fachada que evidenció que el problema no es solo de rascacielos: la rehabilitación energética con materiales combustibles es masiva en toda España.</p>
+        </li>
+        <li class="crono-clave">
+          <span class="crono-fecha">22 febrero 2024 · Edificio Maravillas, Campanar</span>
+          <span class="crono-lugar">València, España</span>
+          <p>14 plantas, 2006, fachada de composite ACM-PE. La torre se incendió por completo en pocas horas. Diez personas murieron, decenas de familias perdieron su hogar. Este es el incidente que motivó cendra.</p>
+        </li>
+      </ol>
+    </section>
+
+    <section class="prop-bloque">
+      <h3>Plan de inspección municipal: los 154 candidatos</h3>
+      <p class="prop-ayuda">Edificios de València construidos entre 2000 y 2017 con 10 plantas o más. Cumplen el perfil temporal del incidente Campanar y son los candidatos prioritarios para inspección de fachada por parte del Ajuntament. <strong>NO sabemos si tienen ACM-PE</strong> (el dato no es público y por buenas razones), pero estadísticamente son los que estuvieron más expuestos a esa tecnología constructiva durante su construcción.</p>
+      <div class="tabla-candidatos-controles">
+        <input type="text" id="filtro_barrio" placeholder="Filtrar por barrio…">
+        <button id="descargar_csv" type="button">Descargar CSV completo</button>
+      </div>
+      <div class="tabla-wrap">
+        <table class="tabla-candidatos">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Barrio</th>
+              <th>Plantas</th>
+              <th>Año</th>
+              <th>Riesgo base</th>
+              <th>Bomberos</th>
+              <th>Ref. Catastro</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tabla_candidatos_body"></tbody>
+        </table>
+      </div>
+      <p class="tabla-pie" id="tabla_pie"></p>
+    </section>
+
+    <section class="prop-bloque">
+      <h3>Propuestas de acción</h3>
+      <p class="prop-ayuda">Tres bloques de medidas concretas dirigidas a tres actores con poder de decisión.</p>
+      <div class="acciones-grid">
+        <article class="accion accion-ajuntament">
+          <h4>Para el Ajuntament de València</h4>
+          <ol>
+            <li>Cruzar la lista de los 154 candidatos con los registros municipales de licencias de obra y reformas para identificar cuáles tienen efectivamente revestimiento de composite o SATE combustible.</li>
+            <li>Ordenar inspección técnica de fachada de los identificados, priorizando edificios residenciales con población vulnerable cerca (residencias geriátricas, centros sanitarios).</li>
+            <li>Publicar como dataset abierto la ubicación de los parques de bomberos del SPEIS (que cendra ha tenido que reconstruir manualmente).</li>
+            <li>Publicar como dataset abierto el histórico anonimizado de incidentes del SPEIS, fundamental para refinar modelos de respuesta.</li>
+            <li>Incorporar los hallazgos del modelo en la próxima revisión del Plan General de Ordenación Urbana, en particular los criterios de altura admisible vs. distancia a parque de bomberos.</li>
+          </ol>
+        </article>
+
+        <article class="accion accion-speis">
+          <h4>Para el Servei de Prevenció, Extinció d'Incendis i Salvament</h4>
+          <ol>
+            <li>Validar el modelo de despliegue (dotaciones, vehículos, caudal) con la doctrina operativa real del SPEIS y publicar las desviaciones para retroalimentar el modelo.</li>
+            <li>Estudiar la viabilidad de un parque adicional o auxiliar para reducir el tiempo medio de llegada en pedanías como Borbotó o El Perellonet, donde supera los 13 minutos.</li>
+            <li>Incorporar el modelo paramétrico en la formación interna como herramienta pedagógica de simulación de escenarios.</li>
+            <li>Compartir datos de presión hidráulica de la red de hidrantes para refinar el factor R_hidrante del modelo (hoy es solo distancia, no presión).</li>
+          </ol>
+        </article>
+
+        <article class="accion accion-ciudadania">
+          <h4>Para la ciudadanía y comunidades de propietarios</h4>
+          <ol>
+            <li>Si tu edificio aparece en la lista de los 154 candidatos, propón en la próxima junta de propietarios solicitar al Ajuntament una inspección técnica de fachada.</li>
+            <li>Comprueba el estado del SCI (sistema contra incendios) de tu finca. Si solo tenéis extintores o nada, hablad con un técnico cualificado para evaluar opciones (rociadores, columna seca, detección).</li>
+            <li>Verifica si la ITE de tu edificio está al día. Para edificios con más de 50 años es obligatoria por ley estatal.</li>
+            <li>Conoce las dos rutas de evacuación de tu edificio. En incendios de fachada combustible, la propagación es por exterior y los pasillos suelen mantenerse practicables más tiempo que las escaleras exteriores.</li>
+          </ol>
+        </article>
+      </div>
+    </section>
+
+    <section class="prop-bloque cierre">
+      <h3>Llamada</h3>
+      <p>cendra es código y datos abiertos. Fork del repositorio: <a href="https://github.com/imartinsorribes/cendra">github.com/imartinsorribes/cendra</a>. Cualquier ciudad española con Catastro INSPIRE puede regenerar el atlas calibrando solo el factor de población local. Esa es la propuesta de fondo: que la respuesta a Campanar no se quede en València.</p>
+    </section>
+
+  </div>
+</section>
+
 <footer>
   <p>
     Proyecto para la IV Convocatoria de Premios de datos abiertos y periodismo de datos
@@ -257,7 +385,7 @@
 </footer>
 
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
-<script src="modelo.js?v=15"></script>
-<script src="app.js?v=15"></script>
+<script src="modelo.js?v=16"></script>
+<script src="app.js?v=16"></script>
 </body>
 </html>

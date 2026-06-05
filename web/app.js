@@ -980,6 +980,131 @@ document.querySelectorAll('.critico-tab').forEach(btn => {
 
 cargarCriticos();
 
+// === Cambio de vista entre Análisis y Propuestas ============================
+
+document.querySelectorAll('.header-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const vista = btn.dataset.vista;
+    document.querySelectorAll('.header-tab').forEach(b => b.classList.remove('activa'));
+    btn.classList.add('activa');
+    document.querySelectorAll('.vista').forEach(v => {
+      v.hidden = (v.id !== `vista-${vista}`);
+    });
+    // Si pasamos a Propuestas, asegurarnos de cargar la tabla.
+    if (vista === 'propuestas') cargarTablaCandidatos();
+    // Si pasamos a Análisis y el mapa existe, forzar resize por si
+    // estaba escondido y MapLibre no había recalculado dimensiones.
+    if (vista === 'analisis' && window.__map) {
+      setTimeout(() => window.__map.resize(), 50);
+    }
+  });
+});
+
+// === Tabla de los 154 candidatos Campanar (vista Propuestas) ===============
+
+let _candidatosCompletos = null;
+
+async function cargarTablaCandidatos() {
+  if (_candidatosCompletos) {
+    pintarTablaCandidatos(_candidatosCompletos);
+    return;
+  }
+  try {
+    const r = await fetch('data/candidatos_campanar_completo.json');
+    if (!r.ok) return;
+    _candidatosCompletos = await r.json();
+    pintarTablaCandidatos(_candidatosCompletos);
+  } catch (e) { /* offline */ }
+}
+
+function pintarTablaCandidatos(items) {
+  const tbody = document.getElementById('tabla_candidatos_body');
+  if (!tbody) return;
+  tbody.innerHTML = items.map(it => {
+    const refLink = it.ref
+      ? `<a href="https://www1.sedecatastro.gob.es/CYCBienInmueble/OVCListaBienes.aspx?rc1=${it.ref.slice(0,7)}&rc2=${it.ref.slice(7)}" target="_blank" rel="noopener"><code>${it.ref}</code></a>`
+      : '—';
+    return `
+      <tr data-lon="${it.lon}" data-lat="${it.lat}" data-plantas="${it.plantas}" data-anio="${it.anio || ''}" data-uso="${it.uso || ''}">
+        <td class="num">${it.rank}</td>
+        <td>${it.barrio || '—'}</td>
+        <td class="num">${it.plantas}</td>
+        <td class="num">${it.anio || '—'}</td>
+        <td class="num">${it.riesgo}</td>
+        <td class="num">${it.tiempo_llegada_min} min</td>
+        <td>${refLink}</td>
+        <td><button class="ver-link" type="button">Ver en mapa</button></td>
+      </tr>
+    `;
+  }).join('');
+  document.getElementById('tabla_pie').textContent =
+    `Mostrando ${items.length} de ${_candidatosCompletos.length} candidatos.`;
+
+  // Click en «Ver en mapa»: cambiar a vista análisis + simular ese edificio
+  tbody.querySelectorAll('button.ver-link').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tr = btn.closest('tr');
+      const lon = parseFloat(tr.dataset.lon);
+      const lat = parseFloat(tr.dataset.lat);
+      const plantas = parseInt(tr.dataset.plantas, 10);
+      const anio = parseInt(tr.dataset.anio, 10);
+      const uso = tr.dataset.uso;
+      // Cambiar a vista análisis
+      document.querySelector('.header-tab[data-vista="analisis"]').click();
+      // Esperar al resize del mapa y luego volar al edificio
+      setTimeout(() => {
+        estado.lon = lon; estado.lat = lat;
+        inputs.plantas.value = plantas; outputs.plantas.value = plantas;
+        if (!isNaN(anio)) { inputs.anio.value = anio; outputs.anio.value = anio; }
+        if (uso) {
+          const opcionExiste = Array.from(inputs.uso.options).some(o => o.value === uso);
+          inputs.uso.value = opcionExiste ? uso : '';
+        }
+        if (window.__map) window.__map.flyTo({ center: [lon, lat], zoom: 17, duration: 1200 });
+        recalcular();
+      }, 200);
+    });
+  });
+}
+
+// Filtro por barrio en la tabla de candidatos
+const filtroBarrioInput = document.getElementById('filtro_barrio');
+if (filtroBarrioInput) {
+  filtroBarrioInput.addEventListener('input', () => {
+    if (!_candidatosCompletos) return;
+    const q = filtroBarrioInput.value.trim().toLowerCase();
+    const filtrados = q
+      ? _candidatosCompletos.filter(c => (c.barrio || '').toLowerCase().includes(q))
+      : _candidatosCompletos;
+    pintarTablaCandidatos(filtrados);
+  });
+}
+
+// Descarga CSV
+const descargarCSVBtn = document.getElementById('descargar_csv');
+if (descargarCSVBtn) {
+  descargarCSVBtn.addEventListener('click', () => {
+    if (!_candidatosCompletos) return;
+    const cols = ['rank', 'barrio', 'plantas', 'anio', 'altura_m', 'uso',
+                  'riesgo', 'tiempo_llegada_min', 'parque_cercano', 'lon', 'lat', 'ref'];
+    const lines = [cols.join(',')];
+    for (const it of _candidatosCompletos) {
+      lines.push(cols.map(c => {
+        const v = it[c] ?? '';
+        const s = String(v);
+        return s.includes(',') || s.includes('"') ? `"${s.replace(/"/g, '""')}"` : s;
+      }).join(','));
+    }
+    const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'cendra_candidatos_campanar.csv';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  });
+}
+
 // === Tutorial de bienvenida (solo primera visita) ==========================
 
 const tutorialEl = document.getElementById('tutorial');

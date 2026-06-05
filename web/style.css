@@ -29,25 +29,58 @@ html, body {
 }
 
 header {
-  padding: 1rem 1.5rem 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem;
+  padding: 0.75rem 1.5rem 0;
   border-bottom: 1px solid var(--linea);
   background: var(--bg-panel);
 }
-header h1 {
+.header-titulo h1 {
   margin: 0;
-  font-size: 1.4rem;
+  font-size: 1.35rem;
   font-weight: 700;
   color: var(--texto);
 }
-header h1 .vlc {
+.header-titulo h1 .vlc {
   color: var(--brasa);
   font-weight: 400;
 }
-header .tagline {
-  margin: 0.25rem 0 0.5rem;
-  font-size: 0.95rem;
+.header-titulo .tagline {
+  margin: 0.2rem 0 0.6rem;
+  font-size: 0.9rem;
   color: var(--texto-suave);
 }
+.header-tabs {
+  display: flex;
+  gap: 0.25rem;
+  align-self: flex-end;
+}
+.header-tab {
+  padding: 0.55rem 1.1rem;
+  background: transparent;
+  border: 1px solid var(--linea);
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  font-family: inherit;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--texto-suave);
+  cursor: pointer;
+  margin-bottom: -1px;
+  transition: all 0.15s;
+}
+.header-tab:hover { color: var(--brasa); }
+.header-tab.activa {
+  background: var(--bg);
+  color: var(--brasa);
+  border-color: var(--linea);
+  border-bottom: 1px solid var(--bg);
+}
+
+/* Vistas: una sola visible a la vez */
+.vista[hidden] { display: none !important; }
 
 main {
   display: grid;
@@ -234,6 +267,259 @@ label > input[type="checkbox"] {
 
 /* Popups del mapa siempre sobre el panel sticky */
 .maplibregl-popup { z-index: 50 !important; }
+
+/* === Vista «Propuestas» ==================================================== */
+
+.vista-propuestas {
+  background: var(--bg);
+  overflow-y: auto;
+  height: calc(100vh - 110px);
+  padding: 2rem 1.5rem 4rem;
+}
+.propuestas-wrap {
+  max-width: 1080px;
+  margin: 0 auto;
+}
+
+.prop-hero {
+  background: var(--bg-panel);
+  border: 1px solid var(--linea);
+  border-left: 4px solid var(--brasa);
+  border-radius: 6px;
+  padding: 1.5rem 1.75rem;
+  margin-bottom: 1.5rem;
+}
+.prop-pretitulo {
+  margin: 0 0 0.4rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.78rem;
+  color: var(--texto-suave);
+  font-weight: 600;
+}
+.prop-hero h2 {
+  margin: 0 0 0.6rem;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--texto);
+  line-height: 1.25;
+}
+.prop-intro {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.55;
+  color: var(--texto-suave);
+}
+
+.cifras-clave {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+.cifra {
+  background: var(--bg-panel);
+  border: 1px solid var(--linea);
+  border-radius: 6px;
+  padding: 0.9rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.cifra .big {
+  font-size: 1.95rem;
+  font-weight: 700;
+  color: var(--texto);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.cifra span:last-child {
+  font-size: 0.78rem;
+  color: var(--texto-suave);
+  line-height: 1.3;
+}
+.cifra.brasa { border-color: var(--brasa); border-left-width: 4px; }
+.cifra.brasa .big { color: var(--brasa); }
+
+.prop-bloque {
+  background: var(--bg-panel);
+  border: 1px solid var(--linea);
+  border-radius: 6px;
+  padding: 1.5rem 1.75rem;
+  margin-bottom: 1.25rem;
+}
+.prop-bloque h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.2rem;
+  color: var(--texto);
+}
+.prop-ayuda {
+  margin: 0 0 1rem;
+  font-size: 0.92rem;
+  color: var(--texto-suave);
+  line-height: 1.55;
+}
+
+/* Cronología visual */
+.cronologia {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-left: 2px solid var(--linea);
+  padding-left: 1.25rem;
+}
+.cronologia li {
+  position: relative;
+  padding: 0.25rem 0 1rem;
+}
+.cronologia li::before {
+  content: '';
+  position: absolute;
+  left: -1.46rem;
+  top: 0.5rem;
+  width: 10px; height: 10px;
+  background: var(--ceniza);
+  border-radius: 50%;
+  border: 2px solid var(--bg-panel);
+}
+.cronologia li.crono-clave::before {
+  background: var(--brasa);
+  width: 14px; height: 14px;
+  left: -1.58rem;
+}
+.cronologia li.crono-clave .crono-fecha { color: var(--brasa); font-weight: 700; }
+.crono-fecha {
+  display: block;
+  font-weight: 600;
+  color: var(--texto);
+  font-size: 0.95rem;
+}
+.crono-lugar {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--texto-suave);
+  font-style: italic;
+  margin-bottom: 0.35rem;
+}
+.cronologia li p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+/* Tabla de candidatos */
+.tabla-candidatos-controles {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.8rem;
+}
+.tabla-candidatos-controles input {
+  flex: 1;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid var(--linea);
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 0.9rem;
+}
+.tabla-candidatos-controles button {
+  padding: 0.45rem 1rem;
+  background: var(--brasa);
+  color: white;
+  border: 1px solid var(--brasa);
+  border-radius: 4px;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.tabla-candidatos-controles button:hover { background: var(--brasa-claro); }
+.tabla-wrap {
+  overflow-x: auto;
+  max-height: 480px;
+  overflow-y: auto;
+  border: 1px solid var(--linea);
+  border-radius: 4px;
+}
+.tabla-candidatos {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+  background: white;
+}
+.tabla-candidatos th {
+  background: var(--bg);
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  font-weight: 600;
+  color: var(--texto-suave);
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  position: sticky;
+  top: 0;
+  border-bottom: 1px solid var(--linea);
+}
+.tabla-candidatos td {
+  padding: 0.4rem 0.75rem;
+  border-bottom: 1px solid var(--linea);
+  vertical-align: middle;
+}
+.tabla-candidatos td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.tabla-candidatos tr:hover td { background: rgba(176, 58, 29, 0.04); }
+.tabla-candidatos a { color: var(--acento); }
+.tabla-candidatos .ver-link {
+  color: var(--brasa);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0;
+}
+.tabla-candidatos .ver-link:hover { text-decoration: underline; }
+.tabla-pie {
+  margin: 0.6rem 0 0;
+  font-size: 0.78rem;
+  color: var(--texto-suave);
+  text-align: right;
+}
+
+/* Cards de acciones */
+.acciones-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+.accion {
+  border: 1px solid var(--linea);
+  border-radius: 6px;
+  padding: 1rem 1.1rem;
+  background: white;
+}
+.accion h4 {
+  margin: 0 0 0.6rem;
+  font-size: 1rem;
+}
+.accion-ajuntament { border-top: 4px solid var(--brasa); }
+.accion-speis { border-top: 4px solid var(--acento); }
+.accion-ciudadania { border-top: 4px solid #6e9d4c; }
+.accion ol {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+.accion ol li { margin-bottom: 0.55rem; }
+
+.prop-bloque.cierre {
+  text-align: center;
+  background: var(--brasa);
+  color: white;
+  border: none;
+}
+.prop-bloque.cierre h3 { color: white; }
+.prop-bloque.cierre p { margin: 0.6rem 0 0; font-size: 1rem; }
+.prop-bloque.cierre a { color: white; text-decoration: underline; }
 
 /* Tutorial de bienvenida */
 .tutorial {

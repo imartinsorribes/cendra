@@ -321,6 +321,27 @@ def construir_lista_top_critical() -> None:
         file=sys.stderr,
     )
 
+    # Lista COMPLETA de los 154 candidatos perfil Campanar para
+    # poderla mostrar en la página de «Propuestas» y exportarla a CSV.
+    full = []
+    for rank, idx in enumerate(candidatos.index, start=1):
+        pt = pts_all.loc[idx]
+        row = candidatos.loc[idx]
+        item = _fila_lista(row, pt)
+        item["rank"] = rank
+        full.append(item)
+    full_path = WEB_DATA / "candidatos_campanar_completo.json"
+    full_path.write_text(
+        json.dumps(full, ensure_ascii=False, separators=(",", ":")),
+        encoding="utf-8",
+    )
+    kb = full_path.stat().st_size / 1024
+    print(
+        f"  → {full_path.relative_to(ROOT)} ({kb:.0f} KB) · "
+        f"lista completa de {len(full)} candidatos para tabla y CSV",
+        file=sys.stderr,
+    )
+
 
 def main() -> None:
     print("[1/4] copiar parques_bomberos.geojson", file=sys.stderr)
