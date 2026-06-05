@@ -7,7 +7,7 @@
 <meta name="description" content="¿Cuál es el riesgo de incendio de tu edificio? Atlas paramétrico de València con datos abiertos.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%23fbf8f3'/%3E%3Cpath d='M50 16 L78 70 L22 70 Z' fill='%23b03a1d'/%3E%3Cpath d='M50 38 L66 64 L34 64 Z' fill='%23fbf8f3'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
-<link rel="stylesheet" href="style.css?v=16">
+<link rel="stylesheet" href="style.css?v=17">
 </head>
 <body>
 
@@ -211,6 +211,10 @@
 
       <p class="banda" id="banda">Rango plausible con un cambio menor: <span id="banda_best">—</span> – <span id="banda_worst">—</span></p>
       <p class="contexto" id="contexto">Mueve los sliders o haz clic en el mapa para ver el riesgo.</p>
+      <details class="explica-riesgo" open>
+        <summary>Por qué este riesgo</summary>
+        <ul id="explica_riesgo_lista" class="explica-lista"></ul>
+      </details>
     </section>
 
     <details class="bloque recomendaciones" open>
@@ -385,7 +389,7 @@
 </footer>
 
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
-<script src="modelo.js?v=16"></script>
-<script src="app.js?v=16"></script>
+<script src="modelo.js?v=17"></script>
+<script src="app.js?v=17"></script>
 </body>
 </html>

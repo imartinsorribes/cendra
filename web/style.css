@@ -733,6 +733,45 @@ label > input[type="checkbox"] {
 }
 .contexto strong { color: var(--texto); }
 
+/* Explicación detallada «Por qué este riesgo» */
+.explica-riesgo {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--linea);
+}
+.explica-riesgo > summary {
+  cursor: pointer;
+  list-style: none;
+  font-size: 0.78rem;
+  color: var(--texto-suave);
+  font-weight: 600;
+  padding-right: 1rem;
+  position: relative;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.explica-riesgo > summary::-webkit-details-marker { display: none; }
+.explica-riesgo > summary::after {
+  content: '';
+  position: absolute;
+  right: 0; top: 0.35rem;
+  width: 6px; height: 6px;
+  border-right: 2px solid var(--texto-suave);
+  border-bottom: 2px solid var(--texto-suave);
+  transform: rotate(45deg);
+  transition: transform 0.18s ease;
+}
+.explica-riesgo[open] > summary::after { transform: rotate(-135deg); top: 0.55rem; }
+.explica-lista {
+  margin: 0.5rem 0 0;
+  padding-left: 1rem;
+  font-size: 0.8rem;
+  color: var(--texto);
+  line-height: 1.5;
+}
+.explica-lista li { margin-bottom: 0.4rem; }
+.explica-lista strong { color: var(--brasa); }
+
 /* Banda de confianza (best / worst case) */
 .banda {
   margin: 0.5rem 0 0;

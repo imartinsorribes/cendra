@@ -558,6 +558,69 @@ function circuloGeo(lon, lat, radioM, n = 64) {
   return { type: "Polygon", coordinates: [coords] };
 }
 
+// === Explicación textual del riesgo ========================================
+// Para que la usuaria entienda POR QUÉ un edificio tiene su valor de
+// riesgo, generamos un desglose en lenguaje natural a partir de los
+// sub-factores del modelo. Es la pieza educativa más vendible.
+
+function explicarRiesgo(input, resultado) {
+  const lineas = [];
+  const subV = resultado.subfactores_V || {};
+  const subE = resultado.subfactores_E || {};
+  const subR = resultado.subfactores_R || {};
+  const det = resultado.detalle_respuesta || {};
+
+  // Régimen
+  if (resultado.pesos.regimen === 'fachada-critica') {
+    lineas.push(`Régimen <strong>fachada crítica</strong>: el peso del edificio sube al 75 % y el de la respuesta de bomberos baja al 5 % porque la fachada combustible propaga el incendio más rápido de lo que pueden contener.`);
+  } else {
+    lineas.push(`Régimen normal: pesos 45 % edificio · 30 % población · 25 % respuesta.`);
+  }
+
+  // V_intrínseca
+  const vDom = [
+    { etiqueta: 'fachada', score: subV.v_fachada, peso: 30, label: LABEL_FACHADA[input.fachada] },
+    { etiqueta: 'sistema SCI', score: subV.v_sci, peso: 20, label: LABEL_SCI[input.sci] },
+    { etiqueta: 'altura', score: subV.v_altura, peso: 15, label: `${input.plantas} plantas` },
+    { etiqueta: 'ITE', score: subV.v_ite, peso: 15, label: LABEL_ITE[input.ite] },
+    { etiqueta: 'edad', score: subV.v_edad, peso: 10, label: `año ${input.anio}` },
+    { etiqueta: 'cubierta', score: subV.v_cubierta, peso: 10, label: LABEL_CUBIERTA[input.cubierta] },
+  ].sort((a, b) => (b.score * b.peso) - (a.score * a.peso));
+  const v1 = vDom[0], v2 = vDom[1];
+  lineas.push(`<strong>Edificio (V = ${resultado.componentes.V_intrinseca})</strong> dominado por ${v1.etiqueta} (${v1.label}, score ${v1.score}) y ${v2.etiqueta} (${v2.label}, score ${v2.score}).`);
+
+  // E_exposición
+  const factorOcup = subE.factor_ocupacion ?? 1;
+  let textoE = `<strong>Población (E = ${resultado.componentes.E_exposicion})</strong> = densidad del barrio ${Math.round(subE.e_densidad ?? 0)}, vulnerabilidad social ${Math.round(subE.e_vulnerab ?? 0)}, equipamientos sensibles ${subE.e_sensibles ?? 0}`;
+  if (factorOcup !== 1) {
+    textoE += `, modulado por ocupación a las ${input.hora}:00 (factor ${factorOcup}).`;
+  } else {
+    textoE += `.`;
+  }
+  lineas.push(textoE);
+
+  // R_respuesta
+  let textoR = `<strong>Bomberos (R = ${resultado.componentes.R_respuesta})</strong>: ${det.parque_efectivo ?? 'parque'} llega en ${det.tiempo_llegada_min} min`;
+  if (det.tiempo_llegada_min <= 4) textoR += ` (cobertura excelente, R_tiempo ≈ 0)`;
+  else if (det.tiempo_llegada_min <= 8) textoR += ` (cobertura razonable)`;
+  else textoR += ` (cobertura insuficiente, R_tiempo elevado)`;
+  textoR += `.`;
+  lineas.push(textoR);
+
+  // Cómo se propaga el fuego (pieza educativa)
+  let propagacion;
+  if (resultado.pesos.regimen === 'fachada-critica') {
+    propagacion = `<strong>Cómo se propagaría:</strong> en fachada combustible, el incendio sube por el revestimiento exterior a una planta cada 30-60 segundos. Un edificio de ${input.plantas} plantas puede quedar envuelto en ${Math.max(2, Math.round(input.plantas * 0.7))} minutos. La planta donde se inicie el fuego importa menos que la altura total: una vez fuera, sube a la cubierta.`;
+  } else if (input.cubierta === 'combustible') {
+    propagacion = `<strong>Cómo se propagaría:</strong> el incendio crece dentro del edificio por hueco de escalera o conductos (~ 5 min por planta). La cubierta combustible puede convertir un fuego contenido en colapso de la última planta.`;
+  } else {
+    propagacion = `<strong>Cómo se propagaría:</strong> el incendio crece dentro del edificio (cocina, instalación eléctrica) y sube por hueco de escalera a unos 5 min por planta si los sectorizados resisten. La fachada no propaga.`;
+  }
+  lineas.push(propagacion);
+
+  return lineas;
+}
+
 // Exportar al ámbito global para que app.js pueda usarlas
 window.cendraModelo = {
   cargarParques,
@@ -568,6 +631,7 @@ window.cendraModelo = {
   parquesQueResponden,
   rutaPorCalles,
   hidrantesOperativos,
+  explicarRiesgo,
   circuloGeo,
   haversineMetros,
   ESCENARIOS,

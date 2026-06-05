@@ -128,6 +128,13 @@ def construir_edificios_todos() -> None:
               "Ejecuta antes calcular_riesgo_batch.py.", file=sys.stderr)
         return
     edif_full = gpd.read_file(gpkg, layer="riesgo")
+    # Deduplicar por localId_base para que cada edificio físico
+    # aparezca una vez (no una por buildingpart).
+    edif_full["localId_base"] = edif_full["localId"].str.split("_part").str[0]
+    edif_full = (
+        edif_full.sort_values("riesgo", ascending=False)
+        .drop_duplicates(subset="localId_base", keep="first")
+    )
     n_top = min(10000, len(edif_full))
     edif = edif_full.nlargest(n_top, "riesgo").reset_index(drop=True)
     pts = edif.geometry.representative_point().to_crs("EPSG:4326")
@@ -196,38 +203,72 @@ def construir_edificios_todos() -> None:
 
 def construir_edificios_poligonos() -> None:
     """Exporta la geometría POLIGONAL real (huella catastral) de los
-    TOP-500 edificios de mayor riesgo. Sirve para destacarlos en el
-    mapa como sombras rojas en lugar de simples puntos, mucho más
-    impactante visualmente y más realista (la usuaria ve la huella
-    real del edificio, no solo un punto).
+    TOP-2000 edificios únicos de mayor riesgo.
+
+    Hasta v0.2 sacábamos 500 polígonos pero el Catastro INSPIRE
+    desglosa cada edificio en buildingparts (`localId` con sufijo
+    `_partN`). Eso provocaba que un mismo edificio físico apareciera
+    varias veces en el mapa (varios polígonos solapados). Ahora
+    deduplicamos por `localId_base` y por agrupación geométrica
+    (unimos las partes que pertenecen al mismo edificio).
+
+    Resultado: una huella por edificio real, no varias por sus
+    partes catastrales.
     """
     gpkg = PROCESSED / "riesgo_edificios.gpkg"
     if not gpkg.exists():
         return
     edif = gpd.read_file(gpkg, layer="riesgo")
-    n = min(500, len(edif))
-    top = edif.nlargest(n, "riesgo").to_crs("EPSG:4326")
+
+    # Deduplicar por localId base (sin `_partN`).
+    edif["localId_base"] = edif["localId"].str.split("_part").str[0]
+    # Para cada edificio único, nos quedamos con la PARTE de mayor
+    # riesgo (suele coincidir con la de mayor altura) y unimos todas
+    # las geometrías de sus partes para tener la huella completa.
+    grouped = edif.sort_values("riesgo", ascending=False).groupby("localId_base", as_index=False)
+    representante = grouped.first()
+    geom_unida = grouped.agg({"geometry": lambda g: g.unary_union})
+    representante["geometry"] = geom_unida["geometry"].values
+
+    # Top 2000 únicos
+    n = min(2000, len(representante))
+    top = (
+        gpd.GeoDataFrame(representante, geometry="geometry", crs=edif.crs)
+        .nlargest(n, "riesgo")
+        .to_crs("EPSG:4326")
+    )
+
     cols = ["riesgo", "plantas", "altura_m", "anio_construccion",
-            "barrio", "candidato_campanar", "geometry"]
+            "barrio", "candidato_campanar", "uso", "tiempo_llegada_min",
+            "parque_cercano", "localId_base", "geometry"]
     cols_disp = [c for c in cols if c in top.columns]
     out = top[cols_disp].copy()
-    # Renombrar a propiedades cortas para coherencia con el otro fichero
     out = out.rename(columns={
         "riesgo": "r", "plantas": "p", "altura_m": "h",
         "anio_construccion": "a", "barrio": "b",
-        "candidato_campanar": "c",
+        "candidato_campanar": "c", "uso": "u",
+        "tiempo_llegada_min": "t", "parque_cercano": "k",
+        "localId_base": "i",
     })
-    # Asegurar que `c` (candidato_campanar) es int/bool en el GeoJSON
     if "c" in out.columns:
         out["c"] = out["c"].fillna(False).astype(int)
-    # Simplificar geometría a 1 m (~ 0,00001 grados) para reducir tamaño
+    # Simplificar geometría a ~1 m para reducir tamaño del GeoJSON
     out["geometry"] = out.geometry.simplify(0.00001, preserve_topology=True)
     out_path = WEB_DATA / "edificios_top_poligonos.geojson"
     out.to_file(out_path, driver="GeoJSON", coordinate_precision=5)
     kb = out_path.stat().st_size / 1024
     print(
         f"  → {out_path.relative_to(ROOT)} ({kb:.0f} KB, "
-        f"{len(out)} polígonos del top de riesgo)",
+        f"{len(out):,} polígonos únicos del top de riesgo)",
+        file=sys.stderr,
+    )
+
+    # Como ya servimos polígonos completos para los TOP 2000, el
+    # archivo de puntos top se usa solo como source para clustering
+    # (un punto por edificio único, ya no por buildingpart).
+    print(
+        f"  (los polígonos ya cubren los 2000 top; los 10.000 puntos "
+        f"siguen para clustering de visión global)",
         file=sys.stderr,
     )
 

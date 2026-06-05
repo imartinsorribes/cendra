@@ -226,21 +226,25 @@ async function inicializarMapa() {
     },
   });
 
-  // Layer 3: edificios individuales (cuando ya no están agrupados)
+  // Layer 3: puntos individuales (cuando NO están en cluster).
+  // Solo se muestran si el zoom es bajo y para los edificios que no
+  // tienen polígono en la capa edificios-poligonos. A zoom alto los
+  // polígonos toman el protagonismo.
   map.addLayer({
     id: 'edificios',
     source: 'edificios',
     type: 'circle',
     filter: ['!', ['has', 'point_count']],
+    maxzoom: 14,  // a partir de zoom 14, los polígonos los reemplazan
     paint: {
       'circle-radius': [
         'interpolate', ['linear'], ['zoom'],
-        11, 3, 13, 5, 16, 7, 19, 11,
+        11, 3, 13, 4.5,
       ],
       'circle-color': colorRiesgo('r'),
       'circle-stroke-color': '#222220',
-      'circle-stroke-width': 0.8,
-      'circle-opacity': 0.95,
+      'circle-stroke-width': 0.6,
+      'circle-opacity': 0.85,
     },
   });
 
@@ -416,11 +420,12 @@ async function inicializarMapa() {
 
   // Click en edificio individual: rellenar los sliders con sus valores
   // reales y mostrar la ficha del edificio.
-  map.on('click', 'edificios', e => {
+  // Handler unificado para click en edificio (sea punto o polígono).
+  function clickEdificio(e) {
     const p = e.features[0].properties;
     estado.lon = e.lngLat.lng;
     estado.lat = e.lngLat.lat;
-    estado.barrio_nombre = p.b;  // barrio
+    estado.barrio_nombre = p.b;
     inputs.plantas.value = p.p;
     outputs.plantas.value = p.p;
     if (p.a != null && !isNaN(p.a)) {
@@ -469,21 +474,30 @@ async function inicializarMapa() {
         </p>
       `)
       .addTo(map);
-  });
-    map.on('mouseenter', 'edificios', () => map.getCanvas().style.cursor = 'pointer');
-    map.on('mouseleave', 'edificios', () => map.getCanvas().style.cursor = '');
+  }
 
-    // Aviso de zoom: visible solo cuando el zoom < umbral de edificios
-    const aviso = document.getElementById('ayuda-zoom');
-    function actualizarAvisoZoom() {
-      if (!aviso) return;
-      aviso.classList.toggle('oculto', map.getZoom() >= 11);
-    }
-    actualizarAvisoZoom();
-    map.on('zoom', actualizarAvisoZoom);
+  // Registrar el handler para los puntos individuales (zoom < 14) y para los
+  // polígonos del Catastro (zoom >= 14). El mismo `clickEdificio` funciona
+  // con ambos porque las propiedades abreviadas (r, p, h, a, u, b, t, k, i)
+  // son las mismas en los dos GeoJSON.
+  map.on('click', 'edificios', clickEdificio);
+  map.on('click', 'edificios-poligonos-fill', clickEdificio);
+  map.on('mouseenter', 'edificios', () => map.getCanvas().style.cursor = 'pointer');
+  map.on('mouseleave', 'edificios', () => map.getCanvas().style.cursor = '');
+  map.on('mouseenter', 'edificios-poligonos-fill', () => map.getCanvas().style.cursor = 'pointer');
+  map.on('mouseleave', 'edificios-poligonos-fill', () => map.getCanvas().style.cursor = '');
 
-    // Primer cálculo
-    recalcular();
+  // Aviso de zoom: visible solo cuando el zoom < umbral de edificios
+  const aviso = document.getElementById('ayuda-zoom');
+  function actualizarAvisoZoom() {
+    if (!aviso) return;
+    aviso.classList.toggle('oculto', map.getZoom() >= 11);
+  }
+  actualizarAvisoZoom();
+  map.on('zoom', actualizarAvisoZoom);
+
+  // Primer cálculo
+  recalcular();
   } catch (e) {
     console.error('cendra · error al inicializar el mapa:', e);
     // Aunque las capas del mapa fallen, intentamos al menos que la
@@ -597,6 +611,14 @@ function recalcular() {
   const banda = M.bandaConfianza(leerInputs());
   document.getElementById('banda_best').textContent = banda.best;
   document.getElementById('banda_worst').textContent = banda.worst;
+
+  // Explicación de por qué el riesgo es el que es (qué subfactor pesa más,
+  // cómo se propagaría el incendio, qué normativa rige el edificio).
+  const expLista = document.getElementById('explica_riesgo_lista');
+  if (expLista && M.explicarRiesgo) {
+    const lineas = M.explicarRiesgo(leerInputs(), r);
+    expLista.innerHTML = lineas.map(l => `<li>${l}</li>`).join('');
+  }
 
   // Recomendaciones
   actualizarRecomendaciones(leerInputs());
