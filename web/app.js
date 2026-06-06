@@ -174,9 +174,12 @@ async function inicializarMapa() {
     },
   });
 
-  // Source de los 10.000 edificios destacados con CLUSTERING.
-  // A zoom bajo se agrupan en burbujas con número; al hacer zoom se
-  // separan hasta verse individualmente. Click en cluster: zoom in.
+  // Source de los 2.000 edificios destacados con CLUSTERING. Es el
+  // MISMO conjunto que los polígonos del Catastro (edificios-poligonos)
+  // — los puntos sirven solo para el clustering a zoom bajo, los
+  // polígonos toman el relevo a zoom ≥ 14. Coherencia: el número que
+  // muestra cada cluster coincide con los polígonos que aparecerán al
+  // hacer zoom hasta esa zona.
   map.addSource('edificios', {
     type: 'geojson',
     data: 'data/edificios_top_riesgo.geojson',

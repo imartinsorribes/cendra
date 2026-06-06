@@ -33,6 +33,37 @@ WEB_DATA = ROOT / "web" / "data"
 WEB_DATA.mkdir(parents=True, exist_ok=True)
 
 
+_TOP_EDIFICIOS_CACHE: gpd.GeoDataFrame | None = None
+N_TOP_EDIFICIOS = 2000
+
+
+def _cargar_top_unicos() -> gpd.GeoDataFrame | None:
+    """Devuelve los TOP-N edificios únicos (deduplicados por
+    `localId_base`) ordenados por riesgo descendente. Lo cachea para que
+    `construir_edificios_todos` y `construir_edificios_poligonos` partan
+    EXACTAMENTE del mismo conjunto: así los números que muestra cada
+    cluster coinciden con los polígonos que aparecen al hacer zoom."""
+    global _TOP_EDIFICIOS_CACHE
+    if _TOP_EDIFICIOS_CACHE is not None:
+        return _TOP_EDIFICIOS_CACHE
+    gpkg = PROCESSED / "riesgo_edificios.gpkg"
+    if not gpkg.exists():
+        return None
+    edif = gpd.read_file(gpkg, layer="riesgo")
+    edif["localId_base"] = edif["localId"].str.split("_part").str[0]
+    # Para cada localId_base, nos quedamos con la fila de mayor riesgo
+    # (sort + drop_duplicates keep="first"). Después tomamos los top N
+    # únicos. Esta es la lista canónica que usan ambas funciones.
+    edif = (
+        edif.sort_values("riesgo", ascending=False)
+        .drop_duplicates(subset="localId_base", keep="first")
+        .reset_index(drop=True)
+    )
+    n = min(N_TOP_EDIFICIOS, len(edif))
+    _TOP_EDIFICIOS_CACHE = edif.head(n).copy()
+    return _TOP_EDIFICIOS_CACHE
+
+
 def _quitar_crs_obsoleto(path: Path) -> None:
     """GeoPandas / Fiona inyectan un bloque `crs` heredado del estándar
     GeoJSON 2008 (`urn:ogc:def:crs:OGC:1.3:CRS84`). RFC 7946 lo desaprueba
@@ -121,12 +152,15 @@ def construir_barris_riesgo() -> None:
 
 
 def construir_edificios_todos() -> None:
-    """Exporta los TOP-10.000 edificios de mayor riesgo como un GeoJSON
-    minimizado para que el frontend pueda mostrarlos en el mapa y la
-    usuaria pueda hacer click en cualquiera para usar datos reales.
+    """Exporta los TOP-2.000 edificios de mayor riesgo como un GeoJSON
+    minimizado de puntos para que el frontend pueda agruparlos en
+    clusters a zoom bajo. Los mismos 2.000 son los que tienen polígono
+    real en `edificios_top_poligonos.geojson`, así que los números que
+    muestra cada cluster coinciden con los polígonos que aparecerán al
+    hacer zoom hasta la calle.
 
     Servir los 214.000 enteros sería ~47 MB, prohibitivo para un atlas
-    estático. Los 10.000 cubren bien la geografía urbana sin saturar el
+    estático. Los 2.000 cubren los hotspots reales sin saturar el
     navegador. Cuando la usuaria hace click en un punto del mapa que NO
     es uno de estos edificios, el frontend simula con los valores
     medios del barrio (información que sí está siempre disponible).
@@ -139,21 +173,11 @@ def construir_edificios_todos() -> None:
         i=localId)
       - JSON sin espacios ni indentación
     """
-    gpkg = PROCESSED / "riesgo_edificios.gpkg"
-    if not gpkg.exists():
+    edif = _cargar_top_unicos()
+    if edif is None:
         print("  [skip] riesgo_edificios.gpkg ausente. "
               "Ejecuta antes calcular_riesgo_batch.py.", file=sys.stderr)
         return
-    edif_full = gpd.read_file(gpkg, layer="riesgo")
-    # Deduplicar por localId_base para que cada edificio físico
-    # aparezca una vez (no una por buildingpart).
-    edif_full["localId_base"] = edif_full["localId"].str.split("_part").str[0]
-    edif_full = (
-        edif_full.sort_values("riesgo", ascending=False)
-        .drop_duplicates(subset="localId_base", keep="first")
-    )
-    n_top = min(10000, len(edif_full))
-    edif = edif_full.nlargest(n_top, "riesgo").reset_index(drop=True)
     pts = edif.geometry.representative_point().to_crs("EPSG:4326")
 
     features = []
@@ -181,8 +205,12 @@ def construir_edificios_todos() -> None:
                 prop["t"] = round(float(t), 1)
         if "parque_cercano" in cols and pd.notna(row["parque_cercano"]):
             prop["k"] = str(row["parque_cercano"])
-        if "localId" in cols and pd.notna(row["localId"]):
-            prop["i"] = str(row["localId"])
+        # Usamos localId_base (sin sufijo _partN) para que el id coincida
+        # con el de los polígonos en `edificios_top_poligonos.geojson`.
+        # Así un click en un punto y un click en su polígono devuelven la
+        # misma referencia al frontend.
+        if "localId_base" in cols and pd.notna(row["localId_base"]):
+            prop["i"] = str(row["localId_base"])
         # Bandera «candidato Campanar»: edificios construidos en la era
         # del composite ACM-PE (2000-2017) con ≥10 plantas. Son los
         # edificios que el Ayuntamiento debería priorizar para
@@ -232,26 +260,33 @@ def construir_edificios_poligonos() -> None:
     Resultado: una huella por edificio real, no varias por sus
     partes catastrales.
     """
-    gpkg = PROCESSED / "riesgo_edificios.gpkg"
-    if not gpkg.exists():
+    representantes = _cargar_top_unicos()
+    if representantes is None:
         return
-    edif = gpd.read_file(gpkg, layer="riesgo")
 
-    # Deduplicar por localId base (sin `_partN`).
-    edif["localId_base"] = edif["localId"].str.split("_part").str[0]
-    # Para cada edificio único, nos quedamos con la PARTE de mayor
-    # riesgo (suele coincidir con la de mayor altura) y unimos todas
-    # las geometrías de sus partes para tener la huella completa.
-    grouped = edif.sort_values("riesgo", ascending=False).groupby("localId_base", as_index=False)
-    representante = grouped.first()
-    geom_unida = grouped.agg({"geometry": lambda g: g.unary_union})
-    representante["geometry"] = geom_unida["geometry"].values
+    # Para cada edificio del top, unimos las geometrías de TODAS sus
+    # buildingparts (mismas localId_base) para tener la huella completa
+    # del Catastro, no solo la de la parte representante.
+    gpkg = PROCESSED / "riesgo_edificios.gpkg"
+    edif_completo = gpd.read_file(
+        gpkg, layer="riesgo",
+        columns=["localId", "geometry"],
+    )
+    edif_completo["localId_base"] = edif_completo["localId"].str.split("_part").str[0]
+    ids_top = set(representantes["localId_base"])
+    partes = edif_completo[edif_completo["localId_base"].isin(ids_top)]
+    geom_unida = (
+        partes.groupby("localId_base", as_index=False)["geometry"]
+        .agg(lambda g: g.unary_union)
+    )
 
-    # Top 2000 únicos
-    n = min(2000, len(representante))
+    # Sustituir geometría del representante por la unión de todas sus partes
+    rep = representantes.merge(geom_unida, on="localId_base", suffixes=("", "_unida"))
+    rep["geometry"] = rep["geometry_unida"]
+    rep = rep.drop(columns=["geometry_unida"])
+
     top = (
-        gpd.GeoDataFrame(representante, geometry="geometry", crs=edif.crs)
-        .nlargest(n, "riesgo")
+        gpd.GeoDataFrame(rep, geometry="geometry", crs=representantes.crs)
         .to_crs("EPSG:4326")
     )
 
@@ -281,14 +316,12 @@ def construir_edificios_poligonos() -> None:
         file=sys.stderr,
     )
 
-    # Como ya servimos polígonos completos para los TOP 2000, el
-    # archivo de puntos top se usa solo como source para clustering
-    # (un punto por edificio único, ya no por buildingpart).
-    print(
-        f"  (los polígonos ya cubren los 2000 top; los 10.000 puntos "
-        f"siguen para clustering de visión global)",
-        file=sys.stderr,
-    )
+    # Puntos y polígonos cubren exactamente el mismo conjunto (los 2.000
+    # edificios únicos de mayor riesgo). Los puntos sirven para que el
+    # clustering muestre hotspots a zoom bajo; al hacer zoom hasta zoom
+    # 14 los polígonos toman el relevo. Si en algún momento decidimos
+    # ampliar la cobertura, hay que subir n_top en construir_edificios_todos
+    # y construir_edificios_poligonos juntos para mantener la coherencia.
 
 
 def _fila_lista(row, pt_4326) -> dict:
