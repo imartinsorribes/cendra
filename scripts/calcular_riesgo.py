@@ -281,14 +281,16 @@ def vulnerabilidad_intrinseca(
     media_ponderada = sum(sub[k] * w for k, w in W_VULN_INTERNAL.items())
 
     # Saturación por fachada combustible amplificada por altura:
-    # cuando la fachada se clasifica como `composite-acmpe`, el riesgo
-    # estructural en edificios altos escala no linealmente por el
-    # "efecto chimenea" demostrado en Campanar. El régimen «fachada
-    # crítica» se activa siempre que la fachada combustible esté
-    # presente — esto cambia los pesos de la combinación final, aunque
-    # el valor concreto de V_intrínseca ya estuviera al máximo por
-    # otros factores. El «piso» eleva V si la media ponderada no lo
-    # alcanzaba.
+    # el régimen «fachada crítica» que reescala los pesos y eleva V por
+    # el «piso» se activa SOLO con composite-acmpe (score 100). El
+    # efecto chimenea no lineal está documentado en Grenfell 2017 y
+    # Campanar 2024 para el revestimiento ACM-PE; para SATE combustible
+    # (score 80) la propagación exterior es más lenta y los pesos del
+    # modelo se mantienen normales. Sin embargo el plan de respuesta
+    # operativa y las recomendaciones (ver `plan_respuesta` y
+    # `recomendaciones`) sí tratan ambas fachadas como críticas porque
+    # la respuesta táctica y el coste-beneficio de la sustitución son
+    # equivalentes.
     if sub["v_fachada"] >= 100:
         piso = sub["v_fachada"] * (1.0 + 0.5 * sub["v_altura"] / 100.0)
         piso = min(piso, 100.0)
@@ -306,7 +308,10 @@ def factor_uso_ocupacion(uso: str | None, hora: int) -> float:
     Modula E para reconocer que un edificio residencial a las 3 AM tiene
     más víctimas potenciales que un edificio de oficinas a la misma hora,
     y al revés a las 11:00."""
-    if uso is None:
+    # Tratamos "" igual que None (cadena vacía llega del frontend cuando
+    # el select queda en «Otro / desconocido»). Sin esto Python caía en
+    # la rama final `return 0.6` y el modelo divergía de la versión JS.
+    if not uso:
         return 1.0
     u = uso.lower()
     if "residential" in u or u.startswith("1_"):

@@ -307,9 +307,9 @@ Los tres tests viven en `tests/test_modelo.py` (pendiente).
  hidráulica de la red contra incendios (presión, caudal). Son
  factores reales pero los datos abiertos no permiten introducirlos
  sin inventárselos.
-- **El usuario no puede consultar el modelo sobre edificios concretos
- "qué fachada tiene"**. El producto no etiqueta edificios reales;
- solo permite explorar el espacio de escenarios.
+- **La persona usuaria no puede consultar el modelo sobre edificios
+ concretos "qué fachada tiene"**. El producto no etiqueta edificios
+ reales; solo permite explorar el espacio de escenarios.
 
 ## 8. Extensiones derivadas del modelo (v0.2.1)
 
@@ -324,7 +324,7 @@ variables con mayor caída ordenadas por impacto.
 Cuando el edificio está en régimen «fachada crítica», las otras
 mejoras (ITE, SCI, cubierta) tienen efecto cuasi nulo porque
 V_intrínseca queda saturada por la fachada. El motor reconoce esto
-explícitamente y añade una nota al usuario: *«mientras la fachada
+explícitamente y añade una nota a la persona usuaria: *«mientras la fachada
 combustible persista, las demás mejoras no reducen significativamente
 el riesgo»*.
 

@@ -431,11 +431,12 @@ sobre cualquier hosting estático.
  pieza independiente con una API clara. El batch (`calcular_riesgo_batch.py`)
  lo aplica a 214.000 edificios. El frontend lo replica en JS. Los
  tres pueden evolucionar por separado.
-- **Validación con tests automatizados**. 28 tests (`tests/`) cubren
+- **Validación con tests automatizados**. 40 tests (`tests/`) cubren
  los escenarios canónicos, la sensibilidad del modelo a fachada y
- hora, los cortes normativos, los edge cases extremos y la sincronía
- entre las constantes del modelo Python (batch) y JS (frontend). El
- jurado puede ejecutarlos en local con `pytest tests/`.
+ hora, los cortes normativos, los edge cases extremos, las funciones
+ auxiliares (recomendaciones, banda de confianza, plan de respuesta)
+ y la sincronía entre las constantes del modelo Python (batch) y JS
+ (frontend). El jurado puede ejecutarlos en local con `pytest tests/`.
 - **Calibración con fuentes oficiales**. La estimación poblacional
  se calibra contra el padrón INE; los parques de bomberos se
  verifican con la web oficial del SPEIS; la vulnerabilidad social

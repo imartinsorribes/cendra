@@ -185,11 +185,14 @@ async function inicializarMapa() {
     clusterRadius: 38,
   });
 
-  // Layer 1: clusters (burbujas grandes)
+  // Layer 1: clusters (burbujas grandes). maxzoom: 14 los desactiva
+  // a partir del mismo umbral en el que aparecen los polígonos del
+  // Catastro, evitando burbujas naranjas tapando polígonos rojos.
   map.addLayer({
     id: 'edificios-cluster',
     source: 'edificios',
     type: 'circle',
+    maxzoom: 14,
     filter: ['has', 'point_count'],
     paint: {
       // Color y tamaño escalan con el número de edificios del cluster
@@ -214,6 +217,7 @@ async function inicializarMapa() {
     id: 'edificios-cluster-count',
     source: 'edificios',
     type: 'symbol',
+    maxzoom: 14,
     filter: ['has', 'point_count'],
     layout: {
       'text-field': ['get', 'point_count_abbreviated'],
@@ -429,7 +433,12 @@ async function inicializarMapa() {
     inputs.plantas.value = p.p;
     outputs.plantas.value = p.p;
     if (p.a != null && !isNaN(p.a)) {
-      const a = Math.round(p.a);
+      // Clamp explícito: el catastro tiene edificios fuera del rango
+      // del slider (1850-2026); evitamos que el navegador silencie el
+      // valor y deje el input desincronizado con el output visible.
+      const aMin = parseInt(inputs.anio.min, 10) || 1850;
+      const aMax = parseInt(inputs.anio.max, 10) || 2026;
+      const a = Math.max(aMin, Math.min(aMax, Math.round(p.a)));
       inputs.anio.value = a;
       outputs.anio.value = a;
     }
@@ -857,6 +866,7 @@ function aplicarFiltros() {
   setVis('edificios-cluster-count', filtros.edificios.checked);
   setVis('edificios-poligonos-fill', filtros.edificios.checked);
   setVis('edificios-poligonos-line', filtros.edificios.checked);
+  setVis('edificios-candidatos-line', filtros.edificios.checked);
   setVis('parques', filtros.parques.checked);
   setVis('parques-label', filtros.parques.checked);
 }
@@ -1175,11 +1185,25 @@ if (resetBtn) {
     resultado.delta.classList.remove('up', 'down');
     // Limpiar buscador
     if (buscadorInput) { buscadorInput.value = ''; buscadorMsg.textContent = ''; }
+    // Limpiar filtro de la tabla de candidatos
+    if (filtroBarrioInput) filtroBarrioInput.value = '';
+    if (_candidatosCompletos) pintarTablaCandidatos(_candidatosCompletos);
     // Cerrar popups
     document.querySelectorAll('.maplibregl-popup').forEach(p => p.remove());
     // Quitar resaltado de barrio
     if (window.__map?.getLayer('barris-hover')) {
       window.__map.setFilter('barris-hover', ['==', 'codbarrio', -1]);
+    }
+    // Vaciar capas operativas (radios, ruta, target) para no dejar restos
+    // del último escenario apilados sobre el centro inicial.
+    const empty = { type: 'FeatureCollection', features: [] };
+    if (window.__map) {
+      ['op_evacuacion', 'op_perimetro', 'op_ruta', 'op_target'].forEach(s => {
+        const src = window.__map.getSource(s);
+        if (src) src.setData(empty);
+      });
+      // Volver al encuadre inicial
+      window.__map.flyTo({ center: [_estadoInicial.lon, _estadoInicial.lat], zoom: 12, duration: 800 });
     }
     recalcular();
   });

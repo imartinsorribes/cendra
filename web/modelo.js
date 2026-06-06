@@ -607,14 +607,17 @@ function explicarRiesgo(input, resultado) {
   textoR += `.`;
   lineas.push(textoR);
 
-  // Cómo se propaga el fuego (pieza educativa)
+  // Cómo se propaga el fuego (pieza educativa). Las cifras orientativas
+  // proceden del informe Grenfell Tower Inquiry (Phase 1) y de la
+  // doctrina táctica del SPEIS post-Campanar; ver `docs/modelo-riesgo.md`
+  // para las referencias detalladas.
   let propagacion;
   if (resultado.pesos.regimen === 'fachada-critica') {
-    propagacion = `<strong>Cómo se propagaría:</strong> en fachada combustible, el incendio sube por el revestimiento exterior a una planta cada 30-60 segundos. Un edificio de ${input.plantas} plantas puede quedar envuelto en ${Math.max(2, Math.round(input.plantas * 0.7))} minutos. La planta donde se inicie el fuego importa menos que la altura total: una vez fuera, sube a la cubierta.`;
+    propagacion = `<strong>Cómo se propagaría:</strong> en fachada combustible, el incendio puede subir por el revestimiento exterior a velocidades reportadas de entre 30 y 60 segundos por planta (Grenfell, Campanar). Un edificio de ${input.plantas} plantas puede quedar envuelto en torno a ${Math.max(2, Math.round(input.plantas * 0.7))} minutos. La planta donde se inicie el fuego importa menos que la altura total: una vez fuera, sube hasta la cubierta.`;
   } else if (input.cubierta === 'combustible') {
-    propagacion = `<strong>Cómo se propagaría:</strong> el incendio crece dentro del edificio por hueco de escalera o conductos (~ 5 min por planta). La cubierta combustible puede convertir un fuego contenido en colapso de la última planta.`;
+    propagacion = `<strong>Cómo se propagaría:</strong> el incendio crece dentro del edificio por hueco de escalera o conductos (~ 5 min por planta según informes del SPEIS). La cubierta combustible puede convertir un fuego contenido en colapso de la última planta.`;
   } else {
-    propagacion = `<strong>Cómo se propagaría:</strong> el incendio crece dentro del edificio (cocina, instalación eléctrica) y sube por hueco de escalera a unos 5 min por planta si los sectorizados resisten. La fachada no propaga.`;
+    propagacion = `<strong>Cómo se propagaría:</strong> el incendio crece dentro del edificio (cocina, instalación eléctrica) y sube por hueco de escalera a unos 5 minutos por planta si los sectorizados resisten. La fachada no propaga.`;
   }
   lineas.push(propagacion);
 

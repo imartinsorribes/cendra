@@ -33,6 +33,22 @@ WEB_DATA = ROOT / "web" / "data"
 WEB_DATA.mkdir(parents=True, exist_ok=True)
 
 
+def _quitar_crs_obsoleto(path: Path) -> None:
+    """GeoPandas / Fiona inyectan un bloque `crs` heredado del estándar
+    GeoJSON 2008 (`urn:ogc:def:crs:OGC:1.3:CRS84`). RFC 7946 lo desaprueba
+    porque asume WGS84 implícito. MapLibre lo ignora pero los validadores
+    estrictos lo marcan como warning. Lo eliminamos en sitio."""
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        if "crs" in data:
+            data.pop("crs")
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
+    except Exception as e:
+        print(f"  [warn] no pude limpiar crs en {path.name}: {e}", file=sys.stderr)
+
+
 def copiar_parques() -> None:
     shutil.copyfile(
         RAW / "parques_bomberos.geojson",
@@ -87,6 +103,7 @@ def construir_barris_riesgo() -> None:
 
     out = WEB_DATA / "barris_riesgo.geojson"
     barris_out.to_file(out, driver="GeoJSON")
+    _quitar_crs_obsoleto(out)
     kb = out.stat().st_size / 1024
     print(
         f"  → {out.relative_to(ROOT)} ({kb:.0f} KB, {len(barris_out)} barrios)",
@@ -256,6 +273,7 @@ def construir_edificios_poligonos() -> None:
     out["geometry"] = out.geometry.simplify(0.00001, preserve_topology=True)
     out_path = WEB_DATA / "edificios_top_poligonos.geojson"
     out.to_file(out_path, driver="GeoJSON", coordinate_precision=5)
+    _quitar_crs_obsoleto(out_path)
     kb = out_path.stat().st_size / 1024
     print(
         f"  → {out_path.relative_to(ROOT)} ({kb:.0f} KB, "
