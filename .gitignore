@@ -7,6 +7,9 @@ data/processed/*.tif
 data/processed/*.zip
 data/cache/
 
+# --- Memoria HTML intermedia (regenerable con scripts/generar_memoria_pdf.py) ---
+docs/memoria/anexo-ii.html
+
 # --- Python ---
 __pycache__/
 *.py[cod]

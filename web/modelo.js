@@ -493,6 +493,13 @@ function planRespuesta(input) {
 //   - alto u oficinas con fachada combustible: 2 parques
 //   - alto + fachada combustible: 3 parques (cercano + 2 refuerzos)
 function parquesQueResponden(lon, lat, fachadaCritica = false, plantas = 1) {
+  if (!PARQUES.length) {
+    // Defensivo: si la red está caída y `cargarParques` no terminó,
+    // devolvemos lista vacía para que el frontend no pinte rutas
+    // huérfanas y registre el problema en la consola.
+    console.warn('cendra · parquesQueResponden sin PARQUES cargados');
+    return [];
+  }
   const conDist = PARQUES.map(p => ({
     nombre: p.nombre, lon: p.lon, lat: p.lat,
     distancia_m: haversineMetros(lon, lat, p.lon, p.lat),

@@ -84,7 +84,7 @@ header {
 
 main {
   display: grid;
-  grid-template-columns: 290px 1fr 340px;
+  grid-template-columns: 270px 1fr 320px;
   height: calc(100vh - 110px);
 }
 
@@ -1152,9 +1152,10 @@ footer a {
 }
 footer a:hover { text-decoration: underline; }
 
-/* Pantallas medias (1100-1400 px): paneles algo más estrechos */
-@media (max-width: 1400px) and (min-width: 1101px) {
-  main { grid-template-columns: 270px 1fr 320px; }
+/* Pantallas medias (1100-1280 px): paneles aún más estrechos para
+   que el mapa siga teniendo respiración (mapa < 470 px se queda enano). */
+@media (max-width: 1280px) and (min-width: 1101px) {
+  main { grid-template-columns: 250px 1fr 300px; }
 }
 
 /* Tablet: dos columnas (controles izq + mapa), info riesgo abajo */

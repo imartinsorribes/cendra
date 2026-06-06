@@ -1086,8 +1086,10 @@ function pintarTablaCandidatos(items) {
       const uso = tr.dataset.uso;
       // Cambiar a vista análisis
       document.querySelector('.header-tab[data-vista="analisis"]').click();
-      // Esperar al resize del mapa y luego volar al edificio
-      setTimeout(() => {
+      // Esperar a que el mapa termine de redimensionar (más fiable que
+      // setTimeout fijo: la primera vez que se entra a la vista Análisis
+      // el resize puede tardar más de 200 ms en navegadores móviles).
+      const aplicar = () => {
         estado.lon = lon; estado.lat = lat;
         inputs.plantas.value = plantas; outputs.plantas.value = plantas;
         if (!isNaN(anio)) { inputs.anio.value = anio; outputs.anio.value = anio; }
@@ -1097,19 +1099,26 @@ function pintarTablaCandidatos(items) {
         }
         if (window.__map) window.__map.flyTo({ center: [lon, lat], zoom: 17, duration: 1200 });
         recalcular();
-      }, 200);
+      };
+      if (window.__map) window.__map.once('idle', aplicar);
+      else setTimeout(aplicar, 200);
     });
   });
 }
 
-// Filtro por barrio en la tabla de candidatos
+// Filtro por barrio en la tabla de candidatos. Normalizamos acentos
+// (Sant Antoni == sant antoni == Sànt Antòni) para que el buscador
+// funcione aunque el dataset incluya tildes.
+function _norm(s) {
+  return (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+}
 const filtroBarrioInput = document.getElementById('filtro_barrio');
 if (filtroBarrioInput) {
   filtroBarrioInput.addEventListener('input', () => {
     if (!_candidatosCompletos) return;
-    const q = filtroBarrioInput.value.trim().toLowerCase();
+    const q = _norm(filtroBarrioInput.value.trim());
     const filtrados = q
-      ? _candidatosCompletos.filter(c => (c.barrio || '').toLowerCase().includes(q))
+      ? _candidatosCompletos.filter(c => _norm(c.barrio).includes(q))
       : _candidatosCompletos;
     pintarTablaCandidatos(filtrados);
   });

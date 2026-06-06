@@ -10,6 +10,18 @@
   - Confirma que los enlaces del README y de la vista «Propuestas»
     (`https://github.com/imartinsorribes/cendra`) responden 200.
 
+- [ ] **Crear el release v0.3.0 con el dataset adjunto**
+  - <https://github.com/imartinsorribes/cendra/releases/new>
+  - Tag: `v0.3.0` (ya empujado al remoto, debería aparecer en el desplegable).
+  - Title: `v0.3.0 · Atlas + dataset abierto de candidatos Campanar`
+  - Description: copia del bloque «Notas del release» que está al
+    final de este checklist.
+  - Adjuntar `data/processed/candidatos_campanar.csv` arrastrándolo a
+    la zona «Attach binaries by dropping them here».
+  - Adjuntar también `docs/memoria/anexo-ii.pdf` para que el jurado
+    pueda descargar la memoria sin clonar el repo.
+  - Marcar como «Latest release» y publicar.
+
 - [ ] **Verificar el deploy** en `https://cendra.pages.dev`
   - El último commit del `main` debe estar reflejado (Cloudflare Pages
     suele tardar ~1-2 min después del push).
@@ -61,3 +73,51 @@
 - [ ] Si gana, agradecer y subir un commit con la nota.
 - [ ] Mantener el repo público y la web online: el atlas tiene valor
   más allá del concurso.
+
+---
+
+## Notas del release v0.3.0 (copiar al crear el release en GitHub)
+
+```markdown
+# cendra v0.3.0 · Atlas + dataset abierto de candidatos Campanar
+
+Atlas paramétrico de riesgo de incendio para los edificios residenciales de
+València, construido íntegramente con datos abiertos del Ajuntament y del
+Catastro INSPIRE. Web interactiva en https://cendra.pages.dev.
+
+## Qué incluye este release
+
+- **`candidatos_campanar.csv`** — los 154 edificios de València que cumplen
+  el perfil Campanar (≥10 plantas, construidos entre 2000 y 2017, era del
+  composite con núcleo combustible). Incluye coordenadas, referencia
+  catastral, plantas, año, riesgo del modelo y tiempo estimado de llegada
+  de bomberos. CSV abierto, descargable y reutilizable.
+- **`anexo-ii.pdf`** — memoria del Anexo II del concurso con la
+  metodología, el modelo paramétrico, las fuentes de datos y la
+  validación.
+
+## Características de esta versión
+
+- 36.300 edificios únicos analizados (de 214.000 buildingParts del
+  Catastro INSPIRE).
+- 2.000 polígonos del Catastro renderizados en el mapa, con click para
+  simulación inmediata.
+- Modelo paramétrico de riesgo en tres dimensiones (V/E/R) con régimen
+  «fachada crítica» derivado de Grenfell y Campanar.
+- Plan de respuesta operativa del SPEIS por edificio (efectivos, caudal,
+  perímetro, rutas reales por calles vía OSRM).
+- Vista «Propuestas» con cronología histórica, tabla descargable de los
+  154 candidatos y plan de acción municipal.
+- 40 tests automatizados (`pytest tests/`).
+- Hosting estático en Cloudflare Pages.
+
+## Reproducción
+
+Cualquier persona puede regenerar todos los datos desde cero siguiendo
+las instrucciones del [README](https://github.com/imartinsorribes/cendra#pipeline-reproducible).
+
+## Licencia
+
+Código bajo MIT. Datos derivados bajo CC BY 4.0 (atribución requerida al
+Ajuntament de València y al Catastro INSPIRE).
+```

@@ -81,7 +81,8 @@ Inventario completo y trazable en [`docs/inventario-datos.md`](docs/inventario-d
 | Validación y auditoría de datos | ([`docs/validacion-datos.md`](docs/validacion-datos.md) · [`scripts/validar_datos.py`](scripts/validar_datos.py)) |
 | Cálculo batch sobre los 214k edificios | ([`data/processed/riesgo_edificios.gpkg`](data/processed/riesgo_edificios.gpkg) · gpkg no versionado) + agregado por barrio ([`data/processed/riesgo_por_barrio.csv`](data/processed/riesgo_por_barrio.csv)) |
 | Frontend web interactivo | ([`web/`](web/) · HTML + MapLibre + modelo en JS + calculadora paramétrica + capa de los 2.000 edificios de mayor riesgo) |
-| Memoria Anexo II del concurso | ([`docs/memoria/anexo-ii.md`](docs/memoria/anexo-ii.md)) |
+| Memoria Anexo II del concurso | ([`docs/memoria/anexo-ii.md`](docs/memoria/anexo-ii.md) · [PDF entregable](docs/memoria/anexo-ii.pdf) generado con [`scripts/generar_memoria_pdf.py`](scripts/generar_memoria_pdf.py)) |
+| Dataset abierto de candidatos | [`data/processed/candidatos_campanar.csv`](data/processed/candidatos_campanar.csv) — 154 edificios con perfil Campanar (≥10 plantas, 2000-2017), descargable en CSV con coordenadas y referencia catastral |
 | Configuración de despliegue público | ([`docs/despliegue.md`](docs/despliegue.md)) |
 | Despliegue efectivo | <https://cendra.pages.dev> (Cloudflare Pages, despliegue continuo desde `main`) |
 
