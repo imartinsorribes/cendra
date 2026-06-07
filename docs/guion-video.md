@@ -1,152 +1,180 @@
-# Guión del vídeo de presentación · 60 segundos
+# Guión del vídeo de presentación · 3 minutos
 
-> **Vídeo base ya grabado**: `docs/video-demo.webm` (7,2 MB · 60 s · 1920×1080)
+> **Vídeo base ya grabado**: `docs/video-demo.webm` (19 MB · 3:00 · 1920×1080 · 25 fps)
 > reproducido automáticamente por `scripts/grabar_demo.py` siguiendo
-> el guión que viene a continuación. La pista de vídeo está; solo
-> falta tu voz en off por encima.
+> este guión exacto. La pista de vídeo está; solo falta tu voz por
+> encima.
 >
-> **Cómo añadirle voz** (orden recomendado por sencillez):
-> 1. Abre `docs/video-demo.webm` en cualquier editor (DaVinci Resolve
->    gratis / OpenShot / Shotcut / iMovie / CapCut).
-> 2. Mete una pista de audio nueva y graba lectura del guión de abajo.
->    Si prefieres grabar directo, ponlo en Loom / OBS con el WebM en
->    pantalla y narras encima en vivo.
-> 3. Exporta el resultado a MP4 1080p para distribuir.
+> **Cómo añadirle voz** (por orden de sencillez):
+> 1. **Canva** (en línea): «Crear un diseño» → «Vídeo» → subir el
+>    WebM, añadir pista de audio nueva con tu micro, grabar leyendo
+>    el guión, exportar como MP4. Tiene plantillas con cara
+>    flotante en círculo si quieres salir tú también.
+> 2. **DaVinci Resolve** (gratis, escritorio): importa el WebM,
+>    pista de audio nueva, graba en directo o pega un MP3 ya
+>    grabado, exporta H.264 1080p.
+> 3. **OBS** o **Loom**: pones el WebM en pantalla completa y
+>    grabas con tu micro en tiempo real comentando encima.
 >
-> **Si quieres regenerar el vídeo** tras cualquier cambio del atlas:
+> **Si retoques algo del atlas y quieras regenerar el vídeo base**:
 > `python scripts/grabar_demo.py`
-
-Pensado para grabar con OBS o el grabador del navegador, con voz en off
-encima de la pantalla. Castellano, tono claro y directo, lenguaje
-inclusivo. Cada bloque indica qué se ve en pantalla y qué se dice.
-
-Total: 60 segundos · 7 escenas · ~165 palabras de narración (~2,7 palabras/s).
+>
+> Las cifras totales: 480 palabras a ritmo natural (~2,7 palabras/segundo).
+> Si vas muy justo de tiempo, recorta las frases entre paréntesis.
 
 ---
 
-## Escena 1 · 0:00 → 0:08 (8 s) · Hook
+## CAPÍTULO 1 · 0:00 → 0:18 · Hook
 
-**Pantalla**: la home de `cendra.pages.dev` con el mapa de barrios de
-València coloreado por riesgo. Cerrar el tutorial de bienvenida si
-aparece.
+**En pantalla**: home de cendra con el mapa de barrios de València
+coloreado por riesgo (verde a brasa). La leyenda inferior izquierda
+queda resaltada un segundo.
 
-**Voz en off**:
-> «En febrero de 2024 ardió un edificio en Campanar. Diez personas
-> murieron. La fachada tardó siete minutos en propagar el fuego
-> de planta a planta.»
-
----
-
-## Escena 2 · 0:08 → 0:16 (8 s) · La pregunta
-
-**Pantalla**: zoom hacia el barrio de Campanar / Aiora con el mapa
-ya cargado.
-
-**Voz en off**:
-> «¿Cuántos edificios más en València comparten ese perfil de riesgo?
-> Hasta ahora, nadie tenía la respuesta abierta y comprobable.»
+**Lo que dices**:
+> «En febrero de 2024 ardió un edificio de catorce plantas en el
+> barrio de Campanar de València. Diez personas murieron. La fachada
+> de composite con núcleo combustible cubrió todo el bloque en
+> menos de media hora. Esto es cendra: un atlas paramétrico que
+> intenta entender qué pasó y cuántos edificios más en la ciudad
+> podrían estar en una situación parecida.»
 
 ---
 
-## Escena 3 · 0:16 → 0:26 (10 s) · La herramienta
+## CAPÍTULO 2 · 0:18 → 0:42 · Las cifras
 
-**Pantalla**: cambio a la vista «Propuestas». Mostrar la cifra grande
-«154 edificios cumplen el perfil Campanar».
+**En pantalla**: cambio a la pestaña «Propuestas». Las seis cifras
+clave (36.300 edificios, 154 candidatos, 10 capas, 6 parques, 1.923
+hidrantes, 40 tests). Después scroll a la cronología histórica con
+Lacrosse, Address, Grenfell, Mocejón y Campanar.
 
-**Voz en off**:
-> «cendra es un atlas paramétrico construido con datos abiertos del
-> Ajuntament y del Catastro. Identifica los 154 edificios de la
-> ciudad que comparten el perfil de Campanar: diez plantas o más
-> y construidos entre el año 2000 y 2017, la era del composite
-> con núcleo combustible.»
-
----
-
-## Escena 4 · 0:26 → 0:38 (12 s) · La interacción
-
-**Pantalla**: vuelta a la vista «Análisis». Hacer zoom a la zona de
-Aiora. Click en un polígono dorado (candidato Campanar). Mostrar el
-panel derecho rellenando los valores reales y el bloque «Por qué
-este riesgo».
-
-**Voz en off**:
-> «Cualquier persona puede hacer click en su edificio y ver no solo
-> su riesgo simulado, sino exactamente por qué: qué pesa más, qué
-> pesa menos, y cómo se propagaría el fuego según la fachada y la
-> cubierta.»
+**Lo que dices**:
+> «El atlas cruza 10 capas de datos abiertos del Ajuntament y del
+> Catastro INSPIRE para analizar 36.300 edificios únicos de
+> València. Con un criterio conservador —diez plantas o más,
+> construidos entre 2000 y 2017— identifica 154 edificios que
+> comparten lo que llamamos perfil Campanar. No es la primera
+> vez que esto pasa en Europa: Lacrosse en 2014, Grenfell en 2017,
+> Mocejón en 2022. Todos compartían el mismo material en fachada.»
 
 ---
 
-## Escena 5 · 0:38 → 0:48 (10 s) · La simulación
+## CAPÍTULO 3 · 0:42 → 1:18 · Tu edificio · click + sliders
 
-**Pantalla**: cambiar el slider «Fachada» de combustible a no
-combustible. La cifra del riesgo cae visiblemente del rango 60-70 al
-rango 35-45.
+**En pantalla**: vuelta a «Análisis», zoom hasta Aiora, click en un
+polígono dorado del Catastro. El panel derecho se rellena con los
+valores reales del edificio. Aparece el bloque «Por qué este
+riesgo». Después se cambian los sliders: Fachada de combustible a
+ladrillo, SCI a completo, hora a las 03:00.
 
-**Voz en off**:
-> «Y puede simular: si esta fachada se sustituyera por una no
-> combustible, el riesgo del edificio bajaría a la mitad. Esta cifra
-> es lo que cuesta una decisión municipal.»
-
----
-
-## Escena 6 · 0:48 → 0:55 (7 s) · La acción
-
-**Pantalla**: vuelta a vista «Propuestas». Mostrar la tabla de los
-154 candidatos, hacer scroll y resaltar el botón «Descargar CSV».
-
-**Voz en off**:
-> «La lista de los 154 edificios es descargable en CSV. Cualquier
-> técnico municipal puede usarla mañana para empezar las inspecciones.»
+**Lo que dices**:
+> «Cualquier persona puede hacer click en su edificio y ver el
+> riesgo simulado. El panel se rellena con los valores reales del
+> Catastro y el modelo explica de dónde viene cada cifra: la
+> fachada pesa el 30%, la edad el 25%, la altura el 15%. Si esta
+> fachada se sustituyera por una no combustible, el riesgo baja
+> a casi la mitad. Si además se completa el sistema contra
+> incendios, baja todavía más. Y si simulamos que el incendio
+> ocurre de madrugada, la exposición poblacional sube porque
+> hay más gente dentro. Esa es la potencia del modelo paramétrico.»
 
 ---
 
-## Escena 7 · 0:55 → 1:00 (5 s) · Cierre
+## CAPÍTULO 4 · 1:18 → 1:45 · Plan operativo del SPEIS
 
-**Pantalla**: zoom out al título grande con la URL del proyecto
-visible.
+**En pantalla**: scroll a las recomendaciones automáticas (tres
+mejoras con mayor caída de riesgo). Después scroll al «Plan de
+respuesta operativa». Vuelta al mapa con los círculos de
+evacuación, perímetro y la ruta hasta el parque de bomberos
+trazada por calles reales con OSRM.
 
-**Voz en off**:
-> «cendra punto pages punto dev. Los datos abiertos no sirven si
-> no los cruzamos.»
+**Lo que dices**:
+> «cendra no se queda en el diagnóstico. Para cada edificio calcula
+> las tres mejoras que más reducirían el riesgo, y propone un plan
+> operativo del SPEIS: cuántos efectivos, cuántas dotaciones, qué
+> caudal de agua y qué tiempo de control se necesitan. En el mapa
+> aparece el radio de evacuación inmediata, el perímetro operativo
+> y la ruta real por calles hasta el parque más cercano.»
+
+---
+
+## CAPÍTULO 5 · 1:45 → 2:12 · RAG normativo
+
+**En pantalla**: bloque «Qué dice la normativa de tu edificio» se
+despliega. Aparecen sugerencias de preguntas según el edificio
+simulado. Se escribe «¿Qué pasó en Campanar y por qué afecta a mi
+edificio?» y se pulsa Buscar. Aparecen tres tarjetas: investigación
+judicial, RD 732/2019 post-Grenfell y CTE DB-SI SI 2.
+
+**Lo que dices**:
+> «Cuando alguien pregunta sobre la normativa de su edificio,
+> cendra busca en un corpus curado del Código Técnico, la antigua
+> NBE-CPI, el reglamento de instalaciones y la inspección técnica
+> de la Comunitat Valenciana. Cada respuesta cita textualmente el
+> artículo y enlaza al BOE. Es trazabilidad de verdad: cualquier
+> persona técnica puede verificar la fuente.»
+
+---
+
+## CAPÍTULO 6 · 2:12 → 2:35 · Asistente con IA
+
+**En pantalla**: bloque «Pregúntale al asistente con IA» con el
+badge morado «con IA». Se escribe la pregunta «¿Por qué mi edificio
+tiene tanto riesgo?» y aparece la respuesta del modelo Llama 3.1 8B.
+
+**Lo que dices**:
+> «Para preguntas más abiertas hay un asistente conversacional con
+> el modelo Llama 3.1 8B alojado en Cloudflare Workers AI. Funciona
+> en el plan gratuito y, lo importante, está blindado: solo usa los
+> datos de la simulación y los pasajes normativos que ha
+> encontrado el buscador. No inventa cifras, no señala edificios
+> concretos y, si no sabe, lo dice.»
+
+---
+
+## CAPÍTULO 7 · 2:35 → 2:55 · Los 154 candidatos + CSV
+
+**En pantalla**: vista «Propuestas» otra vez, scroll a la tabla
+descargable. Se filtra por «aiora» y se ve cómo la tabla reacciona.
+Se quita el filtro. El botón «Descargar CSV» aparece resaltado en
+brasa.
+
+**Lo que dices**:
+> «La lista completa de los 154 candidatos está aquí: barrio,
+> plantas, año, riesgo, tiempo de bomberos y referencia catastral.
+> Es filtrable, ordenable y descargable como CSV. Cualquier
+> técnico municipal puede usarla mañana para empezar las
+> inspecciones de fachada.»
+
+---
+
+## CAPÍTULO 8 · 2:55 → 3:00 · Cierre con `/historia`
+
+**En pantalla**: cambio a la página `/historia.html`, scroll rápido
+por las siete escenas del scrollytelling (Campanar, edificio,
+fuego, propagación, cronología, 154, CTA).
+
+**Lo que dices**:
+> «cendra punto pages punto dev. Datos abiertos del Ajuntament,
+> código abierto bajo licencia MIT.»
 
 ---
 
 ## Notas de producción
 
-- **Resolución de grabación**: 1920×1080. Zoom del navegador al 110 %
-  para que el texto se lea bien comprimido en YouTube / vídeo del
-  jurado.
-- **Audio**: voz en off limpia, sin música de fondo (más serio para un
-  proyecto técnico). Si añades música, que sea ambiental muy baja
-  (-25 dB).
-- **Cursor**: si OBS / Loom permiten resaltar el cursor, actívalo.
-  Ayuda a seguir los clicks.
-- **Recortes**: que no se vean URLs personales (history del navegador)
-  ni notificaciones. Pestaña incógnita o ventana limpia.
-- **Subtítulos**: añadirlos en post (.srt). El jurado puede que vea
-  el vídeo sin sonido.
-- **Cierre con frame fijo**: los últimos 2-3 segundos pueden ser un
-  frame fijo con la URL grande y el lema, da tiempo a que se quede
-  grabado.
+- **Resolución**: el WebM está en 1920×1080. Exporta el MP4 final
+  en 1080p también.
+- **Audio**: voz limpia, sin música. Si quieres añadir música la
+  pones muy baja (-25 dB) y que sea ambiental, no festiva.
+- **Subtítulos**: añádelos en post para que el jurado pueda verlo
+  sin sonido. Canva los genera automáticamente desde el audio.
+- **Cara o no cara**: en Canva puedes meterte tú en un círculo en
+  la esquina inferior derecha hablando. Sube credibilidad. No es
+  obligatorio.
+- **Cierre con frame fijo**: añade 2-3 segundos extra al final con
+  un frame fijo de la URL y «cendra.pages.dev» en grande para que
+  el jurado se quede con el dato.
 
-## Checklist antes de grabar
+## Si quieres hacer una versión más corta (60 s)
 
-- [ ] Cerrado el tutorial de bienvenida (`localStorage.setItem('cendra_tutorial_visto_v1', '1')`).
-- [ ] Limpiado el caché del navegador para que los cambios recientes
-  se carguen (Ctrl+F5).
-- [ ] Probado que el deploy actual de `cendra.pages.dev` muestra los
-  últimos cambios (puntos coherentes con polígonos, explicador de
-  riesgo, vista Propuestas).
-- [ ] Pestaña incógnita y ventana maximizada.
-- [ ] Bandeja de notificaciones del sistema en silencio.
-- [ ] Practicar la narración una vez en voz alta para ajustar el ritmo
-  a los 60 segundos exactos.
-
-## Versión cortada (30 segundos)
-
-Si necesitas una versión más corta para redes sociales:
-
-- Mantener escenas 1, 4 y 5 (hook, interacción, simulación).
-- Recortar la voz en off a unas 75 palabras.
-- Acabar con la URL en pantalla.
+Mantén los capítulos 1, 3, 5 y 8. Recorta el resto. Te queda un
+trailer rápido para Instagram, Twitter o LinkedIn.
