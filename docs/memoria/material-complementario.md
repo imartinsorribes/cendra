@@ -26,8 +26,6 @@ cronología internacional con los 154 candidatos.
   <https://github.com/imartinsorribes/cendra/raw/main/docs/video-demo.mp4>
 - **Datos**: 3 min 3 s · 1080p · 30 fps · H.264 · 57 MB · narración
   del autor en castellano, audio normalizado a -16 LUFS (EBU R128).
-- **Guion del vídeo** (texto completo de la narración):
-  <https://github.com/imartinsorribes/cendra/blob/main/docs/guion-voz.md>
 
 ---
 
