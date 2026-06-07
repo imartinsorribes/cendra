@@ -1,5 +1,21 @@
 # Guión del vídeo de presentación · 60 segundos
 
+> **Vídeo base ya grabado**: `docs/video-demo.webm` (7,2 MB · 60 s · 1920×1080)
+> reproducido automáticamente por `scripts/grabar_demo.py` siguiendo
+> el guión que viene a continuación. La pista de vídeo está; solo
+> falta tu voz en off por encima.
+>
+> **Cómo añadirle voz** (orden recomendado por sencillez):
+> 1. Abre `docs/video-demo.webm` en cualquier editor (DaVinci Resolve
+>    gratis / OpenShot / Shotcut / iMovie / CapCut).
+> 2. Mete una pista de audio nueva y graba lectura del guión de abajo.
+>    Si prefieres grabar directo, ponlo en Loom / OBS con el WebM en
+>    pantalla y narras encima en vivo.
+> 3. Exporta el resultado a MP4 1080p para distribuir.
+>
+> **Si quieres regenerar el vídeo** tras cualquier cambio del atlas:
+> `python scripts/grabar_demo.py`
+
 Pensado para grabar con OBS o el grabador del navegador, con voz en off
 encima de la pantalla. Castellano, tono claro y directo, lenguaje
 inclusivo. Cada bloque indica qué se ve en pantalla y qué se dice.
