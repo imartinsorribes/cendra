@@ -1,0 +1,34 @@
+cff-version: 1.2.0
+title: "cendra: atlas paramétrico de riesgo de incendio en València"
+message: "Si reutilizas este atlas, la metodología o el dataset de candidatos Campanar, cita esta entrada."
+type: software
+authors:
+  - family-names: "Martín Sorribes"
+    given-names: "Iñaki"
+    email: "imxrtins@gmail.com"
+repository-code: "https://github.com/imartinsorribes/cendra"
+url: "https://cendra.pages.dev"
+abstract: >-
+  Atlas paramétrico abierto que estima el riesgo de incendio de los
+  edificios residenciales de València cruzando el Catastro INSPIRE,
+  los datos abiertos del Ajuntament (barrios, vulnerabilidad social,
+  hidrantes), una capa propia de los seis parques del SPEIS y un
+  modelo de tres dimensiones (Vulnerabilidad estructural, Exposición
+  poblacional, Respuesta operativa) calibrado contra padrón INE.
+  Identifica los 154 edificios que cumplen el «perfil Campanar»
+  (>=10 plantas, construidos entre 2000 y 2017) y propone un plan
+  de respuesta operativa por edificio.
+keywords:
+  - "incendio"
+  - "fachada combustible"
+  - "Catastro INSPIRE"
+  - "datos abiertos"
+  - "València"
+  - "Campanar"
+  - "MapLibre"
+  - "modelo paramétrico"
+  - "atlas urbano"
+license: MIT
+license-url: "https://github.com/imartinsorribes/cendra/blob/main/LICENSE"
+version: "0.3.0"
+date-released: "2026-06-07"
