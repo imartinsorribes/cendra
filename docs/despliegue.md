@@ -107,3 +107,45 @@ git push
 
 Si el despliegue automático está configurado, Cloudflare publica la
 nueva versión en menos de un minuto.
+
+## Activar el asistente con IA (Workers AI)
+
+El asistente conversacional del panel derecho usa **Cloudflare
+Workers AI** (Llama 3.1 8B) a través de una Pages Function en
+`functions/api/asistente.js`. El binding `AI` está disponible
+gratis en el plan free de Cloudflare Pages hasta 10.000 peticiones
+por día.
+
+Pasos para activarlo en el dashboard:
+
+1. <https://dash.cloudflare.com> → tu proyecto Pages **cendra**.
+2. **Settings** → **Functions** → **Bindings** → **Add binding**.
+3. Tipo: **Workers AI**. Variable name: `AI` (en mayúsculas, exacto).
+4. Guardar y **redesplegar** el último commit (Deployments → ⋯ →
+   Retry deployment) para que el binding se inyecte.
+
+Verificación:
+
+```bash
+curl -X POST https://cendra.pages.dev/api/asistente \
+  -H 'Content-Type: application/json' \
+  -d '{"pregunta":"¿Es obligatoria la columna seca en mi edificio?","contexto":{"plantas":14,"anio":2010,"riesgo_total":62}}'
+```
+
+Si responde JSON con `{"respuesta": "..."}` está activo. Si devuelve
+`{"error":"Workers AI no está enlazado..."}` falta el binding del
+paso 3.
+
+## Por qué el asistente no se llama si no está el binding
+
+El frontend siempre intenta llamar a `/api/asistente`. Si el binding
+no está configurado, la Function devuelve `503` con un mensaje
+explícito. El usuario ve un mensaje rojo en el chat: «Workers AI no
+está enlazado en este despliegue». La web sigue funcionando
+perfectamente sin asistente — el bloque del chat queda desactivado
+pero el resto del atlas opera normalmente.
+
+Esta separación es deliberada: el asistente es un extra de
+conveniencia, no un requisito. Cualquiera puede clonar el repo y
+desplegar el atlas en su propio Pages sin tener que activar Workers
+AI.

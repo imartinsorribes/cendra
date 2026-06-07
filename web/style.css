@@ -1280,6 +1280,127 @@ footer a:hover { text-decoration: underline; }
   margin: 0.5rem 0;
 }
 
+/* === Asistente conversacional con Workers AI ============================ */
+
+.bloque.asistente { border-left: 3px solid #6e3a8a; }
+
+.bloque.asistente summary h2 .badge-ia {
+  display: inline-block;
+  font-size: 0.65em;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  background: #6e3a8a;
+  color: white;
+  padding: 0.15rem 0.5rem;
+  border-radius: 12px;
+  margin-left: 0.4rem;
+  vertical-align: middle;
+}
+
+.chat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0.6rem 0 0.4rem;
+}
+
+.chat-turnos {
+  background: var(--bg);
+  border: 1px solid var(--linea);
+  border-radius: 6px;
+  padding: 0.6rem 0.75rem;
+  min-height: 90px;
+  max-height: 320px;
+  overflow-y: auto;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.chat-bienvenida {
+  margin: 0;
+  color: var(--ceniza);
+  font-style: italic;
+  font-size: 0.85rem;
+}
+
+.chat-turno {
+  margin: 0.4rem 0 0.7rem;
+}
+.chat-turno:first-child { margin-top: 0; }
+
+.chat-pregunta {
+  font-weight: 600;
+  color: var(--texto);
+  background: rgba(110, 58, 138, 0.06);
+  padding: 0.4rem 0.6rem;
+  border-radius: 4px 4px 4px 0;
+  border-left: 3px solid #6e3a8a;
+  margin-bottom: 0.3rem;
+}
+
+.chat-respuesta {
+  color: var(--texto);
+  padding: 0.1rem 0;
+}
+
+.chat-pensando {
+  color: var(--ceniza);
+  font-style: italic;
+  font-size: 0.85rem;
+}
+
+.chat-input {
+  display: flex;
+  gap: 0.4rem;
+  min-width: 0;
+}
+.chat-input input[type=text] {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--linea);
+  border-radius: 6px;
+  font: inherit;
+  background: var(--bg);
+}
+.chat-input input[type=text]:focus {
+  outline: none;
+  border-color: #6e3a8a;
+  box-shadow: 0 0 0 3px rgba(110, 58, 138, 0.18);
+}
+.chat-input button {
+  flex: 0 0 auto;
+  padding: 0.5rem 0.9rem;
+  background: #6e3a8a;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+}
+.chat-input button:hover { background: #4f2862; }
+.chat-input button:disabled {
+  background: var(--ceniza);
+  cursor: wait;
+}
+
+.chat-aviso {
+  font-size: 0.72rem;
+  color: var(--ceniza);
+  margin: 0.4rem 0 0;
+  font-style: italic;
+}
+
+.chat-error {
+  color: #b03a1d;
+  font-size: 0.85rem;
+  background: rgba(176, 58, 29, 0.08);
+  padding: 0.35rem 0.55rem;
+  border-radius: 4px;
+}
+
 /* Pantallas medias (1100-1280 px): paneles aún más estrechos para
    que el mapa siga teniendo respiración (mapa < 470 px se queda enano). */
 @media (max-width: 1280px) and (min-width: 1101px) {

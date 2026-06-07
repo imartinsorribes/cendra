@@ -29,7 +29,7 @@
 
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%23fbf8f3'/%3E%3Cpath d='M50 16 L78 70 L22 70 Z' fill='%23b03a1d'/%3E%3Cpath d='M50 38 L66 64 L34 64 Z' fill='%23fbf8f3'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
-<link rel="stylesheet" href="style.css?v=20">
+<link rel="stylesheet" href="style.css?v=21">
 </head>
 <body>
 
@@ -251,6 +251,21 @@
       <div class="rag-resultados" id="rag_resultados"></div>
     </details>
 
+    <details class="bloque asistente" id="bloque_asistente">
+      <summary><h2>Pregúntale al asistente <span class="badge-ia">con IA</span></h2></summary>
+      <p class="ayuda">El asistente combina los datos de tu simulación + los pasajes del corpus normativo y los pasa por un modelo Llama 3.1 8B (alojado en Cloudflare Workers AI). Responde en castellano con cifras del modelo —no inventa datos ni señala edificios concretos. Si no sabe, te lo dice.</p>
+      <div class="chat" id="chat">
+        <div class="chat-turnos" id="chat_turnos">
+          <p class="chat-bienvenida">«¿Por qué el riesgo cambia tanto cuando subo de planta?», «¿qué obliga el CTE en mi edificio?», «¿qué pasaría si la fachada se sustituyera mañana?»</p>
+        </div>
+        <div class="chat-input">
+          <input type="text" id="chat_input" placeholder="Escribe tu pregunta…" autocomplete="off">
+          <button type="button" id="chat_btn">Enviar</button>
+        </div>
+      </div>
+      <p class="chat-aviso">El asistente puede equivocarse. Las cifras del modelo son siempre las del panel; comprueba la normativa con los enlaces al BOE.</p>
+    </details>
+
     <details class="bloque recomendaciones" open>
       <summary><h2>Cómo bajaría más el riesgo</h2></summary>
       <p class="ayuda">Las tres mejoras de mayor impacto en este edificio.</p>
@@ -423,8 +438,8 @@
 </footer>
 
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
-<script src="modelo.js?v=20"></script>
-<script src="rag.js?v=20"></script>
-<script src="app.js?v=20"></script>
+<script src="modelo.js?v=21"></script>
+<script src="rag.js?v=21"></script>
+<script src="app.js?v=21"></script>
 </body>
 </html>

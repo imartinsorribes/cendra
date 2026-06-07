@@ -711,7 +711,90 @@ document.addEventListener('DOMContentLoaded', () => {
   if (inp) inp.addEventListener('keydown', e => {
     if (e.key === 'Enter') { e.preventDefault(); ejecutarBusquedaRAG(); }
   });
+  const chatBtn = document.getElementById('chat_btn');
+  const chatInp = document.getElementById('chat_input');
+  if (chatBtn) chatBtn.addEventListener('click', enviarChat);
+  if (chatInp) chatInp.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); enviarChat(); }
+  });
 });
+
+// === Asistente conversacional con Workers AI =============================
+
+async function enviarChat() {
+  const inp = document.getElementById('chat_input');
+  const btn = document.getElementById('chat_btn');
+  const turnos = document.getElementById('chat_turnos');
+  if (!inp || !turnos) return;
+  const pregunta = inp.value.trim();
+  if (!pregunta) return;
+
+  // Limpiar bienvenida la primera vez
+  const bienvenida = turnos.querySelector('.chat-bienvenida');
+  if (bienvenida) bienvenida.remove();
+
+  // Pintar el turno con la pregunta + indicador «pensando»
+  const turno = document.createElement('div');
+  turno.className = 'chat-turno';
+  turno.innerHTML = `
+    <div class="chat-pregunta">${_escaparHtml(pregunta)}</div>
+    <div class="chat-respuesta chat-pensando">Pensando…</div>
+  `;
+  turnos.appendChild(turno);
+  turnos.scrollTop = turnos.scrollHeight;
+  inp.value = '';
+  if (btn) { btn.disabled = true; btn.textContent = 'Pensando…'; }
+
+  // Componer el contexto para el endpoint
+  const i = leerInputs();
+  const r = M.calcularRiesgo(i);
+  const contexto = {
+    plantas: i.plantas, anio: i.anio, uso: i.uso || 'no especificado',
+    fachada: i.fachada, cubierta: i.cubierta, ite: i.ite, sci: i.sci,
+    hora: i.hora, barrio: estado.barrio_nombre,
+    riesgo_total: r.riesgo_total,
+    V: r.componentes.V_intrinseca,
+    E: r.componentes.E_exposicion,
+    R: r.componentes.R_respuesta,
+    regimen: r.pesos.regimen,
+    parque: r.detalle_respuesta.parque_efectivo,
+    tiempo_min: r.detalle_respuesta.tiempo_llegada_min,
+  };
+  // Recuperar pasajes RAG relevantes para contextualizar al modelo
+  let normativa = [];
+  if (window.cendraRAG && _ragListo) {
+    try { normativa = window.cendraRAG.buscar(pregunta, 3); } catch {}
+  }
+
+  try {
+    const resp = await fetch('/api/asistente', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pregunta, contexto, normativa }),
+    });
+    const data = await resp.json();
+    const cont = turno.querySelector('.chat-respuesta');
+    cont.classList.remove('chat-pensando');
+    if (!resp.ok) {
+      cont.innerHTML = `<span class="chat-error">${_escaparHtml(data.error || 'Error desconocido')}</span>`;
+    } else {
+      cont.textContent = data.respuesta;
+    }
+  } catch (e) {
+    const cont = turno.querySelector('.chat-respuesta');
+    cont.classList.remove('chat-pensando');
+    cont.innerHTML = `<span class="chat-error">No he podido contactar con el asistente. Comprueba tu conexión o vuelve a probar en unos segundos.</span>`;
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Enviar'; }
+    turnos.scrollTop = turnos.scrollHeight;
+  }
+}
+
+function _escaparHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  })[c]);
+}
 
 // Pinta el plan de respuesta operativa + actualiza las capas del mapa
 function actualizarPlanRespuesta(input, detalleRespuesta) {
