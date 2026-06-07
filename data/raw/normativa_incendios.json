@@ -1,0 +1,125 @@
+{
+  "fuente": "Corpus curado de los pasajes normativos en vigor que afectan al modelo cendra. Cada entrada cita el reglamento, el artículo o sección, el rango de aplicación temporal (años) y el texto literal o resumido con su referencia oficial al BOE / DOGV.",
+  "ultima_revision": "2026-05",
+  "items": [
+    {
+      "id": "cpi91-art4-residencial-altura",
+      "norma": "NBE-CPI-91",
+      "norma_completa": "Norma Básica de la Edificación · Condiciones de Protección contra Incendios en los Edificios (NBE-CPI-91)",
+      "vigencia": [1991, 1996],
+      "categoria": "altura",
+      "articulo": "Art. 4 · Sectorización",
+      "texto": "Los edificios de uso residencial con altura de evacuación inferior a 28 m no precisan instalación de columna seca. La compartimentación en sectores de incendio se exige a partir de 2.500 m² construidos por planta. La resistencia al fuego de los elementos separadores entre sectores es RF-90 con carácter general.",
+      "boe": "BOE núm. 198 de 19/08/1991",
+      "url": "https://www.boe.es/buscar/doc.php?id=BOE-A-1991-21171"
+    },
+    {
+      "id": "cpi91-art13-revestimientos",
+      "norma": "NBE-CPI-91",
+      "vigencia": [1991, 1996],
+      "categoria": "fachada",
+      "articulo": "Art. 13 · Materiales de revestimiento",
+      "texto": "Los materiales empleados en revestimientos de paredes y techos en zonas de evacuación deben tener una clase de reacción al fuego M1 o M0. La norma NO regula explícitamente los revestimientos exteriores de fachada ventilada con material combustible interior, vacío que el CTE DB-SI corregirá parcialmente.",
+      "boe": "BOE núm. 198 de 19/08/1991"
+    },
+    {
+      "id": "cpi96-revisión",
+      "norma": "NBE-CPI-96",
+      "norma_completa": "Norma Básica de la Edificación · Condiciones de Protección contra Incendios en los Edificios (NBE-CPI-96)",
+      "vigencia": [1996, 2006],
+      "categoria": "general",
+      "articulo": "Real Decreto 2177/1996",
+      "texto": "Sustituye a la NBE-CPI-91. Mantiene los criterios de altura de evacuación pero incorpora exigencias específicas para garajes, hospitales y residencias de mayores. Sigue sin regular la propagación exterior por fachadas ventiladas con núcleo combustible.",
+      "boe": "BOE núm. 261 de 29/10/1996"
+    },
+    {
+      "id": "cte-dbsi-si2-fachadas",
+      "norma": "CTE DB-SI",
+      "norma_completa": "Código Técnico de la Edificación · Documento Básico de Seguridad en caso de Incendio",
+      "vigencia": [2006, 9999],
+      "categoria": "fachada",
+      "articulo": "SI 2 · Propagación exterior · Sección 1 (Fachadas)",
+      "texto": "La clase de reacción al fuego de los materiales que ocupen más del 10 % de la superficie del acabado exterior de las fachadas o de las superficies interiores de las cámaras ventiladas será B-s3,d2 (combustible pero con baja contribución al fuego, baja opacidad de humos y sin caída de gotas inflamadas) hasta una altura de 3,5 m como mínimo cuando arranquen en zonas accesibles al público en general; en el resto será como mínimo D-s3,d0. Esta clasificación se modificó tras Grenfell (2017) y Campanar (2024).",
+      "boe": "Real Decreto 314/2006 (BOE 28/03/2006); modificado por RD 732/2019 (BOE 27/12/2019)"
+    },
+    {
+      "id": "cte-dbsi-si4-instalaciones",
+      "norma": "CTE DB-SI",
+      "vigencia": [2006, 9999],
+      "categoria": "sci",
+      "articulo": "SI 4 · Instalaciones de protección contra incendios · Tabla 1.1",
+      "texto": "Para uso residencial vivienda, los extintores portátiles son obligatorios cada 15 m de recorrido en cada planta a partir del origen de evacuación. Los hidrantes exteriores son obligatorios si la altura de evacuación es mayor de 28 m o la superficie construida total es mayor de 5.000 m². La columna seca es obligatoria a partir de 24 m de altura de evacuación. La instalación de detección y alarma se exige a partir de 50 viviendas o cuando la altura supera 50 m. Los rociadores automáticos se exigen en garajes a partir de cierta superficie y en residencias de mayores.",
+      "boe": "Real Decreto 314/2006"
+    },
+    {
+      "id": "cte-dbsi-si3-evacuacion",
+      "norma": "CTE DB-SI",
+      "vigencia": [2006, 9999],
+      "categoria": "altura",
+      "articulo": "SI 3 · Evacuación de ocupantes",
+      "texto": "Para uso residencial vivienda, la altura de evacuación máxima desde una planta hasta el espacio exterior seguro debe permitir la evacuación en un tiempo razonable. A partir de 28 m de altura de evacuación se exigen escaleras especialmente protegidas. La densidad de ocupación se calcula a 20 m²/persona en residencial.",
+      "boe": "Real Decreto 314/2006"
+    },
+    {
+      "id": "ripci-2017-mantenimiento",
+      "norma": "RIPCI 2017",
+      "norma_completa": "Reglamento de Instalaciones de Protección contra Incendios · RD 513/2017",
+      "vigencia": [2017, 9999],
+      "categoria": "mantenimiento",
+      "articulo": "Capítulo IV · Mantenimiento e inspecciones",
+      "texto": "Las instalaciones de protección contra incendios deben someterse a mantenimiento por una empresa habilitada con periodicidad trimestral, semestral o anual según el tipo. Las instalaciones de comunidades de propietarios con más de cierta complejidad requieren contrato de mantenimiento con empresa instaladora habilitada. La inspección periódica oficial cada 10 años es obligatoria para instalaciones existentes.",
+      "boe": "BOE núm. 139 de 12/06/2017",
+      "url": "https://www.boe.es/buscar/doc.php?id=BOE-A-2017-6606"
+    },
+    {
+      "id": "rd-732-2019-modificación-cte",
+      "norma": "RD 732/2019",
+      "norma_completa": "Real Decreto 732/2019 que modifica el CTE",
+      "vigencia": [2019, 9999],
+      "categoria": "fachada",
+      "articulo": "Modificación de SI 2",
+      "texto": "Tras el incendio de Grenfell Tower (Londres, 2017), España endurece los requisitos de reacción al fuego de las fachadas con cámara ventilada. La clase exigida se eleva y se amplían las restricciones a edificios de altura superior a 18 m. NO afecta retroactivamente a los edificios construidos entre 2000 y 2017, que es el rango del «perfil Campanar». Los edificios anteriores a 2006 (anteriores al CTE) tienen aún más laxo el régimen de fachadas.",
+      "boe": "BOE núm. 311 de 27/12/2019"
+    },
+    {
+      "id": "ite-valencia-decreto-2025",
+      "norma": "ITE Valencia",
+      "norma_completa": "Inspección Técnica de Edificios en la Comunitat Valenciana · Decreto 53/2018",
+      "vigencia": [2018, 9999],
+      "categoria": "ite",
+      "articulo": "Inspección obligatoria por antigüedad",
+      "texto": "Los edificios de uso residencial con más de 50 años de antigüedad están obligados a pasar la Inspección Técnica del Edificio (ITE). En València capital la ordenanza municipal añade controles para edificios sobre cierto umbral de plantas. La ITE evalúa estructura, fachadas, cubiertas e instalaciones. La fachada combustible NO está expresamente listada como motivo de inspección urgente, vacío que el atlas cendra propone subsanar.",
+      "url": "https://dogv.gva.es/datos/2018/05/04/pdf/2018_4127.pdf"
+    },
+    {
+      "id": "rsec-2018-baja-tension",
+      "norma": "REBT",
+      "norma_completa": "Reglamento Electrotécnico para Baja Tensión · RD 842/2002",
+      "vigencia": [2002, 9999],
+      "categoria": "instalaciones",
+      "articulo": "ITC-BT-28 · Locales de pública concurrencia",
+      "texto": "Las instalaciones eléctricas en zonas comunes de edificios residenciales colectivos deben cumplir la ITC-BT-28 si la ocupación supera ciertos umbrales. Las acometidas eléctricas son la primera causa de origen de incendio domiciliario en España según informes anuales de UNESPA y la Asociación Profesional de Técnicos de Bomberos.",
+      "boe": "BOE núm. 224 de 18/09/2002"
+    },
+    {
+      "id": "campanar-causa-investigacion",
+      "norma": "Investigación judicial",
+      "norma_completa": "Investigación del incendio de Campanar (València, 22/02/2024)",
+      "vigencia": [2024, 9999],
+      "categoria": "fachada",
+      "articulo": "Auto del Juzgado de Instrucción nº 5 de València",
+      "texto": "El incendio de Campanar (22 febrero 2024, 10 personas fallecidas) tuvo origen residencial en la 4ª planta y propagó a través del revestimiento de fachada de tipo composite con núcleo de polietileno (ACM-PE), envolviendo el edificio en aproximadamente 30 minutos. Los materiales de fachada cumplían la normativa vigente al construirse (CTE 2006-2019). El caso ha reabierto el debate sobre la retroactividad de los requisitos de reacción al fuego en fachadas existentes.",
+      "url": "https://www.elperiodic.com/incendio-campanar-investigacion"
+    },
+    {
+      "id": "directiva-eu-products-2024",
+      "norma": "Directiva (UE) 2024/1275",
+      "norma_completa": "Directiva (UE) 2024/1275 del Parlamento Europeo · eficiencia energética en edificios y seguridad post-Grenfell",
+      "vigencia": [2024, 9999],
+      "categoria": "fachada",
+      "articulo": "Considerando 56 y siguientes",
+      "texto": "Recomienda a los Estados miembros incentivar la sustitución de revestimientos de fachada combustibles en edificios residenciales existentes mediante ayudas públicas, y estudiar criterios de obligatoriedad para edificios sobre cierta altura. España tiene plazo hasta 2030 para transponer.",
+      "url": "https://eur-lex.europa.eu/eli/dir/2024/1275/oj"
+    }
+  ]
+}

@@ -1152,6 +1152,124 @@ footer a {
 }
 footer a:hover { text-decoration: underline; }
 
+/* === RAG normativo (CTE / NBE / RIPCI) ================================== */
+
+.bloque.normativa { border-left: 3px solid #1f4f8b; }
+
+.rag-buscador {
+  display: flex;
+  gap: 0.4rem;
+  margin: 0.6rem 0 0.5rem;
+  min-width: 0;
+}
+.rag-buscador input[type=search] {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--linea);
+  border-radius: 6px;
+  font: inherit;
+  background: var(--bg);
+}
+.rag-buscador input[type=search]:focus {
+  outline: none;
+  border-color: #1f4f8b;
+  box-shadow: 0 0 0 3px rgba(31, 79, 139, 0.18);
+}
+.rag-buscador button {
+  flex: 0 0 auto;
+  padding: 0.5rem 0.9rem;
+  background: #1f4f8b;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+}
+.rag-buscador button:hover { background: #163d6f; }
+
+.rag-sugerencias {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin: 0.3rem 0 0.7rem;
+}
+.rag-sug {
+  font-size: 0.78rem;
+  padding: 0.25rem 0.55rem;
+  background: rgba(31, 79, 139, 0.08);
+  border: 1px solid rgba(31, 79, 139, 0.25);
+  color: #1f4f8b;
+  border-radius: 12px;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  line-height: 1.3;
+}
+.rag-sug:hover {
+  background: rgba(31, 79, 139, 0.14);
+  border-color: #1f4f8b;
+}
+
+.rag-resultados { margin-top: 0.5rem; }
+
+.rag-item {
+  margin: 0.6rem 0;
+  padding: 0.7rem 0.85rem;
+  background: var(--bg);
+  border: 1px solid var(--linea);
+  border-radius: 6px;
+}
+.rag-cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: baseline;
+  margin-bottom: 0.4rem;
+  font-size: 0.8rem;
+}
+.rag-norma {
+  font-weight: 700;
+  color: #1f4f8b;
+  background: rgba(31, 79, 139, 0.1);
+  padding: 0.1rem 0.45rem;
+  border-radius: 3px;
+}
+.rag-articulo { color: var(--ceniza); font-style: italic; }
+.rag-vigencia {
+  margin-left: auto;
+  font-size: 0.72rem;
+  color: var(--ceniza);
+  font-variant-numeric: tabular-nums;
+}
+.rag-texto {
+  margin: 0.2rem 0 0.5rem;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--texto);
+}
+.rag-pie {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  font-size: 0.75rem;
+  color: var(--ceniza);
+}
+.rag-link {
+  color: #1f4f8b;
+  font-weight: 600;
+  text-decoration: none;
+}
+.rag-link:hover { text-decoration: underline; }
+
+.rag-vacio, .rag-cargando {
+  font-size: 0.85rem;
+  color: var(--ceniza);
+  font-style: italic;
+  margin: 0.5rem 0;
+}
+
 /* Pantallas medias (1100-1280 px): paneles aún más estrechos para
    que el mapa siga teniendo respiración (mapa < 470 px se queda enano). */
 @media (max-width: 1280px) and (min-width: 1101px) {

@@ -637,7 +637,81 @@ function recalcular() {
 
   // Plan de respuesta operativa
   actualizarPlanRespuesta(leerInputs(), r.detalle_respuesta);
+
+  // Sugerencias del RAG normativo (preguntas plantilladas según el
+  // edificio: año, plantas, fachada, sci...). El corpus se carga una
+  // sola vez en background; mientras tanto el bloque queda visible
+  // pero el botón Buscar avisa de que aún se está cargando.
+  actualizarSugerenciasRAG(leerInputs());
 }
+
+// === RAG normativo (búsqueda BM25 sobre corpus curado) ====================
+
+let _ragListo = false;
+if (window.cendraRAG) {
+  window.cendraRAG.cargarCorpus()
+    .then(() => { _ragListo = true; })
+    .catch(e => console.warn('cendra · RAG normativo no disponible:', e));
+}
+
+function actualizarSugerenciasRAG(input) {
+  if (!window.cendraRAG) return;
+  const cont = document.getElementById('rag_sugerencias');
+  if (!cont) return;
+  const sug = window.cendraRAG.sugerenciasParaInput(input);
+  cont.innerHTML = sug.map(s =>
+    `<button type="button" class="rag-sug">${s}</button>`
+  ).join('');
+  cont.querySelectorAll('.rag-sug').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const inp = document.getElementById('rag_input');
+      inp.value = btn.textContent;
+      ejecutarBusquedaRAG();
+    });
+  });
+}
+
+function ejecutarBusquedaRAG() {
+  if (!window.cendraRAG) return;
+  const inp = document.getElementById('rag_input');
+  const out = document.getElementById('rag_resultados');
+  if (!inp || !out) return;
+  const q = inp.value.trim();
+  if (!q) { out.innerHTML = ''; return; }
+  if (!_ragListo) {
+    out.innerHTML = '<p class="rag-cargando">Cargando corpus normativo…</p>';
+    setTimeout(ejecutarBusquedaRAG, 300);
+    return;
+  }
+  const res = window.cendraRAG.buscar(q, 3);
+  if (!res.length) {
+    out.innerHTML = '<p class="rag-vacio">No he encontrado pasajes relevantes en el corpus. Reformula la pregunta usando términos como «fachada», «altura», «extintor», «ITE», «mantenimiento», «Campanar».</p>';
+    return;
+  }
+  out.innerHTML = res.map(r => `
+    <article class="rag-item">
+      <header class="rag-cabecera">
+        <span class="rag-norma">${r.norma}</span>
+        <span class="rag-articulo">${r.articulo}</span>
+        ${r.vigencia ? `<span class="rag-vigencia">${r.vigencia[0]}${r.vigencia[1] >= 9999 ? '–vigente' : `–${r.vigencia[1]}`}</span>` : ''}
+      </header>
+      <p class="rag-texto">${r.texto}</p>
+      <footer class="rag-pie">
+        ${r.boe ? `<span class="rag-boe">${r.boe}</span>` : ''}
+        ${r.url ? `<a class="rag-link" href="${r.url}" target="_blank" rel="noopener">Texto oficial</a>` : ''}
+      </footer>
+    </article>
+  `).join('');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('rag_btn');
+  const inp = document.getElementById('rag_input');
+  if (btn) btn.addEventListener('click', ejecutarBusquedaRAG);
+  if (inp) inp.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); ejecutarBusquedaRAG(); }
+  });
+});
 
 // Pinta el plan de respuesta operativa + actualiza las capas del mapa
 function actualizarPlanRespuesta(input, detalleRespuesta) {

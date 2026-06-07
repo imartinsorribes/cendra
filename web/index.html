@@ -29,7 +29,7 @@
 
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%23fbf8f3'/%3E%3Cpath d='M50 16 L78 70 L22 70 Z' fill='%23b03a1d'/%3E%3Cpath d='M50 38 L66 64 L34 64 Z' fill='%23fbf8f3'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
-<link rel="stylesheet" href="style.css?v=19">
+<link rel="stylesheet" href="style.css?v=20">
 </head>
 <body>
 
@@ -239,6 +239,17 @@
       </details>
     </section>
 
+    <details class="bloque normativa" id="bloque_normativa">
+      <summary><h2>Qué dice la normativa de tu edificio</h2></summary>
+      <p class="ayuda">Buscador trazable sobre el corpus curado del CTE DB-SI, NBE-CPI-91, RIPCI 2017, ITE Comunitat Valenciana y otras normas aplicables. Cada respuesta cita textualmente el artículo y enlaza al BOE / DOGV.</p>
+      <div class="rag-buscador">
+        <input type="search" id="rag_input" placeholder="Pregunta en lenguaje natural: «¿es obligatoria la columna seca en mi edificio?»" autocomplete="off">
+        <button type="button" id="rag_btn">Buscar</button>
+      </div>
+      <div class="rag-sugerencias" id="rag_sugerencias" aria-label="Preguntas sugeridas según tu edificio"></div>
+      <div class="rag-resultados" id="rag_resultados"></div>
+    </details>
+
     <details class="bloque recomendaciones" open>
       <summary><h2>Cómo bajaría más el riesgo</h2></summary>
       <p class="ayuda">Las tres mejoras de mayor impacto en este edificio.</p>
@@ -411,7 +422,8 @@
 </footer>
 
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
-<script src="modelo.js?v=19"></script>
-<script src="app.js?v=19"></script>
+<script src="modelo.js?v=20"></script>
+<script src="rag.js?v=20"></script>
+<script src="app.js?v=20"></script>
 </body>
 </html>
