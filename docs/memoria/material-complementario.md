@@ -5,11 +5,12 @@ lang: es
 
 # cendra · material complementario
 
-Recursos adicionales del proyecto cendra que **no van adjuntos en este
-envío** porque la sede electrónica del Ajuntament de València no
-admite todos los formatos necesarios (especialmente `.mp4` y `.csv`).
-Todos están publicados como recursos abiertos en el repositorio
-público de GitHub y son accesibles sin necesidad de registro.
+Recursos abiertos del proyecto cendra para que el jurado pueda
+explorarlos directamente, sin necesidad de registro: el atlas web
+desplegado, el vídeo de demostración narrado, el dataset descargable
+de los 154 candidatos, el código fuente, los tests de validación y el
+asistente conversacional con IA verificable en vivo. La forma de
+acceder a cada uno se detalla a continuación.
 
 ---
 
