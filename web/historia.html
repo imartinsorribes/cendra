@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>cendra · qué pasó en Campanar y cómo entenderlo con datos</title>
+<meta name="description" content="Scrollytelling: el incendio de Campanar paso a paso, los 154 edificios con perfil parecido en València y la cronología internacional de fachadas combustibles desde Lacrosse 2014 hasta hoy.">
+<meta name="author" content="Iñaki Martín Sorribes">
+
+<meta property="og:type" content="article">
+<meta property="og:locale" content="es_ES">
+<meta property="og:site_name" content="cendra · atlas de riesgo de incendio">
+<meta property="og:title" content="Cómo entender Campanar con datos abiertos">
+<meta property="og:description" content="El incendio paso a paso, el patrón internacional desde Grenfell, y los 154 edificios de València con perfil parecido. Una historia para leer haciendo scroll.">
+<meta property="og:url" content="https://cendra.pages.dev/historia.html">
+<meta property="og:image" content="https://cendra.pages.dev/og-image.png">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%23fbf8f3'/%3E%3Cpath d='M50 16 L78 70 L22 70 Z' fill='%23b03a1d'/%3E%3Cpath d='M50 38 L66 64 L34 64 Z' fill='%23fbf8f3'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="historia.css?v=1">
+</head>
+<body>
+
+<header class="hero-historia">
+  <a href="index.html" class="volver">← volver al atlas</a>
+  <p class="pretitulo">Una historia con datos abiertos</p>
+  <h1>Cómo entender lo que pasó en Campanar</h1>
+  <p class="subtitulo">Diez personas murieron el 22 de febrero de 2024. La fachada cubrió el edificio en treinta minutos. <strong>No fue la primera vez en Europa</strong>. Esta página explica el patrón con datos verificables y abre el código y los criterios para que cualquiera pueda comprobarlos.</p>
+  <p class="cta-scroll">Empieza a hacer scroll ↓</p>
+</header>
+
+<!-- Contenedor scrollytelling: a la izquierda los pasos del relato,
+     a la derecha el «escenario» fijo que va cambiando según el paso. -->
+<section class="scrolly">
+  <div class="escenario" id="escenario">
+    <div class="escena escena-mapa activa" data-escena="0">
+      <div class="mapa-mock"></div>
+      <div class="ann">València</div>
+    </div>
+
+    <div class="escena escena-edificio" data-escena="1">
+      <div class="edif-svg">
+        <svg viewBox="0 0 200 320" width="100%" height="100%">
+          <rect x="40" y="60" width="120" height="240" fill="#3a3530" stroke="#1c1b16" stroke-width="2"/>
+          <g class="ventanas">
+            <!-- 14 plantas x 4 ventanas -->
+          </g>
+          <text x="100" y="40" text-anchor="middle" font-size="14" fill="#1c1b16" font-weight="700">14 plantas · Aiora</text>
+        </svg>
+      </div>
+    </div>
+
+    <div class="escena escena-fuego" data-escena="2">
+      <div class="edif-svg">
+        <svg viewBox="0 0 200 320" width="100%" height="100%">
+          <rect x="40" y="60" width="120" height="240" fill="#3a3530" stroke="#1c1b16" stroke-width="2"/>
+          <rect x="40" y="220" width="120" height="80" fill="#b03a1d" opacity="0.9">
+            <animate attributeName="opacity" values="0.6;1;0.7;1" dur="1.5s" repeatCount="indefinite"/>
+          </rect>
+          <text x="100" y="40" text-anchor="middle" font-size="13" fill="#1c1b16" font-weight="700">Origen: planta intermedia</text>
+        </svg>
+      </div>
+    </div>
+
+    <div class="escena escena-propaga" data-escena="3">
+      <div class="edif-svg">
+        <svg viewBox="0 0 200 320" width="100%" height="100%">
+          <rect x="40" y="60" width="120" height="240" fill="#3a3530" stroke="#1c1b16" stroke-width="2"/>
+          <rect x="40" y="60" width="120" height="240" fill="url(#fuego)" opacity="0.85"/>
+          <defs>
+            <linearGradient id="fuego" x1="0" y1="100%" x2="0" y2="0%">
+              <stop offset="0%" stop-color="#b03a1d"/>
+              <stop offset="50%" stop-color="#e57a37"/>
+              <stop offset="100%" stop-color="#f5b400"/>
+            </linearGradient>
+          </defs>
+          <text x="100" y="40" text-anchor="middle" font-size="13" fill="#1c1b16" font-weight="700">Fachada envuelta · 30 min</text>
+        </svg>
+      </div>
+    </div>
+
+    <div class="escena escena-cronologia" data-escena="4">
+      <ol class="cronologia-svg">
+        <li><span class="anyo">2014</span> Lacrosse · Melbourne · 0 muertes</li>
+        <li><span class="anyo">2015</span> Address Hotel · Dubai · 0 muertes</li>
+        <li class="grenfell"><span class="anyo">2017</span> Grenfell Tower · Londres · <strong>72 muertes</strong></li>
+        <li><span class="anyo">2022</span> Mocejón · Toledo · 0 muertes</li>
+        <li class="campanar"><span class="anyo">2024</span> Campanar · València · <strong>10 muertes</strong></li>
+      </ol>
+    </div>
+
+    <div class="escena escena-mapa-154" data-escena="5">
+      <div class="mapa-mock-154">
+        <span class="cifra-grande">154</span>
+        <span class="cifra-pie">edificios con perfil parecido</span>
+      </div>
+    </div>
+
+    <div class="escena escena-cta" data-escena="6">
+      <div class="cta-final">
+        <h2>Explora el atlas</h2>
+        <p>Cualquier persona puede comprobar el riesgo de su edificio, descargar la lista de los 154 candidatos y ver qué dice la normativa.</p>
+        <a class="boton-cta" href="index.html">Abrir el atlas</a>
+        <a class="boton-cta-sec" href="https://github.com/imartinsorribes/cendra" target="_blank" rel="noopener">Código y datos en GitHub</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="texto">
+    <div class="paso" data-paso="0">
+      <p class="numero">0</p>
+      <h2>València, 22 de febrero de 2024</h2>
+      <p>Un edificio de catorce plantas en el barrio de Aiora arde en una tarde tranquila de invierno. La fachada de composite con núcleo combustible empieza a propagar fuego de planta a planta a una velocidad que los servicios de emergencia no pueden contener desde la calle.</p>
+      <p class="fuente">Fuente: investigación judicial, Juzgado de Instrucción nº 5 de València. Datos del SPEIS y Catastro INSPIRE.</p>
+    </div>
+
+    <div class="paso" data-paso="1">
+      <p class="numero">1</p>
+      <h2>El edificio</h2>
+      <p>14 plantas. 41 viviendas. Construido entre 2008 y 2009. Fachada con paneles de aluminio composite (ACM) con núcleo de polietileno —el mismo material que ardió en la Grenfell Tower de Londres en 2017.</p>
+      <p>El edificio cumplía la normativa vigente al construirse. Lo que cambió fue la doctrina sobre cómo arde ese material a escala real.</p>
+    </div>
+
+    <div class="paso" data-paso="2">
+      <p class="numero">2</p>
+      <h2>Cómo empezó</h2>
+      <p>El origen estuvo en una planta intermedia, en el interior de una vivienda. La causa exacta sigue bajo investigación pero las cifras de UNESPA apuntan que la mayoría de incendios residenciales empiezan por instalación eléctrica o cocina.</p>
+      <p>Lo grave no fue el origen. Lo grave fue lo que pasó después.</p>
+    </div>
+
+    <div class="paso" data-paso="3">
+      <p class="numero">3</p>
+      <h2>Cómo se propagó</h2>
+      <p>El fuego saltó al exterior por la ventana de la vivienda original. Una vez ahí, el revestimiento de fachada se incendió y subió. La propagación exterior por el «efecto chimenea» fue de aproximadamente una planta cada 30-60 segundos: en menos de media hora la mayoría de fachadas estaban implicadas.</p>
+      <p>Los bomberos no pudieron entrar por dentro mientras la fachada caía como brasas a la calle.</p>
+    </div>
+
+    <div class="paso" data-paso="4">
+      <p class="numero">4</p>
+      <h2>No es la primera vez</h2>
+      <p>El patrón es internacional desde 2014. Lacrosse en Melbourne sin víctimas; Address Hotel en Dubai sin víctimas; Grenfell en Londres con 72 muertes; Mocejón en Toledo sin víctimas; Campanar con diez. Lo que cambia es la suerte de quién esté dentro y la rapidez de la respuesta.</p>
+      <p>La causa estructural común es la misma: <strong>composite con núcleo combustible en fachada ventilada</strong>.</p>
+    </div>
+
+    <div class="paso" data-paso="5">
+      <p class="numero">5</p>
+      <h2>Cuántos edificios en València comparten ese perfil</h2>
+      <p>Cruzando el Catastro INSPIRE con un criterio prudente —diez plantas o más, construidos entre 2000 y 2017 (la era del composite ACM-PE)— el atlas identifica <strong>154 edificios en València</strong> que merecen una inspección de fachada prioritaria.</p>
+      <p>No sabemos si todos tienen ACM-PE. Sí sabemos que cumplen el perfil temporal y de altura para que merezca la pena comprobarlo. Esa lista no existía antes de cendra y es descargable como CSV.</p>
+    </div>
+
+    <div class="paso" data-paso="6">
+      <p class="numero">6</p>
+      <h2>Por qué este atlas es abierto</h2>
+      <p>El código está en GitHub bajo licencia MIT. Los datos están bajo CC BY 4.0. La metodología está documentada paso a paso en el Anexo II del proyecto. Cualquier persona puede comprobar las cifras, mejorar el modelo o aplicarlo a otro municipio.</p>
+      <p>Los datos abiertos del Ajuntament de València solo sirven si los cruzamos.</p>
+    </div>
+  </div>
+</section>
+
+<footer class="footer-historia">
+  <p>cendra · atlas paramétrico de riesgo de incendio en València · CC BY 4.0 · datos del Ajuntament de València y Catastro INSPIRE</p>
+  <p><a href="index.html">Atlas interactivo</a> · <a href="https://github.com/imartinsorribes/cendra" target="_blank" rel="noopener">Código en GitHub</a> · <a href="data/candidatos_campanar_completo.json" target="_blank" rel="noopener">Dataset de candidatos</a></p>
+</footer>
+
+<script src="historia.js?v=1"></script>
+</body>
+</html>

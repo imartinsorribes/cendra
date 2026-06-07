@@ -1,0 +1,340 @@
+/* historia.css · Scrollytelling de Campanar */
+
+:root {
+  --bg: #fbf8f3;
+  --bg-panel: #f1efe7;
+  --texto: #1c1b16;
+  --acento: #b03a1d;
+  --azul: #1f4f8b;
+  --linea: #d8d2c1;
+  --ceniza: #5a564b;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--texto);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+a { color: var(--azul); }
+
+/* === Hero === */
+
+.hero-historia {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 4rem 1.5rem 5rem;
+  text-align: left;
+}
+
+.volver {
+  font-size: 0.9rem;
+  color: var(--ceniza);
+  text-decoration: none;
+  display: inline-block;
+  margin-bottom: 2rem;
+}
+.volver:hover { color: var(--acento); }
+
+.pretitulo {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--acento);
+  font-weight: 700;
+  margin: 0 0 0.6rem;
+}
+
+.hero-historia h1 {
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  line-height: 1.15;
+  font-weight: 800;
+  margin: 0 0 1.4rem;
+  letter-spacing: -1px;
+}
+
+.subtitulo {
+  font-size: 1.15rem;
+  color: var(--ceniza);
+  max-width: 600px;
+  margin: 0 0 2.5rem;
+}
+
+.cta-scroll {
+  font-size: 0.85rem;
+  color: var(--ceniza);
+  font-style: italic;
+}
+
+/* === Scrollytelling === */
+
+.scrolly {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1.5rem 5rem;
+}
+
+.escenario {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-panel);
+  border-radius: 12px;
+  margin-right: 1rem;
+  overflow: hidden;
+}
+
+.escena {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+  padding: 2rem;
+}
+
+.escena.activa {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.texto {
+  padding: 4rem 0 0 1rem;
+}
+
+.paso {
+  min-height: 95vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 2rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.paso .numero {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--acento);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin: 0 0 0.5rem;
+}
+
+.paso h2 {
+  font-size: clamp(1.5rem, 3.5vw, 2.4rem);
+  font-weight: 800;
+  line-height: 1.15;
+  margin: 0 0 1.2rem;
+  letter-spacing: -0.5px;
+}
+
+.paso p {
+  font-size: 1.08rem;
+  margin: 0 0 1rem;
+  color: var(--texto);
+}
+
+.paso p strong {
+  color: var(--acento);
+  font-weight: 700;
+}
+
+.paso .fuente {
+  font-size: 0.85rem;
+  color: var(--ceniza);
+  font-style: italic;
+  border-left: 3px solid var(--linea);
+  padding-left: 0.8rem;
+  margin-top: 1.2rem;
+}
+
+/* === Escenas individuales === */
+
+.mapa-mock {
+  width: 80%;
+  max-width: 380px;
+  aspect-ratio: 1;
+  background:
+    radial-gradient(ellipse at 60% 50%, #f5b400 0%, transparent 30%),
+    radial-gradient(ellipse at 35% 60%, #e57a37 0%, transparent 25%),
+    radial-gradient(ellipse at 50% 35%, #6e9d4c 0%, transparent 35%),
+    var(--bg-panel);
+  border-radius: 12px;
+  border: 1px solid var(--linea);
+  position: relative;
+}
+
+.ann {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-weight: 800;
+  font-size: 1.4rem;
+  color: var(--texto);
+  background: rgba(251, 248, 243, 0.9);
+  padding: 0.4rem 1rem;
+  border-radius: 8px;
+}
+
+.edif-svg {
+  width: 60%;
+  max-width: 280px;
+  height: 80%;
+}
+
+.cronologia-svg {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 1.05rem;
+  width: 80%;
+  max-width: 420px;
+}
+
+.cronologia-svg li {
+  padding: 0.7rem 1rem;
+  margin: 0.4rem 0;
+  background: var(--bg);
+  border-left: 4px solid var(--linea);
+  border-radius: 4px;
+  display: flex;
+  align-items: baseline;
+  gap: 0.8rem;
+}
+
+.cronologia-svg li.grenfell { border-left-color: var(--acento); }
+.cronologia-svg li.campanar {
+  border-left-color: var(--acento);
+  background: rgba(176, 58, 29, 0.08);
+  font-weight: 600;
+}
+.cronologia-svg .anyo {
+  font-weight: 800;
+  color: var(--acento);
+  min-width: 3rem;
+}
+
+.mapa-mock-154 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background:
+    radial-gradient(circle at 30% 50%, #b03a1d 0%, transparent 12%),
+    radial-gradient(circle at 60% 30%, #b03a1d 0%, transparent 12%),
+    radial-gradient(circle at 50% 60%, #b03a1d 0%, transparent 12%),
+    radial-gradient(circle at 70% 70%, #b03a1d 0%, transparent 12%),
+    radial-gradient(circle at 25% 25%, #b03a1d 0%, transparent 10%),
+    radial-gradient(circle at 80% 50%, #b03a1d 0%, transparent 10%),
+    radial-gradient(circle at 45% 80%, #b03a1d 0%, transparent 12%),
+    var(--bg-panel);
+  width: 80%;
+  max-width: 420px;
+  aspect-ratio: 1;
+  border-radius: 12px;
+  border: 1px solid var(--linea);
+  justify-content: center;
+}
+
+.cifra-grande {
+  font-size: clamp(4.5rem, 12vw, 7.5rem);
+  font-weight: 900;
+  color: var(--acento);
+  line-height: 1;
+  letter-spacing: -3px;
+}
+
+.cifra-pie {
+  font-size: 1rem;
+  color: var(--texto);
+  margin-top: 0.4rem;
+  font-weight: 600;
+  background: rgba(251, 248, 243, 0.95);
+  padding: 0.2rem 0.7rem;
+  border-radius: 6px;
+}
+
+.cta-final {
+  text-align: center;
+  max-width: 380px;
+}
+
+.cta-final h2 {
+  font-size: 2rem;
+  font-weight: 800;
+  margin: 0 0 1rem;
+}
+
+.cta-final p {
+  font-size: 1.05rem;
+  color: var(--ceniza);
+  margin-bottom: 1.6rem;
+}
+
+.boton-cta, .boton-cta-sec {
+  display: inline-block;
+  margin: 0.4rem 0.3rem;
+  padding: 0.8rem 1.5rem;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.boton-cta {
+  background: var(--acento);
+  color: white;
+}
+.boton-cta:hover { background: #8a2e16; }
+
+.boton-cta-sec {
+  background: transparent;
+  color: var(--azul);
+  border: 1.5px solid var(--azul);
+}
+.boton-cta-sec:hover { background: var(--azul); color: white; }
+
+/* === Footer === */
+
+.footer-historia {
+  padding: 3rem 1.5rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--ceniza);
+  border-top: 1px solid var(--linea);
+  background: var(--bg-panel);
+}
+.footer-historia p { margin: 0.4rem 0; }
+
+/* === Móvil: el escenario va arriba pequeño y los textos debajo === */
+
+@media (max-width: 800px) {
+  .scrolly {
+    grid-template-columns: 1fr;
+    padding: 0 1rem 3rem;
+  }
+  .escenario {
+    height: 40vh;
+    margin-right: 0;
+    margin-bottom: 1rem;
+    top: 0;
+  }
+  .texto { padding: 2rem 0 0; }
+  .paso { min-height: 70vh; }
+  .hero-historia { padding: 2.5rem 1rem 3rem; }
+}

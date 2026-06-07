@@ -72,6 +72,16 @@ header {
   transition: all 0.15s;
 }
 .header-tab:hover { color: var(--brasa); }
+a.header-tab.header-tab-link {
+  text-decoration: none;
+  display: inline-block;
+  line-height: 1;
+}
+a.header-tab.header-tab-link::after {
+  content: ' →';
+  opacity: 0.6;
+  font-size: 0.85em;
+}
 .header-tab.activa {
   background: var(--bg);
   color: var(--brasa);
