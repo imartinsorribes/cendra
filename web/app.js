@@ -174,6 +174,23 @@ async function inicializarMapa() {
     },
   });
 
+  // Resaltado del edificio CLICKADO. Sustituye al popup: cuando se
+  // clica un edificio el panel derecho se rellena con todos los datos
+  // y este borde le dice visualmente «este es el que has elegido».
+  // El filtro arranca con un valor imposible para que no resalte
+  // nada hasta que haya un clic.
+  map.addLayer({
+    id: 'edificios-seleccionado-line',
+    source: 'edificios-poligonos',
+    type: 'line',
+    minzoom: 13,
+    filter: ['==', ['get', 'i'], '__ninguno__'],
+    paint: {
+      'line-color': '#1f4f8b',
+      'line-width': 4,
+    },
+  });
+
   // Source de los 2.000 edificios destacados con CLUSTERING. Es el
   // MISMO conjunto que los polígonos del Catastro (edificios-poligonos)
   // — los puntos sirven solo para el clustering a zoom bajo, los
@@ -488,43 +505,39 @@ async function inicializarMapa() {
     map.flyTo({ center: e.lngLat, zoom: 17, duration: 800 });
     recalcular();
 
-    // El popup muestra el riesgo CALCULADO con los mismos inputs que
-    // se acaban de poner en los sliders (no el riesgo del batch
-    // precalculado en el GeoJSON). Así popup y panel coinciden por
-    // construcción y solo divergen cuando la usuaria empieza a tocar
-    // los sliders. El batch sigue existiendo y guía el color de los
-    // polígonos del mapa.
-    const rPanel = M.calcularRiesgo(leerInputs()).riesgo_total;
+    // Resaltar el polígono del edificio clickado con un borde azul:
+    // el feedback visual sustituye al popup grande que antes tapaba
+    // medio mapa.
+    if (p.i && window.__map?.getLayer?.('edificios-seleccionado-line')) {
+      window.__map.setFilter('edificios-seleccionado-line', ['==', ['get', 'i'], p.i]);
+    }
 
+    // Mostrar la referencia catastral en el panel derecho. Es el
+    // ÚNICO dato del antiguo popup que no estaba ya en el panel.
+    const edifRef = document.getElementById('edificio_ref');
+    if (edifRef) {
+      if (p.i) {
+        const ref = p.i.split('_part')[0];
+        const url = `https://www1.sedecatastro.gob.es/CYCBienInmueble/OVCListaBienes.aspx?rc1=${ref.slice(0,7)}&rc2=${ref.slice(7)}`;
+        edifRef.innerHTML = `
+          <strong>Edificio simulado:</strong> ${p.p ?? '?'} plantas
+          · ${p.h ?? '?'} m
+          · año ${p.a ? Math.round(p.a) : '—'}
+          ${p.b ? ` · ${p.b}` : ''}<br>
+          Referencia catastral:
+          <a href="${url}" target="_blank" rel="noopener"><code>${ref}</code></a>
+        `;
+        edifRef.hidden = false;
+      } else {
+        edifRef.hidden = true;
+        edifRef.innerHTML = '';
+      }
+    }
+
+    // Cerrar cualquier popup que pudiera quedar abierto (de barrios
+    // u otras capas) para no obstruir la vista del polígono
+    // resaltado.
     document.querySelectorAll('.maplibregl-popup').forEach(el => el.remove());
-    new maplibregl.Popup({ offset: 10, closeButton: true, maxWidth: '280px' })
-      .setLngLat(e.lngLat)
-      .setHTML(`
-        <div class="popup-titulo">Edificio del Catastro</div>
-        <div class="popup-num">
-          <span class="popup-num-val" style="color:${colorPorValor(rPanel)}">${rPanel.toFixed(1)}</span>
-          <span class="popup-num-lab">riesgo del modelo con tus parámetros actuales</span>
-        </div>
-        <p class="popup-detalle">
-          ${p.p ?? '?'} plantas · ${p.h ?? '?'} m
-          · año ${p.a ? Math.round(p.a) : '—'}<br>
-          ${p.b || '(sin barrio)'}${p.u ? ` · uso ${p.u}` : ''}<br>
-          Bomberos: ${p.k ?? '—'} · ${p.t ?? '?'} min<br>
-          ${p.i ? (() => {
-            // El localId del Catastro INSPIRE viene como
-            // «000100100YJ27F_part1» (la parte buildingpart). La referencia
-            // catastral REAL es la base sin el sufijo _partN.
-            const ref = p.i.split('_part')[0];
-            return `<span class="popup-ref">Ref. catastral: <a href="https://www1.sedecatastro.gob.es/CYCBienInmueble/OVCListaBienes.aspx?rc1=${ref.slice(0,7)}&rc2=${ref.slice(7)}" target="_blank" rel="noopener"><code>${ref}</code></a></span>`;
-          })() : ''}
-        </p>
-        <p class="popup-cta">
-          El panel de la derecha ya recalcula con los datos reales
-          de este edificio + el barrio. Cambia fachada / ITE / SCI /
-          cubierta o la hora para ver qué pasaría bajo otros escenarios.
-        </p>
-      `)
-      .addTo(map);
   }
 
   // Registrar el handler para los puntos individuales (zoom < 14) y para los
@@ -1280,7 +1293,7 @@ function pintarTablaCandidatos(items) {
       ? `<a href="https://www1.sedecatastro.gob.es/CYCBienInmueble/OVCListaBienes.aspx?rc1=${it.ref.slice(0,7)}&rc2=${it.ref.slice(7)}" target="_blank" rel="noopener"><code>${it.ref}</code></a>`
       : '—';
     return `
-      <tr data-lon="${it.lon}" data-lat="${it.lat}" data-plantas="${it.plantas}" data-anio="${it.anio || ''}" data-uso="${it.uso || ''}">
+      <tr data-lon="${it.lon}" data-lat="${it.lat}" data-plantas="${it.plantas}" data-anio="${it.anio || ''}" data-uso="${it.uso || ''}" data-altura="${it.altura_m || ''}" data-ref="${it.ref || ''}" data-barrio="${it.barrio || ''}">
         <td class="num">${it.rank}</td>
         <td>${it.barrio || '—'}</td>
         <td class="num">${it.plantas}</td>
@@ -1343,6 +1356,33 @@ function pintarTablaCandidatos(items) {
           }
         }
         if (window.__map) window.__map.flyTo({ center: [lon, lat], zoom: 17, duration: 1200 });
+
+        // Resaltar el polígono seleccionado por su localId_base y
+        // mostrar la ref catastral en el panel derecho (mismo
+        // comportamiento que clickEdificio en el mapa).
+        const refBase = tr.dataset.ref;
+        if (refBase && window.__map?.getLayer?.('edificios-seleccionado-line')) {
+          window.__map.setFilter('edificios-seleccionado-line', ['==', ['get', 'i'], refBase]);
+        }
+        const edifRef = document.getElementById('edificio_ref');
+        if (edifRef) {
+          if (refBase) {
+            const url = `https://www1.sedecatastro.gob.es/CYCBienInmueble/OVCListaBienes.aspx?rc1=${refBase.slice(0,7)}&rc2=${refBase.slice(7)}`;
+            const altura = tr.dataset.altura;
+            edifRef.innerHTML = `
+              <strong>Edificio simulado:</strong> ${plantas} plantas
+              ${altura ? `· ${altura} m` : ''}
+              · año ${!isNaN(anio) ? anio : '—'}
+              ${tr.dataset.barrio ? ` · ${tr.dataset.barrio}` : ''}<br>
+              Referencia catastral:
+              <a href="${url}" target="_blank" rel="noopener"><code>${refBase}</code></a>
+            `;
+            edifRef.hidden = false;
+          } else {
+            edifRef.hidden = true;
+          }
+        }
+
         recalcular();
       };
       if (window.__map) window.__map.once('idle', aplicar);
@@ -1451,6 +1491,13 @@ if (resetBtn) {
     if (window.__map?.getLayer('barris-hover')) {
       window.__map.setFilter('barris-hover', ['==', 'codbarrio', -1]);
     }
+    // Quitar resaltado del edificio seleccionado
+    if (window.__map?.getLayer('edificios-seleccionado-line')) {
+      window.__map.setFilter('edificios-seleccionado-line', ['==', ['get', 'i'], '__ninguno__']);
+    }
+    // Ocultar la referencia catastral del panel
+    const _edifRef = document.getElementById('edificio_ref');
+    if (_edifRef) { _edifRef.hidden = true; _edifRef.innerHTML = ''; }
     // Vaciar capas operativas (radios, ruta, target) para no dejar restos
     // del último escenario apilados sobre el centro inicial.
     const empty = { type: 'FeatureCollection', features: [] };

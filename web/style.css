@@ -743,6 +743,32 @@ label > input[type="checkbox"] {
 }
 .contexto strong { color: var(--texto); }
 
+/* Referencia catastral del edificio clickado (sustituye al popup) */
+.edificio-ref {
+  margin: 0.5rem 0 0;
+  padding: 0.4rem 0.6rem;
+  background: rgba(31, 79, 139, 0.07);
+  border-left: 3px solid #1f4f8b;
+  border-radius: 0 4px 4px 0;
+  font-size: 0.78rem;
+  color: var(--texto-suave);
+  line-height: 1.45;
+}
+.edificio-ref strong { color: var(--texto); }
+.edificio-ref a {
+  color: #1f4f8b;
+  font-weight: 600;
+  text-decoration: none;
+}
+.edificio-ref a:hover { text-decoration: underline; }
+.edificio-ref code {
+  background: white;
+  padding: 0.05em 0.4em;
+  border-radius: 3px;
+  font-size: 0.95em;
+  border: 1px solid var(--linea);
+}
+
 /* Explicación detallada «Por qué este riesgo» */
 .explica-riesgo {
   margin-top: 0.5rem;
