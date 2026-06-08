@@ -271,9 +271,11 @@ auditable.
 
 ## 4. Resultados
 
-### 4.1 Cálculo batch sobre los 214.000 edificios de València
+### 4.1 Cálculo batch sobre los 214.000 unidades INSPIRE
 
-El modelo se ejecuta sobre todos los edificios del Catastro bajo un
+El modelo se ejecuta sobre todas las unidades del Catastro INSPIRE
+(214.000 *buildingparts*, equivalentes a aproximadamente **36.300
+edificios únicos** tras la deduplicación por `localId_base`) bajo un
 escenario por defecto (paramétricos en valores medios) en 17 segundos
 con `scripts/calcular_riesgo_batch.py`. La distribución resultante:
 
@@ -281,8 +283,39 @@ con `scripts/calcular_riesgo_batch.py`. La distribución resultante:
 - **σ entre edificios**: 6,3
 - **Rango**: 20 - 59
 - **88 barrios** con riesgo medio entre 25 y 52
+- **36.300 edificios únicos** (cifra real de unidades físicas en
+  Catastro INSPIRE tras unir las *buildingparts* que pertenecen al
+  mismo edificio en sus partes vertical y horizontal)
 
-### 4.2 Distribución por barrio
+### 4.2 Los 154 edificios con perfil Campanar
+
+La pieza original más relevante del proyecto: a partir del cruce del
+Catastro INSPIRE con el modelo, cendra identifica de forma
+reproducible **los 154 edificios de València que comparten el perfil
+temporal y de altura del edificio que ardió en Campanar**:
+
+- **Diez plantas o más** (umbral conservador para que el efecto
+  chimenea sea relevante en caso de fachada combustible).
+- **Construidos entre 2000 y 2017**, la era industrial del
+  revestimiento de composite con núcleo de polietileno (ACM-PE) en
+  España, antes de que la modificación del CTE post-Grenfell
+  (RD 732/2019) endureciera los requisitos de reacción al fuego en
+  fachadas ventiladas.
+
+El criterio es **prudente y trazable**: cendra no afirma que esos
+154 edificios tengan ACM-PE en fachada (eso requiere inspección
+visual), pero sí afirma que **encajan en el perfil temporal y
+estructural que merece priorización municipal**. La lista completa
+con referencia catastral, barrio, año, plantas, altura, riesgo del
+modelo y tiempo de bomberos se entrega como dataset abierto
+(`data/processed/candidatos_campanar.csv`, 154 filas · 12 columnas ·
+CC BY 4.0) y es descargable desde la vista «Propuestas» del atlas.
+
+Dimensión: **154 edificios en perfil Campanar frente a 36.300
+edificios únicos analizados** (≈ 0,42 % del parque residencial
+analizado). El criterio es exigente y la lista priorizable.
+
+### 4.3 Distribución por barrio
 
 El top de barrios por riesgo medio (escenario por defecto):
 
@@ -324,6 +357,22 @@ servidor sin necesidad de backend ni base de datos. Combina:
  de Campanar, un edificio histórico de Centro en madrugada y una
  promoción nueva de Quatre Carreres en hora punta. Permiten
  comparar de un vistazo cómo afectan los distintos factores.
+- **Dos vistas complementarias**: «Análisis» (mapa + simulador) y
+ «Propuestas» (tabla descargable de los 154 candidatos, cronología
+ histórica internacional desde Lacrosse hasta Campanar, plan de
+ acción municipal).
+- **Página de narrativa visual** (`/historia`) con scrollytelling de
+ siete pasos que cuenta qué pasó en Campanar y dibuja el patrón
+ internacional con datos abiertos. Está pensada para personas que
+ vienen a entender el problema antes que a usar la herramienta.
+- **Buscador del corpus normativo (RAG)** integrado en el panel
+ derecho. La persona usuaria pregunta en lenguaje natural y recibe
+ los pasajes literales del CTE / NBE-CPI / RIPCI / ITE relevantes
+ con su cita al BOE.
+- **Asistente conversacional flotante con IA** (botón en la esquina
+ inferior derecha que abre un panel con chat). Detrás está Llama
+ 3.1 8B en Cloudflare Workers AI, blindado para no inventar cifras
+ ni señalar edificios concretos.
 
 El modelo está implementado dos veces: una en Python para los
 cálculos batch y la validación, y otra en JavaScript para la
@@ -338,6 +387,34 @@ sobre cualquier hosting estático.
 
 ## 6. Innovación y originalidad · criterio 1
 
+- **Identificación abierta de los 154 edificios con «perfil
+ Campanar»**. La pieza más visible y accionable del proyecto.
+ Cruzando el Catastro INSPIRE con un criterio prudente y
+ documentado (≥ 10 plantas y construidos entre 2000 y 2017,
+ correspondientes a la era industrial del composite ACM-PE en
+ España) cendra publica por primera vez una **lista priorizable de
+ los 154 edificios de València que merecen inspección de fachada
+ prioritaria**. La lista se entrega como dataset abierto en CSV
+ con referencia catastral, barrio, año, plantas, altura, riesgo y
+ tiempo de llegada de bomberos. No existía nada equivalente
+ abierto hasta ahora.
+- **RAG normativo trazable en el navegador**. cendra incluye un
+ buscador BM25 sobre un corpus curado de doce pasajes literales de
+ CTE DB-SI, NBE-CPI-91, RIPCI 2017, ITE Comunitat Valenciana,
+ RD 732/2019 post-Grenfell y la investigación judicial del propio
+ caso Campanar. Cada respuesta cita textualmente el artículo y
+ enlaza al BOE o al DOGV. La búsqueda corre 100 % en cliente,
+ sin envío de la consulta a ningún servidor externo.
+- **Asistente conversacional blindado con Llama 3.1 8B**. La
+ versión en producción incorpora un asistente con IA generativa
+ (Llama 3.1 8B alojado en Cloudflare Workers AI, plan gratuito) que
+ sólo puede usar las cifras de la simulación en curso y los
+ pasajes del RAG normativo. El system prompt es público y le
+ prohíbe expresamente inventar números, listar edificios concretos
+ por dirección, predecir incendios o dar consejo profesional. Si
+ la pregunta requiere algo fuera del contexto, debe responder
+ «no tengo datos sobre eso». Es una incorporación de IA al
+ análisis con trazabilidad y sin alucinación.
 - **El modelo paramétrico como respuesta al dilema datos abiertos vs
  datos sensibles**. Es la decisión metodológica central: aceptar que
  los datos clave (fachada, ITE, SCI) no son abiertos y nunca podrán

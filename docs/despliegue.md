@@ -140,8 +140,8 @@ paso 3.
 
 El frontend siempre intenta llamar a `/api/asistente`. Si el binding
 no está configurado, la Function devuelve `503` con un mensaje
-explícito. El usuario ve un mensaje rojo en el chat: «Workers AI no
-está enlazado en este despliegue». La web sigue funcionando
+explícito. La persona usuaria ve un mensaje rojo en el chat: «Workers
+AI no está enlazado en este despliegue». La web sigue funcionando
 perfectamente sin asistente — el bloque del chat queda desactivado
 pero el resto del atlas opera normalmente.
 

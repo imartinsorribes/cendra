@@ -1284,7 +1284,7 @@ footer a:hover { text-decoration: underline; }
 
 /* === Asistente conversacional con Workers AI ============================ */
 /* El asistente vive como widget flotante (FAB + panel) en lugar de
-   ocupar espacio dentro del panel derecho. El usuario lo abre cuando
+   ocupar espacio dentro del panel derecho. Se abre cuando
    quiere y se cierra cuando no, sin invadir el resto del atlas. */
 
 .badge-ia {
