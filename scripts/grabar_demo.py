@@ -28,9 +28,12 @@ Para acelerar las primeras pruebas (sin grabar) durante desarrollo:
 from __future__ import annotations
 
 import argparse
+import glob
 import http.server
+import os
 import shutil
 import socketserver
+import subprocess
 import sys
 import threading
 import time
@@ -68,6 +71,75 @@ def _arrancar_servidor():
 
 def _msg(t):
     print(f"[grabar] {t}", file=sys.stderr, flush=True)
+
+
+def _localizar_ffmpeg() -> str | None:
+    """Busca un ffmpeg con soporte de H.264. El ffmpeg que viene con
+    Playwright solo trae VP8, así que preferimos el de imageio-ffmpeg
+    (build completo) o el del sistema."""
+    try:
+        import imageio_ffmpeg
+        p = imageio_ffmpeg.get_ffmpeg_exe()
+        if p and Path(p).exists():
+            return p
+    except Exception:
+        pass
+    sysff = shutil.which("ffmpeg")
+    if sysff:
+        return sysff
+    # Último recurso: el ffmpeg recortado de Playwright (solo VP8).
+    candidatos = [
+        Path(p) for p in glob.glob(
+            str(Path.home() / "AppData/Local/ms-playwright/ffmpeg*/ffmpeg-win64.exe")
+        )
+    ]
+    for c in candidatos:
+        if c.exists():
+            return str(c)
+    return None
+
+
+def _convertir_a_mp4(webm: Path, mp4: Path) -> bool:
+    """Re-encoda el WebM (VP8 25fps ~890kbps) a MP4 H.264 30fps 4000kbps.
+    H.264 da mejor compresión a la misma calidad y es universalmente
+    compatible con editores de vídeo (Canva, DaVinci, Premiere)."""
+    ffmpeg = _localizar_ffmpeg()
+    if not ffmpeg:
+        _msg("ffmpeg no encontrado, salto la conversión a MP4")
+        return False
+    if mp4.exists():
+        mp4.unlink()
+    cmd = [
+        ffmpeg, "-y", "-loglevel", "warning",
+        "-i", str(webm),
+        # Re-encode con H.264 a 30 fps. No usamos minterpolate (muy
+        # lento, ~5 min para un vídeo de 4 min); el filtro fps simple
+        # con duplicación frame-to-frame es suficiente.
+        "-vf", "fps=30",
+        "-c:v", "libx264",
+        "-preset", "fast",           # equilibrio velocidad/calidad
+        "-crf", "20",                # 18-23 = visualmente sin pérdida
+        "-pix_fmt", "yuv420p",       # máxima compatibilidad
+        "-movflags", "+faststart",   # primer frame visible al instante
+        "-an",                       # sin audio
+        str(mp4),
+    ]
+    _msg(f"convirtiendo a MP4 30 fps con ffmpeg (1-2 min)...")
+    try:
+        subprocess.run(cmd, check=True, capture_output=True, timeout=600)
+    except subprocess.CalledProcessError as e:
+        _msg(f"ffmpeg falló: {e.stderr.decode()[:500]}")
+        return False
+    except subprocess.TimeoutExpired:
+        _msg("ffmpeg timeout")
+        return False
+    kb = mp4.stat().st_size / 1024
+    try:
+        rel = mp4.relative_to(ROOT)
+    except ValueError:
+        rel = mp4
+    _msg(f"OK -> {rel} ({kb:.0f} KB)")
+    return True
 
 
 # Script JS que monkey-patchea fetch para mockear /api/asistente
@@ -196,13 +268,14 @@ def grabar(dry_run: bool = False, local: bool = False):
             _msg("cap. 3: click polígono + manipulación sliders...")
             page.click('.header-tab[data-vista="analisis"]')
             time.sleep(2)
-            # Volar a una zona con polígonos
+            # Volar a una zona con polígonos. Duración alta (3,5 s) para
+            # que el flyTo sea suave a 25 fps en la grabación de WebM.
             page.evaluate("""() => {
                 if (window.__map) window.__map.flyTo({
-                    center: [-0.3464, 39.4670], zoom: 17, duration: 2000
+                    center: [-0.3464, 39.4670], zoom: 17, duration: 3500
                 });
             }""")
-            time.sleep(5)
+            time.sleep(6)
             # Click programático en un polígono visible
             page.evaluate("""() => {
                 const m = window.__map; if (!m) return;
@@ -304,13 +377,13 @@ def grabar(dry_run: bool = False, local: bool = False):
                 if (t && !t.checked) { t.checked = true; t.dispatchEvent(new Event('change', { bubbles: true })); }
             }""")
             time.sleep(2)
-            # Volar a ver los círculos
+            # Volar a ver los círculos (duración alta para suavidad)
             page.evaluate("""() => {
                 if (window.__map) window.__map.flyTo({
-                    center: [-0.3464, 39.4670], zoom: 15.5, duration: 1500
+                    center: [-0.3464, 39.4670], zoom: 15.5, duration: 3000
                 });
             }""")
-            time.sleep(5)
+            time.sleep(6)
 
             # ====================================================
             # Capítulo 5 (1:55 - 2:25) · RAG normativo
@@ -432,6 +505,12 @@ def grabar(dry_run: bool = False, local: bool = False):
         webms[0].rename(dst)
         kb = dst.stat().st_size / 1024
         _msg(f"OK -> {dst.relative_to(ROOT)} ({kb:.0f} KB)")
+
+        # Post-proceso: convertir el WebM a MP4 H.264 30 fps con
+        # interpolación. El resultado se ve más suave y es compatible
+        # con cualquier editor de vídeo (Canva no traga WebM bien).
+        mp4 = DOCS / "video-demo.mp4"
+        _convertir_a_mp4(dst, mp4)
 
     finally:
         if srv is not None:

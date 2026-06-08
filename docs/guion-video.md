@@ -1,10 +1,19 @@
-# Guión del vídeo de presentación · 3 min 49 s
+# Guión del vídeo de presentación · 3 min 30 s
 
-> **Vídeo base ya grabado**: `docs/video-demo.webm`
-> (25 MB · 3:49 · 1920×1080 · 25 fps) generado automáticamente
-> por `scripts/grabar_demo.py` contra el atlas en producción
-> (`cendra.pages.dev`). El asistente conversacional con Llama 3.1 8B
-> responde **de verdad** en este vídeo: no es un mock.
+> **Vídeo base ya grabado**:
+> - `docs/video-demo.mp4` (40 MB · 3:30 · 1920×1080 · **30 fps** · H.264 CRF 20) ← úsalo aquí
+> - `docs/video-demo.webm` (24 MB · misma duración · VP8 25 fps) ← original sin post-proceso
+>
+> Generado automáticamente por `scripts/grabar_demo.py` contra el
+> atlas en producción (`cendra.pages.dev`). El asistente
+> conversacional con Llama 3.1 8B responde **de verdad** en este
+> vídeo: no es un mock. Los `flyTo` del mapa van a duración 3-3,5 s
+> para que se vean fluidos en grabación; el WebM se reencoda
+> después a MP4 H.264 30 fps con `ffmpeg` (vía `imageio-ffmpeg`).
+>
+> El MP4 es el archivo que conviene usar en cualquier editor
+> (Canva, DaVinci, Premiere); el WebM queda como original
+> regenerable.
 >
 > **Cómo añadirle voz** (por orden de sencillez):
 > 1. **Canva** (en línea): «Crear un diseño» → «Vídeo» → subir el
@@ -204,3 +213,36 @@ propagación, cronología, 154, CTA final).
 Mantén los capítulos 1, 3, 5 (RAG normativo) y 6 (asistente IA).
 Recorta el resto. Te queda un trailer rápido para Instagram,
 Twitter o LinkedIn donde se entiende la innovación.
+
+---
+
+## Opción alternativa · grabarlo tú con OBS (calidad estudio)
+
+Si prefieres un vídeo con **calidad máxima** (8000 kb/s, 60 fps,
+cero lag en `flyTo`) y no te importa los 15 minutos de tu tiempo,
+esta es la receta:
+
+1. Instala **OBS Studio** (gratis · <https://obsproject.com>).
+2. Settings → Video → Output (Scaled) Resolution **1920×1080**,
+   FPS **60**.
+3. Settings → Output → Recording → Format **MP4** · Encoder **x264**
+   · Bitrate **8000 kb/s** · Preset **veryfast**.
+4. Sources → **Display Capture** → tu monitor.
+5. Abre Chrome / Edge a pantalla completa en
+   `https://cendra.pages.dev`. Modo incógnito para que no
+   aparezcan extensiones ni autocompletados.
+6. Pulsa **Start Recording** en OBS y sigue el guión de arriba
+   capítulo por capítulo con calma. Si te equivocas en una toma,
+   espera 3 segundos y rehazla; cortarás luego.
+7. Stop Recording. Carga el MP4 resultante en Canva o DaVinci y
+   añade voz encima como en la opción A.
+
+**Ventajas frente al script automatizado**:
+- 60 fps, suavidad nativa.
+- Bitrate alto, las cifras del panel se leen perfectamente.
+- Cero lag de `flyTo`.
+
+**Desventajas**:
+- Tienes que ir tú clicando, así que cualquier error de UI lo
+  graba (los descartas en post). El script automático no falla
+  nunca.
