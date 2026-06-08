@@ -1,8 +1,56 @@
-# Checklist del día de la presentación (5 jun 2026)
+# Checklist final — convocatoria AD.TR.15
 
-Última fecha de revisión: 6 jun 2026.
+Plazo oficial de presentación: **08/05/2026 a 08/06/2026** (ambos
+inclusive). Procedimiento `AD.TR.15` en sede electrónica del
+Ajuntament de València. Doble categoría (datos abiertos y
+periodismo de datos), tres premios en cada una: 5.000 € · 3.000 €
+· 2.000 €.
 
-## Antes de la presentación
+Fuente oficial: <https://sede.valencia.es/sede/registro/procedimiento/AD.TR.15?lang=1>
+
+## Tramitación en sede.valencia.es (lo crítico)
+
+### 1. Verificar identificación (HACER YA si no se ha hecho)
+
+- [ ] Entrar a <https://sede.valencia.es> e identificarse con
+  Cl@ve PIN, Cl@ve Permanente, Cl@ve Móvil o certificado digital
+  FNMT. Si Cl@ve no funciona, sacar FNMT con cita presencial
+  (2-7 días hábiles, hacerlo ya).
+- [ ] Una vez dentro, buscar el procedimiento `AD.TR.15` o
+  «Premios datos abiertos» y confirmar que se llega al formulario
+  (sin presentar nada todavía).
+
+### 2. Descargar y rellenar los anexos oficiales
+
+Los tres PDFs oficiales (verificados, todos devuelven 200):
+
+| Documento | Enlace | Qué hay que hacer |
+|---|---|---|
+| **Formulario de solicitud** | <https://sede.valencia.es/sede/descarga/doc/DOCUMENT_1_20230005314292> | Rellenar datos personales, categoría («datos abiertos»), título del proyecto («cendra: atlas paramétrico de riesgo de incendio en València»), datos de contacto. Firmar. |
+| **Declaración responsable** (el Anexo I) | <https://sede.valencia.es/sede/descarga/doc/DOCUMENT_1_20240007668181> | Marcar que no se ha recibido subvención previa del Ayuntamiento por el mismo objeto, que no se está incurso en causas de prohibición, etc. Firmar. |
+| **Bases reguladoras** (leer) | <https://sede.valencia.es/sede/descarga/doc/DOCUMENT_1_20260010001722> | Leer una vez para no llevarse sorpresas (sobre todo el apartado de documentación obligatoria según tipo de solicitante). |
+
+### 3. Documentación del proyecto (ya generada por cendra)
+
+| Documento | Dónde está |
+|---|---|
+| Memoria resumen (el Anexo II) | `docs/memoria/anexo-ii.pdf` (286 KB) |
+| URL del proyecto desplegado | <https://cendra.pages.dev> |
+| Dataset abierto adjunto | `data/processed/candidatos_campanar.csv` (17 KB) |
+| Código fuente | GitHub release v0.3.0 (cuando sea público) |
+
+### 4. Subir todo a sede.valencia.es
+
+- [ ] Entrar al procedimiento AD.TR.15 con Cl@ve.
+- [ ] Rellenar el formulario telemático.
+- [ ] Subir el PDF del formulario de solicitud firmado.
+- [ ] Subir el PDF de la declaración responsable firmada.
+- [ ] Subir el PDF de la memoria (`docs/memoria/anexo-ii.pdf`).
+- [ ] Indicar la URL del proyecto: `https://cendra.pages.dev`.
+- [ ] Adjuntar (opcional pero recomendado) el CSV del dataset.
+- [ ] Firmar y registrar la solicitud. Guardar el justificante.
+
+## GitHub (lo opcional pero suma puntos en el eje 4 «apertura»)
 
 - [ ] **Hacer el repositorio público** en GitHub
   - <https://github.com/imartinsorribes/cendra/settings>
