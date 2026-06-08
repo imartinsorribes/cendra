@@ -743,32 +743,6 @@ label > input[type="checkbox"] {
 }
 .contexto strong { color: var(--texto); }
 
-/* Referencia catastral del edificio clickado (sustituye al popup) */
-.edificio-ref {
-  margin: 0.5rem 0 0;
-  padding: 0.4rem 0.6rem;
-  background: rgba(31, 79, 139, 0.07);
-  border-left: 3px solid #1f4f8b;
-  border-radius: 0 4px 4px 0;
-  font-size: 0.78rem;
-  color: var(--texto-suave);
-  line-height: 1.45;
-}
-.edificio-ref strong { color: var(--texto); }
-.edificio-ref a {
-  color: #1f4f8b;
-  font-weight: 600;
-  text-decoration: none;
-}
-.edificio-ref a:hover { text-decoration: underline; }
-.edificio-ref code {
-  background: white;
-  padding: 0.05em 0.4em;
-  border-radius: 3px;
-  font-size: 0.95em;
-  border: 1px solid var(--linea);
-}
-
 /* Explicación detallada «Por qué este riesgo» */
 .explica-riesgo {
   margin-top: 0.5rem;
@@ -1141,7 +1115,44 @@ label > input[type="checkbox"] {
   letter-spacing: 0.05em;
   color: var(--texto-suave);
   font-weight: 600;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.4rem;
+  border-bottom: 1px solid var(--linea);
+  padding-bottom: 0.3rem;
+}
+
+/* Lista de datos del popup minimalista (Bomberos / Año / Uso / Ref) */
+.popup-datos {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.25rem 0.7rem;
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+.popup-datos dt {
+  font-weight: 600;
+  color: var(--texto-suave);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding-top: 0.15rem;
+}
+.popup-datos dd {
+  margin: 0;
+  color: var(--texto);
+}
+.popup-datos dd a {
+  color: #1f4f8b;
+  font-weight: 600;
+  text-decoration: none;
+}
+.popup-datos dd a:hover { text-decoration: underline; }
+.popup-datos dd code {
+  background: var(--bg-panel);
+  padding: 0.05em 0.4em;
+  border-radius: 3px;
+  font-size: 0.92em;
+  border: 1px solid var(--linea);
 }
 .popup-num {
   display: flex;
