@@ -394,28 +394,42 @@ async function inicializarMapa() {
     },
   });
 
-  // Tooltip parques
+  // Tooltip parques. Mantenemos una referencia única al popup activo
+  // y la reutilizamos: al pasar el ratón sobre otro parque movemos el
+  // popup, no creamos uno nuevo. Antes una propiedad inválida sobre
+  // el objeto Popup hacía que mouseleave NUNCA lo cerrase y los
+  // popups se acumulaban indefinidamente en el DOM.
+  let _popupParque = null;
   map.on('mouseenter', 'parques', e => {
     map.getCanvas().style.cursor = 'pointer';
     const p = e.features[0].properties;
-    new maplibregl.Popup({ closeButton: false, offset: 12 })
+    if (!_popupParque) {
+      _popupParque = new maplibregl.Popup({ closeButton: false, offset: 12, className: 'tooltip-parque' });
+    }
+    _popupParque
       .setLngLat(e.lngLat)
       .setHTML(`<strong>${p.nombre}</strong><br>${p.direccion}`)
-      .addTo(map)
-      .__esTooltipParque = true;
+      .addTo(map);
   });
   map.on('mouseleave', 'parques', () => {
     map.getCanvas().style.cursor = '';
-    document.querySelectorAll('.maplibregl-popup').forEach(el => {
-      if (el.__esTooltipParque) el.remove();
-    });
+    if (_popupParque) _popupParque.remove();
   });
 
-  // Click en barrio: trasladar el contexto al modelo + mostrar info
+  // Click en barrio: trasladar el contexto al modelo + mostrar info.
+  // Sirve TAMBIÉN cuando se clica en una zona del mapa donde no hay
+  // polígono del top 2.000 (solo 2.000 de los ~36.300 edificios
+  // únicos tienen huella renderizada para no inflar la página). En
+  // ese caso el panel simula «un edificio medio del barrio» con los
+  // valores reales de densidad y vulnerabilidad, igual que si fuera
+  // un click en una casa del top.
   map.on('click', 'barris-fill', e => {
-    // Si el click cae también sobre un edificio individual, ignoramos el
-    // barrio (el handler del edificio ya gestiona la situación).
-    const edif = map.queryRenderedFeatures(e.point, { layers: ['edificios'] });
+    // Si el click cae también sobre un edificio del top (punto o
+    // polígono), dejamos que el handler del edificio gestione todo
+    // para no sobreescribir su contexto.
+    const edif = map.queryRenderedFeatures(e.point, {
+      layers: ['edificios', 'edificios-poligonos-fill'],
+    });
     if (edif.length > 0) return;
 
     const f = e.features[0];
@@ -426,6 +440,27 @@ async function inicializarMapa() {
     estado.densidad = Math.min(100, (p.densidad || 5000) / 100);
     estado.barrio_vuln = p.vulnerab || 50;
     map.setFilter('barris-hover', ['==', 'codbarrio', p.codbarrio]);
+    // Resetear los sliders del edificio a los DEFAULTS del batch
+    // (calcular_riesgo_batch.py) para que el panel calcule lo mismo
+    // que el riesgo medio del barrio, con un edificio «tipo».
+    inputs.fachada.value = 'composite-cte';
+    inputs.ite.value = 'pendiente';
+    inputs.sci.value = 'parcial';
+    inputs.cubierta.value = 'mixto';
+    inputs.hora.value = 12;
+    outputs.hora.value = etiquetaHora(12);
+    inputs.saturacion.checked = false;
+    // Plantas: usar la altura media del barrio si está disponible,
+    // como punto de partida sensato.
+    if (p.altura_media) {
+      const plantasMedia = Math.max(2, Math.round(p.altura_media / 3));
+      inputs.plantas.value = plantasMedia;
+      outputs.plantas.value = plantasMedia;
+    }
+    // Quitar resaltado de edificio (si lo había de un click anterior)
+    if (window.__map?.getLayer('edificios-seleccionado-line')) {
+      window.__map.setFilter('edificios-seleccionado-line', ['==', ['get', 'i'], '__ninguno__']);
+    }
     map.flyTo({ center: e.lngLat, zoom: 14, duration: 800 });
     recalcular();
 
