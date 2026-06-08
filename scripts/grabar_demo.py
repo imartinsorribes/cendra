@@ -276,17 +276,22 @@ def grabar(dry_run: bool = False, local: bool = False):
                 });
             }""")
             time.sleep(6)
-            # Click programático en un polígono visible
+            # Click programático en un polígono visible. El popup
+            # minimalista nuevo aparece a la derecha del polígono con
+            # los 4 datos identificativos (bomberos, año, uso, ref) y
+            # el polígono queda resaltado con borde azul.
             page.evaluate("""() => {
                 const m = window.__map; if (!m) return;
+                const dl = m._delegatedListeners.click;
+                const h = dl.find(d => d.layers && d.layers.includes('edificios-poligonos-fill'))?.listener;
                 const feats = m.queryRenderedFeatures({ layers: ['edificios-poligonos-fill'] });
-                if (!feats.length) return;
+                if (!feats.length || !h) return;
                 const f = feats[0];
                 const c = f.geometry.coordinates[0][0];
                 const px = m.project(c);
-                m.fire('click', { lngLat: { lng: c[0], lat: c[1] }, point: px, features: [f] });
+                h({ lngLat: { lng: c[0], lat: c[1] }, point: px, features: [f] });
             }""")
-            time.sleep(6)
+            time.sleep(8)  # respiramos para que se vea bien el popup nuevo
             # Cerrar popup para ver mejor el panel
             page.evaluate("""() => {
                 document.querySelectorAll('.maplibregl-popup').forEach(p => p.remove());
