@@ -717,6 +717,30 @@ document.addEventListener('DOMContentLoaded', () => {
   if (chatInp) chatInp.addEventListener('keydown', e => {
     if (e.key === 'Enter') { e.preventDefault(); enviarChat(); }
   });
+
+  // === FAB del chatbot (widget flotante) ===
+  const fab = document.getElementById('chatbot_fab');
+  const panel = document.getElementById('chatbot_panel');
+  const cerrarBtn = document.getElementById('chatbot_cerrar');
+  function abrirChatbot() {
+    if (!panel || !fab) return;
+    panel.classList.add('abierto');
+    panel.setAttribute('aria-hidden', 'false');
+    fab.classList.add('oculto');
+    setTimeout(() => document.getElementById('chat_input')?.focus(), 200);
+  }
+  function cerrarChatbot() {
+    if (!panel || !fab) return;
+    panel.classList.remove('abierto');
+    panel.setAttribute('aria-hidden', 'true');
+    fab.classList.remove('oculto');
+  }
+  if (fab) fab.addEventListener('click', abrirChatbot);
+  if (cerrarBtn) cerrarBtn.addEventListener('click', cerrarChatbot);
+  // Cerrar con Escape cuando el panel esté abierto
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && panel?.classList?.contains('abierto')) cerrarChatbot();
+  });
 });
 
 // === Asistente conversacional con Workers AI =============================

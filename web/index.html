@@ -29,7 +29,7 @@
 
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%23fbf8f3'/%3E%3Cpath d='M50 16 L78 70 L22 70 Z' fill='%23b03a1d'/%3E%3Cpath d='M50 38 L66 64 L34 64 Z' fill='%23fbf8f3'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
-<link rel="stylesheet" href="style.css?v=21">
+<link rel="stylesheet" href="style.css?v=22">
 </head>
 <body>
 
@@ -251,21 +251,6 @@
       <div class="rag-resultados" id="rag_resultados"></div>
     </details>
 
-    <details class="bloque asistente" id="bloque_asistente">
-      <summary><h2>Pregúntale al asistente <span class="badge-ia">con IA</span></h2></summary>
-      <p class="ayuda">El asistente combina los datos de tu simulación + los pasajes del corpus normativo y los pasa por un modelo Llama 3.1 8B (alojado en Cloudflare Workers AI). Responde en castellano con cifras del modelo —no inventa datos ni señala edificios concretos. Si no sabe, te lo dice.</p>
-      <div class="chat" id="chat">
-        <div class="chat-turnos" id="chat_turnos">
-          <p class="chat-bienvenida">«¿Por qué el riesgo cambia tanto cuando subo de planta?», «¿qué obliga el CTE en mi edificio?», «¿qué pasaría si la fachada se sustituyera mañana?»</p>
-        </div>
-        <div class="chat-input">
-          <input type="text" id="chat_input" placeholder="Escribe tu pregunta…" autocomplete="off">
-          <button type="button" id="chat_btn">Enviar</button>
-        </div>
-      </div>
-      <p class="chat-aviso">El asistente puede equivocarse. Las cifras del modelo son siempre las del panel; comprueba la normativa con los enlaces al BOE.</p>
-    </details>
-
     <details class="bloque recomendaciones" open>
       <summary><h2>Cómo bajaría más el riesgo</h2></summary>
       <p class="ayuda">Las tres mejoras de mayor impacto en este edificio.</p>
@@ -438,8 +423,39 @@
 </footer>
 
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
-<script src="modelo.js?v=21"></script>
-<script src="rag.js?v=21"></script>
-<script src="app.js?v=21"></script>
+<script src="modelo.js?v=22"></script>
+<!-- Widget flotante del asistente conversacional con IA.
+     Aparece como un FAB rojo brasa en la esquina inferior derecha
+     que abre un panel con el chat al hacer click. -->
+<button id="chatbot_fab" type="button" class="chatbot-fab" aria-label="Abrir asistente con IA" title="Pregúntale al asistente con IA">
+  <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+  </svg>
+  <span class="chatbot-fab-pulso" aria-hidden="true"></span>
+</button>
+
+<aside id="chatbot_panel" class="chatbot-panel" role="dialog" aria-labelledby="chatbot_titulo" aria-hidden="true">
+  <header class="chatbot-cab">
+    <div class="chatbot-cab-tit">
+      <h2 id="chatbot_titulo">Asistente cendra <span class="badge-ia">con IA</span></h2>
+      <p>Llama 3.1 8B · Cloudflare Workers AI</p>
+    </div>
+    <button id="chatbot_cerrar" type="button" class="chatbot-cerrar" aria-label="Cerrar asistente">×</button>
+  </header>
+  <p class="chatbot-intro">Combino los valores de tu simulación con los pasajes del corpus normativo y respondo con cifras del modelo. No invento datos ni señalo edificios concretos; si no lo sé, te lo digo.</p>
+  <div class="chat" id="chat">
+    <div class="chat-turnos" id="chat_turnos">
+      <p class="chat-bienvenida">«¿Por qué el riesgo cambia tanto cuando subo de planta?», «¿qué obliga el CTE en mi edificio?», «¿qué pasaría si la fachada se sustituyera mañana?»</p>
+    </div>
+    <div class="chat-input">
+      <input type="text" id="chat_input" placeholder="Escribe tu pregunta…" autocomplete="off">
+      <button type="button" id="chat_btn">Enviar</button>
+    </div>
+  </div>
+  <p class="chat-aviso">El asistente puede equivocarse. Las cifras del modelo son siempre las del panel; comprueba la normativa con los enlaces al BOE.</p>
+</aside>
+
+<script src="rag.js?v=22"></script>
+<script src="app.js?v=22"></script>
 </body>
 </html>

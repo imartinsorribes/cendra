@@ -1057,42 +1057,44 @@ label > input[type="checkbox"] {
   bottom: 1.5rem; left: 1rem;
   background: var(--bg-panel);
   border: 1px solid var(--linea);
-  border-radius: 6px;
-  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+  padding: 0.9rem 1.1rem;
   box-shadow: var(--sombra);
-  font-size: 0.75rem;
+  font-size: 0.9rem;
   color: var(--texto-suave);
   z-index: 10;
-  max-width: 220px;
+  max-width: 280px;
 }
 .leyenda strong {
   color: var(--texto);
-  font-size: 0.8rem;
+  font-size: 0.95rem;
+  font-weight: 700;
 }
 .leyenda .gradiente {
-  margin: 0.4rem 0 0.2rem;
-  height: 8px;
-  border-radius: 4px;
+  margin: 0.55rem 0 0.3rem;
+  height: 12px;
+  border-radius: 6px;
   background: linear-gradient(to right, #6e9d4c 0%, #b8c155 25%, #f5b400 50%, #e57a37 75%, #b03a1d 100%);
 }
 .leyenda .ejes {
   display: flex;
   justify-content: space-between;
-  font-size: 0.7rem;
+  font-size: 0.82rem;
   color: var(--ceniza);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.65rem;
+  font-weight: 500;
 }
 .leyenda .explica {
-  padding-top: 0.4rem;
+  padding-top: 0.55rem;
   border-top: 1px solid var(--linea);
-  font-size: 0.72rem;
-  line-height: 1.5;
+  font-size: 0.85rem;
+  line-height: 1.65;
 }
 .leyenda .punto {
   display: inline-block;
-  width: 8px; height: 8px;
+  width: 11px; height: 11px;
   border-radius: 50%;
-  margin-right: 0.3rem;
+  margin-right: 0.4rem;
   vertical-align: middle;
 }
 .leyenda .punto.parque { background: #1f4f8b; border: 1px solid white; }
@@ -1281,10 +1283,11 @@ footer a:hover { text-decoration: underline; }
 }
 
 /* === Asistente conversacional con Workers AI ============================ */
+/* El asistente vive como widget flotante (FAB + panel) en lugar de
+   ocupar espacio dentro del panel derecho. El usuario lo abre cuando
+   quiere y se cierra cuando no, sin invadir el resto del atlas. */
 
-.bloque.asistente { border-left: 3px solid #6e3a8a; }
-
-.bloque.asistente summary h2 .badge-ia {
+.badge-ia {
   display: inline-block;
   font-size: 0.65em;
   font-weight: 700;
@@ -1297,6 +1300,129 @@ footer a:hover { text-decoration: underline; }
   margin-left: 0.4rem;
   vertical-align: middle;
 }
+
+/* Botón flotante (FAB) abajo derecha */
+.chatbot-fab {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #b03a1d, #6e3a8a);
+  color: white;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(176, 58, 29, 0.35), 0 2px 6px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.chatbot-fab:hover {
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 10px 26px rgba(176, 58, 29, 0.45), 0 3px 8px rgba(0, 0, 0, 0.2);
+}
+.chatbot-fab:active { transform: translateY(0) scale(0.98); }
+.chatbot-fab.oculto { display: none; }
+
+/* Pulso visual que llama la atención hacia el FAB la primera vez */
+.chatbot-fab-pulso {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid #b03a1d;
+  animation: chatbotPulso 2.6s ease-out infinite;
+}
+@keyframes chatbotPulso {
+  0%   { transform: scale(1);   opacity: 0.7; }
+  100% { transform: scale(1.55); opacity: 0; }
+}
+
+/* Panel flotante del chatbot */
+.chatbot-panel {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  width: min(440px, calc(100vw - 3rem));
+  max-height: min(680px, calc(100vh - 3rem));
+  background: var(--bg);
+  border-radius: 14px;
+  box-shadow: 0 16px 60px rgba(0, 0, 0, 0.22), 0 6px 16px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--linea);
+  display: flex;
+  flex-direction: column;
+  z-index: 1001;
+  opacity: 0;
+  transform: translateY(20px) scale(0.96);
+  transition: opacity 0.22s ease, transform 0.22s ease;
+  pointer-events: none;
+  overflow: hidden;
+}
+.chatbot-panel.abierto {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.chatbot-cab {
+  background: linear-gradient(135deg, #b03a1d, #6e3a8a);
+  color: white;
+  padding: 1rem 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+.chatbot-cab-tit h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.chatbot-cab-tit h2 .badge-ia {
+  background: rgba(255, 255, 255, 0.22);
+  color: white;
+  margin-left: 0;
+}
+.chatbot-cab-tit p {
+  margin: 0.2rem 0 0;
+  font-size: 0.78rem;
+  opacity: 0.85;
+  font-weight: 500;
+}
+.chatbot-cerrar {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 1.6rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+.chatbot-cerrar:hover { background: rgba(255, 255, 255, 0.28); }
+
+.chatbot-intro {
+  font-size: 0.82rem;
+  color: var(--ceniza);
+  margin: 0;
+  padding: 0.7rem 1rem;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--linea);
+  line-height: 1.5;
+}
+
+.chatbot-panel .chat { padding: 0 1rem; flex: 1 1 auto; display: flex; flex-direction: column; }
+.chatbot-panel .chat-turnos { flex: 1 1 auto; max-height: none; min-height: 220px; }
+.chatbot-panel .chat-aviso { padding: 0 1rem 0.85rem; margin: 0.3rem 0 0; }
 
 .chat {
   display: flex;
