@@ -433,6 +433,8 @@ async function inicializarMapa() {
     estado.lon = e.lngLat.lng;
     estado.lat = e.lngLat.lat;
     estado.barrio_nombre = p.b;
+
+    // 1. Rellenar los sliders con los datos del edificio
     inputs.plantas.value = p.p;
     outputs.plantas.value = p.p;
     if (p.a != null && !isNaN(p.a)) {
@@ -451,11 +453,48 @@ async function inicializarMapa() {
       if (opcionExiste) inputs.uso.value = u;
       else inputs.uso.value = "";
     }
-    // Para la exposición, usamos los valores del barrio (ya en su CSV)
-    // — los conoceríamos solo si tuviéramos la fuente original, pero
-    // los datasets del frontend solo dan info del barrio agregada.
+
+    // 2. RESETEAR los sliders no rellenados a los DEFAULTS DEL BATCH
+    // (calcular_riesgo_batch.py). Sin esto el panel calcularía con los
+    // valores que la persona usuaria tenía tocados, dando una cifra
+    // distinta a la del popup (que muestra el riesgo del batch).
+    inputs.fachada.value = 'composite-cte';   // DEFAULT_FACHADA del batch
+    inputs.ite.value     = 'pendiente';        // DEFAULT_ITE del batch
+    inputs.sci.value     = 'parcial';          // DEFAULT_SCI del batch
+    inputs.cubierta.value = 'mixto';           // DEFAULT_CUBIERTA del batch
+    inputs.hora.value    = 12;                 // DEFAULT_HORA del batch
+    outputs.hora.value   = etiquetaHora(12);
+    inputs.saturacion.checked = false;         // libre
+
+    // 3. Rellenar el contexto del BARRIO en el que cae el edificio.
+    // queryRenderedFeatures sobre `barris-fill` en el punto del clic
+    // devuelve el barrio cuya geometría contiene el punto; de ahí
+    // sacamos densidad y vulnerabilidad sociales reales.
+    if (window.__map?.getLayer?.('barris-fill')) {
+      const px = window.__map.project(e.lngLat);
+      const barris = window.__map.queryRenderedFeatures(px, { layers: ['barris-fill'] });
+      if (barris.length) {
+        const bp = barris[0].properties;
+        estado.barrio_nombre = bp.barrio || estado.barrio_nombre;
+        estado.densidad = Math.min(100, (bp.densidad || 5000) / 100);
+        estado.barrio_vuln = bp.vulnerab || 50;
+        // Resaltar también el barrio del edificio
+        if (window.__map.getLayer('barris-hover')) {
+          window.__map.setFilter('barris-hover', ['==', 'codbarrio', bp.codbarrio]);
+        }
+      }
+    }
+
     map.flyTo({ center: e.lngLat, zoom: 17, duration: 800 });
     recalcular();
+
+    // El popup muestra el riesgo CALCULADO con los mismos inputs que
+    // se acaban de poner en los sliders (no el riesgo del batch
+    // precalculado en el GeoJSON). Así popup y panel coinciden por
+    // construcción y solo divergen cuando la usuaria empieza a tocar
+    // los sliders. El batch sigue existiendo y guía el color de los
+    // polígonos del mapa.
+    const rPanel = M.calcularRiesgo(leerInputs()).riesgo_total;
 
     document.querySelectorAll('.maplibregl-popup').forEach(el => el.remove());
     new maplibregl.Popup({ offset: 10, closeButton: true, maxWidth: '280px' })
@@ -463,8 +502,8 @@ async function inicializarMapa() {
       .setHTML(`
         <div class="popup-titulo">Edificio del Catastro</div>
         <div class="popup-num">
-          <span class="popup-num-val" style="color:${colorPorValor(p.r || 0)}">${p.r}</span>
-          <span class="popup-num-lab">riesgo del modelo · escenario base</span>
+          <span class="popup-num-val" style="color:${colorPorValor(rPanel)}">${rPanel.toFixed(1)}</span>
+          <span class="popup-num-lab">riesgo del modelo con tus parámetros actuales</span>
         </div>
         <p class="popup-detalle">
           ${p.p ?? '?'} plantas · ${p.h ?? '?'} m
@@ -480,9 +519,9 @@ async function inicializarMapa() {
           })() : ''}
         </p>
         <p class="popup-cta">
-          Los sliders del panel ya están con los valores reales de este
-          edificio. Cambia fachada / ITE / SCI / cubierta para ver qué
-          pasaría bajo otros escenarios.
+          El panel de la derecha ya recalcula con los datos reales
+          de este edificio + el barrio. Cambia fachada / ITE / SCI /
+          cubierta o la hora para ver qué pasaría bajo otros escenarios.
         </p>
       `)
       .addTo(map);
@@ -1277,6 +1316,31 @@ function pintarTablaCandidatos(items) {
         if (uso) {
           const opcionExiste = Array.from(inputs.uso.options).some(o => o.value === uso);
           inputs.uso.value = opcionExiste ? uso : '';
+        }
+        // Resetear el resto de inputs a los defaults del batch, igual que
+        // clickEdificio, para que el panel coincida con el riesgo del
+        // popup tras el flyTo + click programático.
+        inputs.fachada.value = 'composite-cte';
+        inputs.ite.value = 'pendiente';
+        inputs.sci.value = 'parcial';
+        inputs.cubierta.value = 'mixto';
+        inputs.hora.value = 12;
+        outputs.hora.value = etiquetaHora(12);
+        inputs.saturacion.checked = false;
+        // Resolver el barrio del edificio para que la exposición use
+        // densidad + vulnerabilidad reales (no defaults).
+        if (window.__map?.getLayer?.('barris-fill')) {
+          const pt = window.__map.project([lon, lat]);
+          const barris = window.__map.queryRenderedFeatures(pt, { layers: ['barris-fill'] });
+          if (barris.length) {
+            const bp = barris[0].properties;
+            estado.barrio_nombre = bp.barrio || null;
+            estado.densidad = Math.min(100, (bp.densidad || 5000) / 100);
+            estado.barrio_vuln = bp.vulnerab || 50;
+            if (window.__map.getLayer('barris-hover')) {
+              window.__map.setFilter('barris-hover', ['==', 'codbarrio', bp.codbarrio]);
+            }
+          }
         }
         if (window.__map) window.__map.flyTo({ center: [lon, lat], zoom: 17, duration: 1200 });
         recalcular();
