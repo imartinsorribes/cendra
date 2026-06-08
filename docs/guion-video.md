@@ -1,26 +1,31 @@
-# Guión del vídeo de presentación · 3 minutos
+# Guión del vídeo de presentación · 3 min 49 s
 
-> **Vídeo base ya grabado**: `docs/video-demo.webm` (19 MB · 3:00 · 1920×1080 · 25 fps)
-> reproducido automáticamente por `scripts/grabar_demo.py` siguiendo
-> este guión exacto. La pista de vídeo está; solo falta tu voz por
-> encima.
+> **Vídeo base ya grabado**: `docs/video-demo.webm`
+> (25 MB · 3:49 · 1920×1080 · 25 fps) generado automáticamente
+> por `scripts/grabar_demo.py` contra el atlas en producción
+> (`cendra.pages.dev`). El asistente conversacional con Llama 3.1 8B
+> responde **de verdad** en este vídeo: no es un mock.
 >
 > **Cómo añadirle voz** (por orden de sencillez):
 > 1. **Canva** (en línea): «Crear un diseño» → «Vídeo» → subir el
 >    WebM, añadir pista de audio nueva con tu micro, grabar leyendo
->    el guión, exportar como MP4. Tiene plantillas con cara
->    flotante en círculo si quieres salir tú también.
+>    el guión, exportar como MP4. Tiene plantilla para meterte tú
+>    en círculo en la esquina si quieres salir también en cámara.
 > 2. **DaVinci Resolve** (gratis, escritorio): importa el WebM,
->    pista de audio nueva, graba en directo o pega un MP3 ya
->    grabado, exporta H.264 1080p.
+>    pista de audio nueva, graba en directo o pega un MP3
+>    pregrabado, exporta H.264 1080p.
 > 3. **OBS** o **Loom**: pones el WebM en pantalla completa y
->    grabas con tu micro en tiempo real comentando encima.
+>    grabas con tu micro en tiempo real comentando.
 >
-> **Si retoques algo del atlas y quieras regenerar el vídeo base**:
-> `python scripts/grabar_demo.py`
+> **Si retoques algo del atlas y quieras regenerar el vídeo**:
 >
-> Las cifras totales: 480 palabras a ritmo natural (~2,7 palabras/segundo).
-> Si vas muy justo de tiempo, recorta las frases entre paréntesis.
+> ```bash
+> python scripts/grabar_demo.py            # contra producción (recomendado)
+> python scripts/grabar_demo.py --local    # contra localhost
+> ```
+>
+> Total: ~620 palabras a ritmo natural (≈ 2,7 palabras/segundo).
+> Si vas justo de tiempo, recorta las frases entre paréntesis.
 
 ---
 
@@ -28,130 +33,150 @@
 
 **En pantalla**: home de cendra con el mapa de barrios de València
 coloreado por riesgo (verde a brasa). La leyenda inferior izquierda
-queda resaltada un segundo.
+queda resaltada un instante para que se vea bien la escala.
 
 **Lo que dices**:
 > «En febrero de 2024 ardió un edificio de catorce plantas en el
-> barrio de Campanar de València. Diez personas murieron. La fachada
-> de composite con núcleo combustible cubrió todo el bloque en
-> menos de media hora. Esto es cendra: un atlas paramétrico que
-> intenta entender qué pasó y cuántos edificios más en la ciudad
-> podrían estar en una situación parecida.»
+> barrio de Campanar de València. Diez personas murieron. La
+> fachada de composite con núcleo combustible cubrió todo el
+> bloque en menos de media hora. Esto es cendra: un atlas
+> paramétrico que intenta entender qué pasó y cuántos edificios
+> más en la ciudad podrían estar en una situación parecida.»
 
 ---
 
-## CAPÍTULO 2 · 0:18 → 0:42 · Las cifras
+## CAPÍTULO 2 · 0:18 → 0:48 · Las cifras
 
-**En pantalla**: cambio a la pestaña «Propuestas». Las seis cifras
-clave (36.300 edificios, 154 candidatos, 10 capas, 6 parques, 1.923
-hidrantes, 40 tests). Después scroll a la cronología histórica con
-Lacrosse, Address, Grenfell, Mocejón y Campanar.
+**En pantalla**: cambio a la pestaña «Propuestas». Aparecen las seis
+cifras clave (36.300 edificios, 154 candidatos, 10 capas, 6 parques,
+1.923 hidrantes, 40 tests). Después scroll a la cronología histórica
+internacional con Lacrosse, Address, Grenfell, Mocejón y Campanar.
 
 **Lo que dices**:
 > «El atlas cruza 10 capas de datos abiertos del Ajuntament y del
 > Catastro INSPIRE para analizar 36.300 edificios únicos de
 > València. Con un criterio conservador —diez plantas o más,
-> construidos entre 2000 y 2017— identifica 154 edificios que
-> comparten lo que llamamos perfil Campanar. No es la primera
-> vez que esto pasa en Europa: Lacrosse en 2014, Grenfell en 2017,
-> Mocejón en 2022. Todos compartían el mismo material en fachada.»
+> construidos entre el año 2000 y 2017— identifica 154 edificios
+> que comparten lo que llamamos perfil Campanar. No es la primera
+> vez que esto pasa en Europa: Lacrosse en Melbourne en 2014,
+> Address en Dubai en 2015, Grenfell en Londres en 2017 con 72
+> víctimas, Mocejón en Toledo en 2022 y Campanar en 2024. Todos
+> compartían el mismo material en fachada.»
 
 ---
 
-## CAPÍTULO 3 · 0:42 → 1:18 · Tu edificio · click + sliders
+## CAPÍTULO 3 · 0:48 → 1:38 · Tu edificio · click + sliders
 
-**En pantalla**: vuelta a «Análisis», zoom hasta Aiora, click en un
-polígono dorado del Catastro. El panel derecho se rellena con los
-valores reales del edificio. Aparece el bloque «Por qué este
-riesgo». Después se cambian los sliders: Fachada de combustible a
-ladrillo, SCI a completo, hora a las 03:00.
+**En pantalla**: vuelta a la pestaña «Análisis», zoom hasta el
+barrio de Aiora, click en un polígono dorado del Catastro. El panel
+derecho se rellena con los valores reales del edificio. Aparece
+resaltado el panel y el bloque «Por qué este riesgo». Después se
+ven los sliders cambiando uno a uno con outline brasa: Fachada de
+combustible a ladrillo, SCI de parcial a completo, hora a las 03:00.
 
 **Lo que dices**:
 > «Cualquier persona puede hacer click en su edificio y ver el
 > riesgo simulado. El panel se rellena con los valores reales del
-> Catastro y el modelo explica de dónde viene cada cifra: la
-> fachada pesa el 30%, la edad el 25%, la altura el 15%. Si esta
-> fachada se sustituyera por una no combustible, el riesgo baja
-> a casi la mitad. Si además se completa el sistema contra
-> incendios, baja todavía más. Y si simulamos que el incendio
-> ocurre de madrugada, la exposición poblacional sube porque
-> hay más gente dentro. Esa es la potencia del modelo paramétrico.»
+> Catastro y el modelo explica de dónde viene cada cifra: el
+> régimen de fachada crítica, qué subfactor pesa más y, lo más
+> importante, cómo se propagaría el fuego con esta fachada.
+>
+> Y la potencia está en simular: si esta fachada combustible se
+> sustituyera por una de ladrillo no combustible, el riesgo
+> baja casi a la mitad en directo. Si además se completa el
+> sistema contra incendios, baja todavía más. Y si cambiamos
+> la hora a la madrugada, vemos que la exposición poblacional
+> sube porque hay más gente dentro del edificio. Esa es la
+> potencia del modelo paramétrico: 36.300 escenarios distintos
+> en una sola página.»
 
 ---
 
-## CAPÍTULO 4 · 1:18 → 1:45 · Plan operativo del SPEIS
+## CAPÍTULO 4 · 1:38 → 2:08 · Plan operativo del SPEIS
 
-**En pantalla**: scroll a las recomendaciones automáticas (tres
-mejoras con mayor caída de riesgo). Después scroll al «Plan de
-respuesta operativa». Vuelta al mapa con los círculos de
-evacuación, perímetro y la ruta hasta el parque de bomberos
-trazada por calles reales con OSRM.
+**En pantalla**: scroll al bloque de recomendaciones automáticas
+(las tres mejoras con mayor caída de riesgo) y al «Plan de
+respuesta operativa». Después vuelta al mapa con los círculos de
+evacuación, perímetro operativo y la ruta hasta el parque de
+bomberos trazada por calles reales con OSRM.
 
 **Lo que dices**:
-> «cendra no se queda en el diagnóstico. Para cada edificio calcula
-> las tres mejoras que más reducirían el riesgo, y propone un plan
-> operativo del SPEIS: cuántos efectivos, cuántas dotaciones, qué
-> caudal de agua y qué tiempo de control se necesitan. En el mapa
+> «cendra no se queda en el diagnóstico. Para cada edificio
+> calcula las tres mejoras que más reducirían el riesgo, y
+> propone un plan operativo del SPEIS: cuántos efectivos, cuántas
+> dotaciones, qué caudal de agua y qué tiempo de control se
+> necesitan según la altura y el régimen del incendio. En el mapa
 > aparece el radio de evacuación inmediata, el perímetro operativo
-> y la ruta real por calles hasta el parque más cercano.»
+> y la ruta real por calles hasta el parque más cercano,
+> calculada con OSRM.»
 
 ---
 
-## CAPÍTULO 5 · 1:45 → 2:12 · RAG normativo
+## CAPÍTULO 5 · 2:08 → 2:38 · RAG normativo
 
 **En pantalla**: bloque «Qué dice la normativa de tu edificio» se
-despliega. Aparecen sugerencias de preguntas según el edificio
-simulado. Se escribe «¿Qué pasó en Campanar y por qué afecta a mi
-edificio?» y se pulsa Buscar. Aparecen tres tarjetas: investigación
-judicial, RD 732/2019 post-Grenfell y CTE DB-SI SI 2.
+despliega. Aparecen sugerencias de preguntas adaptadas al edificio
+simulado. Se escribe en directo «¿Qué pasó en Campanar y por qué
+afecta a mi edificio?» y se pulsa Buscar. Aparecen tres tarjetas
+con el resultado: investigación judicial, RD 732/2019 post-Grenfell
+y CTE DB-SI SI 2.
 
 **Lo que dices**:
 > «Cuando alguien pregunta sobre la normativa de su edificio,
-> cendra busca en un corpus curado del Código Técnico, la antigua
-> NBE-CPI, el reglamento de instalaciones y la inspección técnica
-> de la Comunitat Valenciana. Cada respuesta cita textualmente el
-> artículo y enlaza al BOE. Es trazabilidad de verdad: cualquier
-> persona técnica puede verificar la fuente.»
+> cendra busca en un corpus curado del Código Técnico, la
+> antigua NBE-CPI, el reglamento de instalaciones y la
+> inspección técnica de la Comunitat Valenciana. La búsqueda
+> es BM25 puro en JavaScript, sin librerías y sin enviar nada
+> a ningún servidor externo. Cada respuesta cita textualmente
+> el artículo y enlaza al BOE o al DOGV. Es trazabilidad de
+> verdad: cualquier persona técnica puede verificar la fuente.»
 
 ---
 
-## CAPÍTULO 6 · 2:12 → 2:35 · Asistente con IA
+## CAPÍTULO 6 · 2:38 → 3:18 · Asistente con IA · widget flotante
 
-**En pantalla**: bloque «Pregúntale al asistente con IA» con el
-badge morado «con IA». Se escribe la pregunta «¿Por qué mi edificio
-tiene tanto riesgo?» y aparece la respuesta del modelo Llama 3.1 8B.
+**En pantalla**: aparece el botón flotante rojo-morado del asistente
+abajo a la derecha, se hace click y se abre el panel flotante con
+cabecera degradada. Se escribe en directo la pregunta «¿Por qué mi
+edificio tiene tanto riesgo y qué bajaría más la cifra?». **Llama
+3.1 responde realmente desde Cloudflare Workers AI** con los
+valores exactos del modelo y la sugerencia de qué slider tocar.
 
 **Lo que dices**:
-> «Para preguntas más abiertas hay un asistente conversacional con
-> el modelo Llama 3.1 8B alojado en Cloudflare Workers AI. Funciona
-> en el plan gratuito y, lo importante, está blindado: solo usa los
-> datos de la simulación y los pasajes normativos que ha
-> encontrado el buscador. No inventa cifras, no señala edificios
-> concretos y, si no sabe, lo dice.»
+> «Para preguntas más abiertas, en la esquina aparece el botón
+> del asistente conversacional. Detrás está Llama 3.1 8B, un
+> modelo open source de Meta alojado en Cloudflare Workers AI,
+> que entra en el plan gratuito hasta diez mil peticiones al día.
+> Lo importante es que está blindado: solo usa los datos de tu
+> simulación y los pasajes normativos que ha recuperado el
+> buscador. No inventa cifras, no señala edificios concretos y,
+> si no sabe, lo dice. Aquí tenemos a Llama explicando con los
+> valores exactos del modelo por qué este edificio tiene tanto
+> riesgo y proponiendo qué slider tocar para bajarlo.»
 
 ---
 
-## CAPÍTULO 7 · 2:35 → 2:55 · Los 154 candidatos + CSV
+## CAPÍTULO 7 · 3:18 → 3:38 · Los 154 candidatos + CSV
 
 **En pantalla**: vista «Propuestas» otra vez, scroll a la tabla
-descargable. Se filtra por «aiora» y se ve cómo la tabla reacciona.
-Se quita el filtro. El botón «Descargar CSV» aparece resaltado en
-brasa.
+descargable de los 154. Se filtra por «aiora» y se ve cómo la
+tabla reacciona en directo. Se quita el filtro. El botón
+«Descargar CSV» aparece resaltado en brasa.
 
 **Lo que dices**:
 > «La lista completa de los 154 candidatos está aquí: barrio,
-> plantas, año, riesgo, tiempo de bomberos y referencia catastral.
-> Es filtrable, ordenable y descargable como CSV. Cualquier
-> técnico municipal puede usarla mañana para empezar las
-> inspecciones de fachada.»
+> plantas, año, riesgo, tiempo de bomberos y referencia
+> catastral. Es filtrable, ordenable y descargable como CSV.
+> Cualquier técnico municipal puede usarla mañana para empezar
+> las inspecciones de fachada.»
 
 ---
 
-## CAPÍTULO 8 · 2:55 → 3:00 · Cierre con `/historia`
+## CAPÍTULO 8 · 3:38 → 3:49 · Cierre con `/historia`
 
-**En pantalla**: cambio a la página `/historia.html`, scroll rápido
-por las siete escenas del scrollytelling (Campanar, edificio,
-fuego, propagación, cronología, 154, CTA).
+**En pantalla**: cambio a la página `/historia.html`, scroll por
+las siete escenas del scrollytelling (Campanar, edificio, fuego,
+propagación, cronología, 154, CTA final).
 
 **Lo que dices**:
 > «cendra punto pages punto dev. Datos abiertos del Ajuntament,
@@ -163,18 +188,19 @@ fuego, propagación, cronología, 154, CTA).
 
 - **Resolución**: el WebM está en 1920×1080. Exporta el MP4 final
   en 1080p también.
-- **Audio**: voz limpia, sin música. Si quieres añadir música la
-  pones muy baja (-25 dB) y que sea ambiental, no festiva.
+- **Audio**: voz limpia, sin música. Si quieres meter música
+  ambiental ponla a -25 dB.
 - **Subtítulos**: añádelos en post para que el jurado pueda verlo
   sin sonido. Canva los genera automáticamente desde el audio.
 - **Cara o no cara**: en Canva puedes meterte tú en un círculo en
   la esquina inferior derecha hablando. Sube credibilidad. No es
   obligatorio.
 - **Cierre con frame fijo**: añade 2-3 segundos extra al final con
-  un frame fijo de la URL y «cendra.pages.dev» en grande para que
-  el jurado se quede con el dato.
+  un frame fijo de la URL en grande para que el jurado se quede
+  con el dato.
 
-## Si quieres hacer una versión más corta (60 s)
+## Versión corta (60 s)
 
-Mantén los capítulos 1, 3, 5 y 8. Recorta el resto. Te queda un
-trailer rápido para Instagram, Twitter o LinkedIn.
+Mantén los capítulos 1, 3, 5 (RAG normativo) y 6 (asistente IA).
+Recorta el resto. Te queda un trailer rápido para Instagram,
+Twitter o LinkedIn donde se entiende la innovación.

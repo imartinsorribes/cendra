@@ -1,28 +1,28 @@
 """
 Graba el vídeo demo de cendra siguiendo el guión extendido (docs/guion-video.md).
 
-Duración objetivo: ~3:30 min. Cubre los 8 capítulos del guión y muestra:
+Duración objetivo: ~3:30 min. Cubre 8 capítulos:
   - Cifras del proyecto.
-  - El mapa coroplético con su leyenda.
+  - El mapa coroplético con su leyenda agrandada.
   - Click en un edificio del Catastro + simulación paramétrica.
   - Manipulación de sliders (plantas, año, fachada) con caída del riesgo.
   - Bloque «Por qué este riesgo» y «Cómo bajaría más».
   - Plan operativo del SPEIS (radios, ruta, hidrantes).
   - RAG normativo con sugerencias y resultados con cita al BOE.
-  - Asistente conversacional con IA (mock de la respuesta del modelo
-    porque el binding AI solo está activo en Cloudflare, no en local).
+  - Asistente conversacional REAL con Llama 3.1 8B en Workers AI
+    (FAB esquina inferior derecha + panel flotante).
   - Tabla de los 154 candidatos Campanar con filtro y descarga CSV.
   - Página /historia con scrollytelling.
   - Cierre con la URL.
 
-Los tiempos están pensados para que la narración en off pueda ir a
-ritmo natural sin agobios. Si una transición se queda corta, sube el
-sleep correspondiente.
+Por defecto graba CONTRA PRODUCCIÓN (cendra.pages.dev) para que el
+asistente con IA conteste de verdad con Llama. Para grabar contra
+el servidor local (útil cuando hay cambios sin desplegar todavía):
 
-Uso:
-    python scripts/grabar_demo.py
+    python scripts/grabar_demo.py --local
 
 Para acelerar las primeras pruebas (sin grabar) durante desarrollo:
+
     python scripts/grabar_demo.py --dry-run
 """
 from __future__ import annotations
@@ -44,7 +44,8 @@ DOCS = ROOT / "docs"
 DOCS.mkdir(exist_ok=True)
 
 PUERTO = 8767
-URL = f"http://localhost:{PUERTO}"
+URL_LOCAL = f"http://localhost:{PUERTO}"
+URL_PROD = "https://cendra.pages.dev"
 
 
 class _Server(socketserver.TCPServer):
@@ -101,10 +102,16 @@ MOCK_ASISTENTE = """
 """
 
 
-def grabar(dry_run: bool = False):
-    _msg("arrancando servidor local...")
-    srv = _arrancar_servidor()
-    time.sleep(0.5)
+def grabar(dry_run: bool = False, local: bool = False):
+    if local:
+        _msg("arrancando servidor local...")
+        srv = _arrancar_servidor()
+        time.sleep(0.5)
+        url_base = URL_LOCAL
+    else:
+        _msg("apuntando a producción cendra.pages.dev")
+        srv = None
+        url_base = URL_PROD
 
     out_dir = DOCS / "_video_temp"
     if out_dir.exists():
@@ -126,14 +133,16 @@ def grabar(dry_run: bool = False):
             context = browser.new_context(**context_args)
             page = context.new_page()
 
-            # Mock del asistente IA antes de cargar la página
-            page.add_init_script(MOCK_ASISTENTE)
+            # Solo mockear el asistente cuando se graba contra local
+            # (en producción Llama 3.1 responde de verdad).
+            if local:
+                page.add_init_script(MOCK_ASISTENTE)
 
             # ====================================================
             # Capítulo 1 (0:00 - 0:20) · Hook y carga del atlas
             # ====================================================
             _msg("cap. 1: hook + carga inicial...")
-            page.goto(URL + "/index.html", wait_until="load")
+            page.goto(url_base + "/index.html", wait_until="load")
             # Cerrar tutorial
             try:
                 page.click("#tutorial_cerrar", timeout=2500)
@@ -216,17 +225,50 @@ def grabar(dry_run: bool = False):
                 if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }""")
             time.sleep(6)
+            # Resaltar el número grande del riesgo y la cifra V para que
+            # se vea bien que CAMBIA cuando manipulemos los sliders
+            page.evaluate("""() => {
+                const num = document.getElementById('riesgo_total');
+                if (num) {
+                    num.style.transition = 'transform 0.4s, color 0.4s';
+                    num.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+                // Resaltar el panel de resultado con un borde brasa sutil
+                const panel = document.querySelector('.resultado-panel');
+                if (panel) panel.style.boxShadow = '0 0 0 3px rgba(176, 58, 29, 0.25)';
+            }""")
+            time.sleep(2)
             # Cambiar slider Fachada para mostrar caída de riesgo
             page.evaluate("""() => {
                 const f = document.getElementById('fachada');
-                if (f) f.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                if (f) {
+                    f.style.outline = '3px solid #b03a1d';
+                    f.style.outlineOffset = '3px';
+                    f.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
             }""")
-            time.sleep(3)
+            time.sleep(2.5)
             page.select_option("#fachada", "ladrillo")
-            time.sleep(4)
-            # Cambiar SCI
+            time.sleep(4.5)
+            # Cambiar SCI (el outline brasa lo movemos al SCI)
+            page.evaluate("""() => {
+                const f = document.getElementById('fachada');
+                if (f) { f.style.outline = ''; f.style.outlineOffset = ''; }
+                const s = document.getElementById('sci');
+                if (s) {
+                    s.style.outline = '3px solid #b03a1d';
+                    s.style.outlineOffset = '3px';
+                    s.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }""")
+            time.sleep(2)
             page.select_option("#sci", "completo")
-            time.sleep(4)
+            time.sleep(4.5)
+            # Quitar outline del SCI antes de seguir
+            page.evaluate("""() => {
+                const s = document.getElementById('sci');
+                if (s) { s.style.outline = ''; s.style.outlineOffset = ''; }
+            }""")
             # Cambiar la hora para mostrar que también se modula por hora
             page.evaluate("""() => {
                 const h = document.getElementById('hora');
@@ -300,25 +342,32 @@ def grabar(dry_run: bool = False):
             time.sleep(7)
 
             # ====================================================
-            # Capítulo 6 (2:25 - 2:50) · Asistente IA
+            # Capítulo 6 (2:25 - 3:05) · Asistente IA (widget flotante)
             # ====================================================
-            _msg("cap. 6: asistente con IA...")
-            page.evaluate("""() => {
-                const det = document.getElementById('bloque_asistente');
-                if (det) { det.open = true; det.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-            }""")
+            _msg("cap. 6: asistente con IA flotante...")
+            # Volver al inicio del scroll para que se vea el mapa con
+            # el FAB del chatbot en la esquina inferior derecha
+            page.evaluate("window.scrollTo({ top: 0, behavior: 'smooth' });")
+            time.sleep(2.5)
+            # Click sobre el FAB del chatbot para abrir el panel flotante
+            page.click('#chatbot_fab')
             time.sleep(3)
+            # Escribir pregunta y enviar (Llama 3.1 responde en producción)
             page.focus('#chat_input')
-            page.type('#chat_input', '¿Por qué mi edificio tiene tanto riesgo?', delay=40)
-            time.sleep(1)
+            page.type('#chat_input', '¿Por qué mi edificio tiene tanto riesgo y qué bajaría más la cifra?', delay=45)
+            time.sleep(1.5)
             page.click('#chat_btn')
-            # El mock tarda 1,2 s en responder; dejamos respirar
-            time.sleep(8)
+            # En producción Llama tarda 2-6 s; en local con mock 1-2 s.
+            # Damos margen generoso para ambos.
+            time.sleep(14)
             page.evaluate("""() => {
                 const t = document.getElementById('chat_turnos');
                 if (t) t.scrollTop = t.scrollHeight;
             }""")
-            time.sleep(6)
+            time.sleep(4)
+            # Cerrar el panel flotante para mostrar el resto del atlas
+            page.click('#chatbot_cerrar')
+            time.sleep(2)
 
             # ====================================================
             # Capítulo 7 (2:50 - 3:15) · 154 candidatos + CSV
@@ -355,7 +404,7 @@ def grabar(dry_run: bool = False):
             # Capítulo 8 (3:15 - 3:35) · /historia + cierre
             # ====================================================
             _msg("cap. 8: /historia + cierre...")
-            page.goto(URL + "/historia.html", wait_until="load")
+            page.goto(url_base + "/historia.html", wait_until="load")
             time.sleep(4)
             # Scrollear despacio por la historia
             for y in (400, 1200, 2400, 3600, 4800, 6000):
@@ -385,7 +434,8 @@ def grabar(dry_run: bool = False):
         _msg(f"OK -> {dst.relative_to(ROOT)} ({kb:.0f} KB)")
 
     finally:
-        srv.shutdown()
+        if srv is not None:
+            srv.shutdown()
         if out_dir.exists():
             shutil.rmtree(out_dir, ignore_errors=True)
 
@@ -394,5 +444,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dry-run", action="store_true",
                         help="Ejecuta sin grabar (para iterar el guión).")
+    parser.add_argument("--local", action="store_true",
+                        help="Grabar contra localhost en lugar de cendra.pages.dev.")
     args = parser.parse_args()
-    grabar(dry_run=args.dry_run)
+    grabar(dry_run=args.dry_run, local=args.local)
