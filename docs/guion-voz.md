@@ -68,6 +68,10 @@ cuando corresponda al timestamp del vídeo.
 
 **3:13** (cierre)
 > **Los datos abiertos del Ajuntament solo sirven si los cruzamos**.
+>
+> [pausa de 1 segundo]
+>
+> Muchas gracias.
 
 ---
 
