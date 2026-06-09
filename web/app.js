@@ -464,25 +464,25 @@ async function inicializarMapa() {
     map.flyTo({ center: e.lngLat, zoom: 14, duration: 800 });
     recalcular();
 
-    // Popup con info del barrio (cierra otros antes)
+    // Popup minimalista del barrio: 4 datos sin cifra de riesgo
+    // (el riesgo grande lo da el panel derecho; ponerlo aquí
+    // también creaba confusión con cifras distintas). closeOnMove
+    // hace que el popup se cierre solo al arrastrar el mapa.
     document.querySelectorAll('.maplibregl-popup').forEach(el => el.remove());
-    new maplibregl.Popup({ offset: 8, closeButton: true, maxWidth: '260px' })
+    new maplibregl.Popup({ offset: 8, closeButton: true, closeOnMove: true, maxWidth: '260px' })
       .setLngLat(e.lngLat)
       .setHTML(`
-        <div class="popup-titulo">Barrio · ${p.barrio}</div>
-        <div class="popup-num">
-          <span class="popup-num-val" style="color:${colorPorValor(p.riesgo_medio || 0)}">${p.riesgo_medio ?? '—'}</span>
-          <span class="popup-num-lab">media del modelo · escenario base</span>
-        </div>
-        <p class="popup-detalle">
-          ${p.n_edificios ?? '?'} edificios · altura media ${p.altura_media?.toFixed?.(1) ?? '?'} m<br>
-          Tiempo medio bomberos: ${p.tiempo_llegada_medio?.toFixed?.(1) ?? '?'} min
-        </p>
-        <p class="popup-cta">
-          Ahora el panel simula un edificio aquí. Mueve los sliders
-          para explorar escenarios, o haz zoom y clic en un punto rojo
-          para usar los datos reales de un edificio concreto.
-        </p>
+        <div class="popup-titulo">Barrio del Ajuntament</div>
+        <dl class="popup-datos">
+          <dt>Barrio</dt>
+          <dd><strong>${p.barrio}</strong></dd>
+          <dt>Edificios</dt>
+          <dd>${p.n_edificios ?? '?'}</dd>
+          <dt>Altura media</dt>
+          <dd>${p.altura_media?.toFixed?.(1) ?? '?'} m</dd>
+          <dt>Bomberos</dt>
+          <dd>${p.tiempo_llegada_medio?.toFixed?.(1) ?? '?'} min de media</dd>
+        </dl>
       `)
       .addTo(map);
   });
@@ -565,7 +565,7 @@ async function inicializarMapa() {
     // (ese vive en el panel y se actualiza al tocar sliders) y sin
     // CTA redundante.
     document.querySelectorAll('.maplibregl-popup').forEach(el => el.remove());
-    new maplibregl.Popup({ offset: 10, closeButton: true, maxWidth: '260px' })
+    new maplibregl.Popup({ offset: 10, closeButton: true, closeOnMove: true, maxWidth: '260px' })
       .setLngLat(e.lngLat)
       .setHTML(_popupEdificioHTML(p))
       .addTo(map);
@@ -1423,7 +1423,7 @@ function pintarTablaCandidatos(items) {
         if (window.__map && refBase) {
           window.__map.once('idle', () => {
             document.querySelectorAll('.maplibregl-popup').forEach(el => el.remove());
-            new maplibregl.Popup({ offset: 10, closeButton: true, maxWidth: '260px' })
+            new maplibregl.Popup({ offset: 10, closeButton: true, closeOnMove: true, maxWidth: '260px' })
               .setLngLat([lon, lat])
               .setHTML(_popupEdificioHTML({
                 p: plantas,
