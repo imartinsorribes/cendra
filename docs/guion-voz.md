@@ -67,7 +67,7 @@ cuando corresponda al timestamp del vídeo.
 > herramienta abierta y un modelo verificable.
 
 **3:13** (cierre)
-> **Los datos abiertos del Ajuntament solo sirven si los cruzamos**.
+> **Esto es lo que se puede hacer cuando los datos están abiertos**.
 >
 > [pausa de 1 segundo]
 >
